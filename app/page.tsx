@@ -114,8 +114,11 @@ export default function KiaOraHomepage() {
   const InteractiveStars = () => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
     const [scrollY, setScrollY] = useState(0)
+    const [isClient, setIsClient] = useState(false)
 
     useEffect(() => {
+      setIsClient(true)
+
       const handleMouseMove = (e: MouseEvent) => {
         setMousePos({ x: e.clientX, y: e.clientY })
       }
@@ -133,6 +136,10 @@ export default function KiaOraHomepage() {
       }
     }, [])
 
+    if (!isClient) {
+      return null
+    }
+
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(100)].map((_, i) => {
@@ -142,9 +149,12 @@ export default function KiaOraHomepage() {
           const twinkleDelay = Math.random() * 5
 
           // Calculate distance from mouse for interaction
+          const windowWidth = typeof window !== "undefined" ? window.innerWidth : 1920
+          const windowHeight = typeof window !== "undefined" ? window.innerHeight : 1080
+
           const distanceFromMouse = Math.sqrt(
-            Math.pow((mousePos.x / window.innerWidth) * 100 - initialX, 2) +
-              Math.pow((mousePos.y / window.innerHeight) * 100 - initialY, 2),
+            Math.pow((mousePos.x / windowWidth) * 100 - initialX, 2) +
+              Math.pow((mousePos.y / windowHeight) * 100 - initialY, 2),
           )
 
           const isNearMouse = distanceFromMouse < 15
