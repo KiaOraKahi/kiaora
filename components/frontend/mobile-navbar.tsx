@@ -1,0 +1,213 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Menu, X, Star, User, Search, Home, Users, HelpCircle, Phone } from "lucide-react"
+import Link from "next/link"
+import SearchAutocomplete from "@/components/frontend/search-autocomplete"
+
+export default function MobileNavbar() {
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  const navItems = [
+    { name: "Home", href: "/", icon: <Home className="w-5 h-5" /> },
+    { name: "Celebrities", href: "/celebrities", icon: <Users className="w-5 h-5" /> },
+    { name: "Categories", href: "/categories", icon: <Star className="w-5 h-5" /> },
+    { name: "How It Works", href: "/how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
+    { name: "Contact", href: "/contact", icon: <Phone className="w-5 h-5" /> },
+  ]
+
+  // Close menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+    setShowSearch(false)
+  }, [])
+
+  return (
+    <>
+      <motion.nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 lg:hidden ${
+          isScrolled
+            ? "bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg"
+            : "bg-slate-900/80 backdrop-blur-sm"
+        }`}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <div className="px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <Star className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                Kia Ora
+              </span>
+            </Link>
+
+            {/* Mobile actions */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSearch(!showSearch)}
+                className="text-white hover:bg-white/20"
+              >
+                <Search className="w-5 h-5" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-white hover:bg-white/20"
+              >
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile Search */}
+          <AnimatePresence>
+            {showSearch && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden border-t border-white/10 pt-4 pb-4"
+              >
+                <SearchAutocomplete placeholder="Search celebrities..." onSearch={() => setShowSearch(false)} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed left-0 top-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-r border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                      <Star className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-xl font-bold text-white">Kia Ora</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-white hover:bg-white/20"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+
+                {/* Navigation Items */}
+                <div className="space-y-2 mb-8">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 touch-manipulation"
+                    >
+                      {item.icon}
+                      <span className="font-medium">{item.name}</span>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white touch-manipulation"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Get Started
+                  </Button>
+                </div>
+
+                {/* Quick Links */}
+                <div className="mt-8 pt-6 border-t border-white/10">
+                  <h4 className="text-white font-semibold mb-4">Quick Links</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <Link
+                      href="/help"
+                      className="text-purple-200 hover:text-white transition-colors touch-manipulation"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Help Center
+                    </Link>
+                    <Link
+                      href="/pricing"
+                      className="text-purple-200 hover:text-white transition-colors touch-manipulation"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Pricing
+                    </Link>
+                    <Link
+                      href="/faq"
+                      className="text-purple-200 hover:text-white transition-colors touch-manipulation"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      FAQ
+                    </Link>
+                    <Link
+                      href="/contact"
+                      className="text-purple-200 hover:text-white transition-colors touch-manipulation"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Support
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}

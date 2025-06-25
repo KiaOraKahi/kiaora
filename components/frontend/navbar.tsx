@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, Search } from "lucide-react"
+import { Menu, X, Star, User } from "lucide-react"
 import Link from "next/link"
+import SearchAutocomplete from "@/components/frontend/search-autocomplete"
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -31,7 +32,7 @@ export default function Navbar() {
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "backdrop-blur-xl border-b border-white/10 shadow-lg shadow-purple-500/10"
+          ? "bg-slate-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-purple-500/10"
           : "bg-transparent"
       }`}
       initial={{ y: -100 }}
@@ -72,9 +73,9 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
-              <Search className="w-5 h-5" />
-            </Button>
+            <div className="w-64">
+              <SearchAutocomplete placeholder="Search..." className="w-full" />
+            </div>
             <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
               <User className="w-4 h-4 mr-2" />
               Sign In

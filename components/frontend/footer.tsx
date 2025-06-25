@@ -20,10 +20,10 @@ export default function Footer() {
     {
       title: "Services",
       links: [
-        { name: "Birthday Messages", href: "/services/birthday" },
-        { name: "Personal Videos", href: "/services/personal" },
-        { name: "Business Endorsements", href: "/services/business" },
-        { name: "Live Calls", href: "/services/live" },
+        { name: "Birthday Messages", href: "/services?service=birthday" },
+        { name: "Personal Messages", href: "/services?service=personal" },
+        { name: "Business Endorsements", href: "/services?service=business" },
+        { name: "Live Calls", href: "/services?service=live" },
       ],
     },
     {
@@ -39,9 +39,9 @@ export default function Footer() {
       title: "Company",
       links: [
         { name: "About Us", href: "/about" },
-        { name: "Careers", href: "/careers" },
-        { name: "Press", href: "/press" },
-        { name: "Partners", href: "/partners" },
+        { name: "Become a Celebrity", href: "/join-celebrity" },
+        { name: "Brand Partnerships", href: "/partnerships" },
+        { name: "Newsroom", href: "/newsroom" },
       ],
     },
   ]
