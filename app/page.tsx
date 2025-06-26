@@ -11,10 +11,12 @@ import Navbar from "@/components/frontend/navbar"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 import Footer from "@/components/frontend/footer"
 import LiveChatWidget from "@/components/frontend/live-chat-widget"
+import { useRouter } from "next/navigation"
 
 // Update the services array to use correct image extensions
 const services = [
   {
+    id: 1,
     icon: <Zap className="w-8 h-8" />,
     title: "Quick shout-outs",
     description: "Fast and fun personalized shout-outs from your favorite talent",
@@ -26,6 +28,7 @@ const services = [
     ],
   },
   {
+    id: 2,
     icon: <MessageCircle className="w-8 h-8" />,
     title: "Personalised video messages",
     description: "Custom video messages tailored specifically for you or your loved ones",
@@ -37,6 +40,7 @@ const services = [
     ],
   },
   {
+    id: 3,
     icon: <Laugh className="w-8 h-8" />,
     title: "Roast someone",
     description: "Hilarious roasts and playful banter from comedy legends",
@@ -48,6 +52,7 @@ const services = [
     ],
   },
   {
+    id: 4,
     icon: <Video className="w-8 h-8" />,
     title: "5min Live interaction",
     description: "Real-time video calls and live interactions with talent",
@@ -59,6 +64,7 @@ const services = [
     ],
   },
   {
+    id: 5,
     icon: <Briefcase className="w-8 h-8" />,
     title: "Business endorsements",
     description: "Professional endorsements and business shoutouts",
@@ -70,6 +76,7 @@ const services = [
     ],
   },
   {
+    id: 6,
     icon: <Gift className="w-8 h-8" />,
     title: "Motivational video messages",
     description: "Inspiring and uplifting messages to boost confidence and motivation",
@@ -210,6 +217,7 @@ export default function KiaOraHomepage() {
   const [isMobile, setIsMobile] = useState(false)
   const [currentServiceIndex, setCurrentServiceIndex] = useState(0)
   const [currentTalentIndex, setCurrentTalentIndex] = useState(0)
+  const router = useRouter()
 
   // Check if mobile
   useEffect(() => {
@@ -230,7 +238,7 @@ export default function KiaOraHomepage() {
 
     const talentInterval = setInterval(() => {
       setCurrentTalentIndex((prev) => (prev + 1) % 3)
-    }, 1500)
+    }, 3000)
 
     return () => {
       clearInterval(serviceInterval)
@@ -364,12 +372,12 @@ export default function KiaOraHomepage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className="flex flex-col items-center group cursor-pointer"
-                      onClick={() => toast.info(`${service.title}`, { description: service.description })}
+                      onClick={() => router.push(`/services?service=${service.id}`)}
                     >
                       {/* Service Circle with Rotating Talent */}
                       <div className="relative mb-4">
                         <div
-                          className={`w-20 h-20 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
+                          className={`w-40 h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
                         >
                           <AnimatePresence mode="wait">
                             <motion.div
@@ -384,12 +392,14 @@ export default function KiaOraHomepage() {
                                 src={
                                   service.talents[currentTalentIndex % service.talents.length].image ||
                                   "/placeholder.svg" ||
+                                  "/placeholder.svg" ||
+                                  "/placeholder.svg" ||
                                   "/placeholder.svg"
                                 }
                                 alt={service.talents[currentTalentIndex % service.talents.length].name}
                                 fill
                                 className="object-cover rounded-full"
-                                sizes="80px"
+                                sizes="160px"
                                 priority={index < 3}
                               />
                             </motion.div>
@@ -419,9 +429,6 @@ export default function KiaOraHomepage() {
                         />
                       </div>
 
-                      {/* Service Title */}
-                      <h3 className="text-white font-semibold text-center text-sm leading-tight">{service.title}</h3>
-
                       {/* Current Talent Name */}
                       <p className="text-yellow-200 text-xs mt-1 opacity-75">
                         {service.talents[currentTalentIndex % service.talents.length].name}
@@ -430,30 +437,6 @@ export default function KiaOraHomepage() {
                   ))}
                 </div>
               </div>
-            </motion.div>
-
-            {/* Category Filters */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
-              transition={{ duration: 0.8, delay: 1.0 }}
-              className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8"
-            >
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
-                  size={isMobile ? "sm" : "default"}
-                  className={`touch-manipulation ${
-                    selectedCategory === category
-                      ? "bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-bold"
-                      : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  }`}
-                >
-                  {category}
-                </Button>
-              ))}
             </motion.div>
 
             {/* CTA Buttons */}
@@ -474,19 +457,6 @@ export default function KiaOraHomepage() {
               >
                 <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 See Video Samples
-              </Button>
-              <Button
-                size={isMobile ? "default" : "lg"}
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
-                onClick={() =>
-                  toast.success("Request Started", {
-                    description: "Let's find the perfect talent for you!",
-                  })
-                }
-              >
-                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Send a Request
               </Button>
             </motion.div>
           </div>
@@ -520,7 +490,22 @@ export default function KiaOraHomepage() {
                   viewport={{ once: true }}
                   whileHover={{ scale: isMobile ? 1 : 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group touch-manipulation"
+                  className="group touch-manipulation cursor-pointer"
+                  onClick={() => {
+                    // Map service titles to service IDs for URL
+                    const serviceMap: { [key: string]: string } = {
+                      "Quick shout-outs": "quick-shoutouts",
+                      "Personalised video messages": "personalised-messages",
+                      "Roast someone": "roast-someone",
+                      "5min Live interaction": "live-interaction",
+                      "Business endorsements": "business-endorsements",
+                      "Motivational video messages": "motivational-messages",
+                    }
+                    const serviceId = serviceMap[service.title]
+                    if (serviceId) {
+                      router.push(`/services?service=${serviceId}`)
+                    }
+                  }}
                 >
                   <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
                     <CardContent className="p-6 sm:p-8">
@@ -541,49 +526,6 @@ export default function KiaOraHomepage() {
 
         {/* Video Testimonials Carousel */}
         {/* <VideoTestimonialsCarousel /> */}
-
-        {/* Final CTA Section */}
-        <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <div className="bg-gradient-to-r from-yellow-500/20 to-purple-500/20 backdrop-blur-lg border border-white/20 rounded-2xl sm:rounded-3xl p-8 sm:p-12">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">Ready to Connect?</h2>
-              <p className="text-lg sm:text-xl text-yellow-200 mb-6 sm:mb-8 max-w-2xl mx-auto">
-                Join thousands of satisfied customers who have created unforgettable moments with their favorite talent
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size={isMobile ? "default" : "lg"}
-                  className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
-                  onClick={() =>
-                    toast.success("Let's Get Started!", {
-                      description: "Browse our amazing talent and start booking!",
-                    })
-                  }
-                >
-                  Start Booking Now
-                </Button>
-                <Button
-                  size={isMobile ? "default" : "lg"}
-                  variant="outline"
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
-                  onClick={() =>
-                    toast.info("Learn More", {
-                      description: "Discover how Kia Ora Kahi works!",
-                    })
-                  }
-                >
-                  Learn More
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        </section>
       </div>
 
       <Footer />

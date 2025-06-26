@@ -1,173 +1,240 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, Star, Grid, List, Clock, DollarSign, Sparkles, Play, MessageCircle } from "lucide-react"
+import { Star, Search, Filter, Sparkles } from "lucide-react"
 import Image from "next/image"
+import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
-import Link from "next/link"
 
-const celebrities = [
+// Subtle starfield component
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
+
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1
+      const type = Math.random()
+
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
+}
+
+const talents = [
   {
     id: 1,
     name: "Emma Stone",
     category: "Actor",
     rating: 4.9,
-    reviews: 234,
-    price: 299,
+    price: "$299",
+    image: "/talents/1.jpeg",
+    badge: "Trending",
+    discount: "20% OFF",
+    description: "Academy Award-winning actress known for La La Land and Easy A",
     responseTime: "24 hours",
-    image: "/placeholder.svg?height=400&width=300",
-    verified: true,
-    featured: true,
-    bio: "Academy Award-winning actress known for La La Land, Easy A, and Superbad.",
-    tags: ["Movies", "Comedy", "Drama"],
+    completedVideos: 1250,
   },
   {
     id: 2,
     name: "John Legend",
     category: "Musician",
     rating: 5.0,
-    reviews: 189,
-    price: 599,
-    responseTime: "3 days",
-    image: "/placeholder.svg?height=400&width=300",
-    verified: true,
-    featured: true,
-    bio: "Grammy-winning singer, songwriter, and producer. EGOT winner.",
-    tags: ["Music", "R&B", "Soul"],
+    price: "$599",
+    image: "/talents/2.jpg",
+    badge: "New",
+    discount: "Limited Time",
+    description: "Grammy-winning singer, songwriter, and producer",
+    responseTime: "48 hours",
+    completedVideos: 890,
   },
   {
     id: 3,
     name: "Tony Robbins",
     category: "Motivator",
     rating: 4.8,
-    reviews: 456,
-    price: 899,
-    responseTime: "5 days",
-    image: "/placeholder.svg?height=400&width=300",
-    verified: true,
-    featured: false,
-    bio: "World-renowned life and business strategist, author, and speaker.",
-    tags: ["Motivation", "Business", "Self-Help"],
+    price: "$899",
+    image: "/talents/3.jpg",
+    badge: "Popular",
+    discount: "15% OFF",
+    description: "World-renowned life coach and motivational speaker",
+    responseTime: "72 hours",
+    completedVideos: 2100,
   },
   {
     id: 4,
     name: "MrBeast",
     category: "Influencer",
     rating: 4.9,
-    reviews: 567,
-    price: 1299,
-    responseTime: "7 days",
-    image: "/placeholder.svg?height=400&width=300",
-    verified: true,
-    featured: true,
-    bio: "YouTube sensation known for elaborate challenges and philanthropy.",
-    tags: ["YouTube", "Gaming", "Philanthropy"],
+    price: "$1299",
+    image: "/talents/4.jpg",
+    badge: "Hot",
+    discount: "New Offer",
+    description: "YouTube sensation known for philanthropy and viral content",
+    responseTime: "24 hours",
+    completedVideos: 567,
   },
   {
     id: 5,
     name: "Oprah Winfrey",
     category: "Motivator",
     rating: 5.0,
-    reviews: 123,
-    price: 1999,
-    responseTime: "10 days",
-    image: "/placeholder.svg?height=400&width=300",
-    verified: true,
-    featured: true,
-    bio: "Media mogul, talk show host, actress, and philanthropist.",
-    tags: ["Media", "Inspiration", "Books"],
+    price: "$1999",
+    image: "/talents/5.jpg",
+    badge: "Premium",
+    discount: "Exclusive",
+    description: "Media mogul, talk show host, and philanthropist",
+    responseTime: "1 week",
+    completedVideos: 345,
   },
   {
     id: 6,
     name: "Ryan Reynolds",
     category: "Actor",
     rating: 4.7,
-    reviews: 345,
-    price: 799,
-    responseTime: "4 days",
-    image: "/placeholder.svg?height=400&width=300",
-    verified: true,
-    featured: false,
-    bio: "Canadian-American actor known for Deadpool, Green Lantern, and The Proposal.",
-    tags: ["Movies", "Comedy", "Action"],
+    price: "$799",
+    image: "/talents/6.jpg",
+    badge: "Comedy",
+    discount: "25% OFF",
+    description: "Canadian actor known for Deadpool and witty humor",
+    responseTime: "48 hours",
+    completedVideos: 1890,
   },
 ]
 
 const categories = ["All", "Actors", "Musicians", "Motivators", "Influencers", "Athletes", "Comedians"]
 const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Rating", "Response Time"]
 
-export default function CelebritiesPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+export default function TalentsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [sortBy, setSortBy] = useState("Featured")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [showFilters, setShowFilters] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isLoaded, setIsLoaded] = useState(false)
 
-  const filteredCelebrities = celebrities
-    .filter((celeb) => {
-      const matchesSearch = celeb.name.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory = selectedCategory === "All" || celeb.category === selectedCategory.slice(0, -1)
-      return matchesSearch && matchesCategory
+  useEffect(() => {
+    setIsLoaded(true)
+  }, [])
+
+  const filteredTalents = talents
+    .filter((talent) => {
+      const matchesCategory = selectedCategory === "All" || talent.category === selectedCategory.slice(0, -1)
+      const matchesSearch =
+        talent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        talent.description.toLowerCase().includes(searchQuery.toLowerCase())
+      return matchesCategory && matchesSearch
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "Price: Low to High":
-          return a.price - b.price
+          return Number.parseInt(a.price.replace(/[^\d]/g, "")) - Number.parseInt(b.price.replace(/[^\d]/g, ""))
         case "Price: High to Low":
-          return b.price - a.price
+          return Number.parseInt(b.price.replace(/[^\d]/g, "")) - Number.parseInt(a.price.replace(/[^\d]/g, ""))
         case "Rating":
           return b.rating - a.rating
-        case "Response Time":
-          return Number.parseInt(a.responseTime) - Number.parseInt(b.responseTime)
         default:
-          return b.featured ? 1 : -1
+          return 0
       }
     })
 
+  const handleBookNow = (talent: any) => {
+    toast.success("Booking Started!", {
+      description: `Starting booking process for ${talent.name}`,
+      action: {
+        label: "View Details",
+        onClick: () => (window.location.href = `/celebrities/${talent.id}`),
+      },
+    })
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-black">
+      {/* Subtle Luxury Starfield Background */}
+      <SubtleLuxuryStarfield />
+
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Browse Celebrities
-            </Badge>
-            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6">
-              Find Your Perfect Celebrity
-            </h1>
-            <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
-              Discover amazing celebrities ready to create personalized messages just for you.
-            </p>
+      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,215,0,0.3),transparent)]" />
+        </div>
 
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
-              <Input
-                type="text"
-                placeholder="Search celebrities..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-4 py-4 text-lg bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-              />
-            </div>
+        <div className="relative max-w-7xl mx-auto text-center">
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+            <Badge className="mb-6 bg-yellow-500/20 text-yellow-200 border-yellow-500/30">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Browse Talent
+            </Badge>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-6">
+              Discover Amazing Talent
+            </h1>
+            <p className="text-xl sm:text-2xl text-yellow-200 max-w-4xl mx-auto leading-relaxed">
+              Connect with your favorite stars, influencers, and personalities for personalized experiences.
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Filters and Controls */}
-      <section className="px-4 sm:px-6 lg:px-8 pb-8">
+      {/* Search and Filters */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white/5">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+            {/* Search */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-300 w-5 h-5" />
+              <Input
+                placeholder="Search talent..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-yellow-300"
+              />
+            </div>
+
             {/* Category Filters */}
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
@@ -175,230 +242,107 @@ export default function CelebritiesPage() {
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
                   onClick={() => setSelectedCategory(category)}
-                  className={`${
+                  size="sm"
+                  className={
                     selectedCategory === category
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                      ? "bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-bold"
                       : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  }`}
+                  }
                 >
                   {category}
                 </Button>
               ))}
             </div>
 
-            {/* Controls */}
-            <div className="flex items-center gap-4">
+            {/* Sort */}
+            <div className="flex items-center gap-2">
+              <Filter className="text-yellow-300 w-5 h-5" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
+                className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2"
               >
                 {sortOptions.map((option) => (
-                  <option key={option} value={option} className="bg-slate-800">
+                  <option key={option} value={option} className="bg-black">
                     {option}
                   </option>
                 ))}
               </select>
-
-              <div className="flex border border-white/20 rounded-lg overflow-hidden">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className={viewMode === "grid" ? "bg-purple-500" : "text-white hover:bg-white/10"}
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className={viewMode === "list" ? "bg-purple-500" : "text-white hover:bg-white/10"}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Results Count */}
-          <p className="text-purple-200 mb-8">
-            Showing {filteredCelebrities.length} celebrities
-            {searchTerm && ` for "${searchTerm}"`}
-            {selectedCategory !== "All" && ` in ${selectedCategory}`}
-          </p>
-
-          {/* Celebrity Grid/List */}
-          <div
-            className={
-              viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" : "space-y-6"
-            }
-          >
-            {filteredCelebrities.map((celebrity, index) => (
+      {/* Talents Grid */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {filteredTalents.map((talent, index) => (
               <motion.div
-                key={celebrity.id}
+                key={talent.id}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.02 }}
                 className="group"
               >
-                {viewMode === "grid" ? (
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 group-hover:scale-105 overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="relative">
-                        <Image
-                          src={celebrity.image || "/placeholder.svg"}
-                          alt={celebrity.name}
-                          width={300}
-                          height={400}
-                          className="w-full h-64 object-cover"
-                        />
-                        {celebrity.featured && (
-                          <Badge className="absolute top-3 left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                            Featured
-                          </Badge>
-                        )}
-                        {celebrity.verified && (
-                          <div className="absolute top-3 right-3 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">✓</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                          <Button className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30">
-                            <Play className="w-4 h-4 mr-2" />
-                            View Sample
-                          </Button>
-                        </div>
+                <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
+                  <CardContent className="p-6">
+                    <div className="relative mb-4">
+                      <Image
+                        src={talent.image || "/placeholder.svg"}
+                        alt={talent.name}
+                        width={300}
+                        height={300}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      <Badge className="absolute top-2 right-2 bg-yellow-500/80 text-black font-bold">
+                        {talent.badge}
+                      </Badge>
+                      {talent.discount && (
+                        <Badge className="absolute top-2 left-2 bg-green-500/80 text-white">{talent.discount}</Badge>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white mb-2">{talent.name}</h3>
+                    <p className="text-yellow-200 text-sm mb-3">{talent.description}</p>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-white text-sm">{talent.rating}</span>
                       </div>
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-xl font-bold text-white">{celebrity.name}</h3>
-                          <Badge className="bg-purple-500/20 text-purple-200 border-purple-500/30">
-                            {celebrity.category}
-                          </Badge>
-                        </div>
-                        <p className="text-purple-200 text-sm mb-4 line-clamp-2">{celebrity.bio}</p>
-                        <div className="flex items-center gap-4 mb-4 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-white">{celebrity.rating}</span>
-                            <span className="text-purple-300">({celebrity.reviews})</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-purple-300">
-                            <Clock className="w-4 h-4" />
-                            <span>{celebrity.responseTime}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-2xl font-bold text-purple-300">${celebrity.price}</span>
-                          <div className="flex gap-2">
-                            <Link href={`/celebrities/${celebrity.id}`} className="flex-1">
-                              <Button
-                                variant="outline"
-                                className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
-                              >
-                                View Profile
-                              </Button>
-                            </Link>
-                            <Button className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
-                              Book Now
-                            </Button>
-                          </div>
-                        </div>
+                      <span className="text-2xl font-bold text-yellow-300">{talent.price}</span>
+                    </div>
+
+                    <div className="space-y-2 mb-4 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-yellow-300">Response Time:</span>
+                        <span className="text-white">{talent.responseTime}</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex gap-6">
-                        <div className="relative flex-shrink-0">
-                          <Image
-                            src={celebrity.image || "/placeholder.svg"}
-                            alt={celebrity.name}
-                            width={120}
-                            height={160}
-                            className="w-24 h-32 object-cover rounded-lg"
-                          />
-                          {celebrity.verified && (
-                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">✓</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="text-2xl font-bold text-white mb-1">{celebrity.name}</h3>
-                              <Badge className="bg-purple-500/20 text-purple-200 border-purple-500/30 mb-2">
-                                {celebrity.category}
-                              </Badge>
-                            </div>
-                            {celebrity.featured && (
-                              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                                Featured
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-purple-200 mb-4">{celebrity.bio}</p>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {celebrity.tags.map((tag) => (
-                              <Badge key={tag} variant="outline" className="border-purple-500/30 text-purple-300">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                <span className="text-white">{celebrity.rating}</span>
-                                <span className="text-purple-300">({celebrity.reviews} reviews)</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-purple-300">
-                                <Clock className="w-4 h-4" />
-                                <span>{celebrity.responseTime}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-purple-300">
-                                <DollarSign className="w-4 h-4" />
-                                <span className="text-2xl font-bold text-purple-300">${celebrity.price}</span>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                              >
-                                <MessageCircle className="w-4 h-4 mr-2" />
-                                Sample
-                              </Button>
-                              <Link href={`/celebrities/${celebrity.id}`}>
-                                <Button
-                                  variant="outline"
-                                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                                >
-                                  View Profile
-                                </Button>
-                              </Link>
-                              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
-                                Book Now
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="flex justify-between">
+                        <span className="text-yellow-300">Videos Completed:</span>
+                        <span className="text-white">{talent.completedVideos}</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    </div>
+
+                    <Button
+                      className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold"
+                      onClick={() => handleBookNow(talent)}
+                    >
+                      Book Now
+                    </Button>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </div>
 
-          {filteredCelebrities.length === 0 && (
+          {filteredTalents.length === 0 && (
             <div className="text-center py-20">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-2xl font-bold text-white mb-2">No celebrities found</h3>
-              <p className="text-purple-200">Try adjusting your search or filters</p>
+              <h3 className="text-2xl font-bold text-white mb-4">No talent found</h3>
+              <p className="text-yellow-200">Try adjusting your search or filters</p>
             </div>
           )}
         </div>

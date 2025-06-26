@@ -1,101 +1,119 @@
 "use client"
-
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
 import {
-  Calendar,
   MessageCircle,
   Video,
-  Heart,
   Briefcase,
-  Gift,
-  Star,
-  Clock,
   CheckCircle,
   ArrowRight,
   Play,
   Sparkles,
   X,
-  Send,
   Camera,
   Music,
   Zap,
+  Laugh,
+  Gift,
 } from "lucide-react"
 import Image from "next/image"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import { toast } from "sonner"
 
+// Updated services to match the new premium services
 const services = [
   {
-    id: "birthday",
-    icon: <Calendar className="w-8 h-8" />,
-    title: "Birthday Messages",
-    shortDescription: "Personalized birthday greetings from your favorite celebrities",
+    id: "quick-shoutouts",
+    icon: <Zap className="w-8 h-8" />,
+    title: "Quick shout-outs",
+    shortDescription: "Fast and fun personalized shout-outs from your favorite talent",
     fullDescription:
-      "Make someone's birthday unforgettable with a personalized video message from their favorite celebrity. Our birthday messages are custom-tailored with the recipient's name, age, and special details you provide.",
-    color: "from-pink-500 to-rose-500",
-    price: "Starting at $99",
-    duration: "1-3 minutes",
-    deliveryTime: "3-7 days",
+      "Get instant energy with quick, personalized shout-outs from your favorite talent. Perfect for birthdays, congratulations, or just to brighten someone's day with a burst of celebrity excitement.",
+    color: "from-yellow-500 to-orange-500",
+    price: "Starting at $49",
+    duration: "30 seconds - 1 minute",
+    deliveryTime: "24-48 hours",
     features: [
-      "Personalized birthday wishes",
-      "Mention recipient's name and age",
-      "Custom birthday song (optional)",
+      "Quick personalized message",
+      "Mention recipient's name",
+      "High-energy delivery",
       "HD video quality",
-      "Unlimited replays",
-      "Digital download included",
+      "Fast turnaround",
+      "Perfect for social sharing",
     ],
     popular: true,
     samples: [
-      { celebrity: "Emma Stone", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Ryan Reynolds", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "John Legend", thumbnail: "/placeholder.svg?height=200&width=300" },
+      { celebrity: "Kevin Hart", thumbnail: "/talents/1.jpeg" },
+      { celebrity: "Ryan Reynolds", thumbnail: "/talents/2.jpg" },
+      { celebrity: "Emma Stone", thumbnail: "/talents/3.jpg" },
     ],
   },
   {
-    id: "personal",
+    id: "personalised-messages",
     icon: <MessageCircle className="w-8 h-8" />,
-    title: "Personal Messages",
-    shortDescription: "Custom video messages for any special occasion",
+    title: "Personalised video messages",
+    shortDescription: "Custom video messages tailored specifically for you or your loved ones",
     fullDescription:
-      "Whether it's congratulations, encouragement, or just a hello, get a personalized message for any occasion. Perfect for graduations, anniversaries, achievements, or just to brighten someone's day.",
+      "Experience the magic of a fully personalized video message crafted specifically for you or your loved ones. Our talent takes time to create meaningful, heartfelt content that will be treasured forever.",
     color: "from-blue-500 to-cyan-500",
     price: "Starting at $149",
     duration: "2-5 minutes",
     deliveryTime: "3-7 days",
     features: [
       "Fully customizable content",
-      "Any occasion or purpose",
-      "Personal anecdotes (when possible)",
+      "Personal anecdotes when possible",
+      "Detailed personalization",
       "HD video quality",
-      "Rush delivery available",
-      "Satisfaction guarantee",
+      "Unlimited replays",
+      "Digital download included",
     ],
-    popular: false,
+    popular: true,
     samples: [
-      { celebrity: "Tony Robbins", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Oprah Winfrey", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "MrBeast", thumbnail: "/placeholder.svg?height=200&width=300" },
+      { celebrity: "John Legend", thumbnail: "/talents/4.jpg" },
+      { celebrity: "Oprah Winfrey", thumbnail: "/talents/5.jpg" },
+      { celebrity: "Taylor Swift", thumbnail: "/talents/6.jpg" },
     ],
   },
   {
-    id: "live",
-    icon: <Video className="w-8 h-8" />,
-    title: "Live Video Calls",
-    shortDescription: "Real-time video calls with celebrities",
+    id: "roast-someone",
+    icon: <Laugh className="w-8 h-8" />,
+    title: "Roast someone",
+    shortDescription: "Hilarious roasts and playful banter from comedy legends",
     fullDescription:
-      "Experience the ultimate fan interaction with live video calls. Have a real conversation, ask questions, and create memories that will last a lifetime. Perfect for special occasions or once-in-a-lifetime experiences.",
+      "Get ready to laugh until it hurts! Our comedy talent will deliver epic roasts and playful banter that's perfectly crafted to entertain while keeping it fun and friendly. Great for friends who love good humor!",
+    color: "from-red-500 to-pink-500",
+    price: "Starting at $99",
+    duration: "1-3 minutes",
+    deliveryTime: "2-5 days",
+    features: [
+      "Hilarious custom roasts",
+      "Playful and friendly tone",
+      "Comedy legend delivery",
+      "Shareable content",
+      "Perfect for friends",
+      "Guaranteed laughs",
+    ],
+    popular: false,
+    samples: [
+      { celebrity: "Dave Chappelle", thumbnail: "/talents/1.jpeg" },
+      { celebrity: "Amy Schumer", thumbnail: "/talents/2.jpg" },
+      { celebrity: "Kevin Hart", thumbnail: "/talents/3.jpg" },
+    ],
+  },
+  {
+    id: "live-interaction",
+    icon: <Video className="w-8 h-8" />,
+    title: "5min Live interaction",
+    shortDescription: "Real-time video calls and live interactions with talent",
+    fullDescription:
+      "Experience the ultimate fan interaction with exclusive 5-minute live video calls. Have real conversations, ask questions, and create once-in-a-lifetime memories with your favorite talent.",
     color: "from-purple-500 to-indigo-500",
     price: "Starting at $999",
-    duration: "5-15 minutes",
+    duration: "5 minutes",
     deliveryTime: "Schedule in advance",
     features: [
       "Real-time video conversation",
@@ -107,45 +125,19 @@ const services = [
     ],
     popular: false,
     samples: [
-      { celebrity: "Celebrity Chef", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Sports Legend", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Music Artist", thumbnail: "/placeholder.svg?height=200&width=300" },
+      { celebrity: "MrBeast", thumbnail: "/talents/4.jpg" },
+      { celebrity: "Emma Chamberlain", thumbnail: "/talents/5.jpg" },
+      { celebrity: "PewDiePie", thumbnail: "/talents/6.jpg" },
     ],
   },
   {
-    id: "motivation",
-    icon: <Heart className="w-8 h-8" />,
-    title: "Motivational Messages",
-    shortDescription: "Inspiring words to boost confidence and motivation",
-    fullDescription:
-      "Get the motivation you need from world-renowned speakers, athletes, and successful entrepreneurs. Perfect for overcoming challenges, achieving goals, or starting new ventures.",
-    color: "from-green-500 to-emerald-500",
-    price: "Starting at $199",
-    duration: "3-7 minutes",
-    deliveryTime: "2-5 days",
-    features: [
-      "Personalized motivational content",
-      "Goal-specific encouragement",
-      "Success strategies shared",
-      "Confidence-building messages",
-      "Life coaching insights",
-      "Inspirational quotes included",
-    ],
-    popular: true,
-    samples: [
-      { celebrity: "Tony Robbins", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Gary Vaynerchuk", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Mel Robbins", thumbnail: "/placeholder.svg?height=200&width=300" },
-    ],
-  },
-  {
-    id: "business",
+    id: "business-endorsements",
     icon: <Briefcase className="w-8 h-8" />,
-    title: "Business Endorsements",
-    shortDescription: "Professional shoutouts for your business or brand",
+    title: "Business endorsements",
+    shortDescription: "Professional endorsements and business shoutouts",
     fullDescription:
-      "Boost your business credibility with celebrity endorsements. Perfect for product launches, company milestones, team motivation, or marketing campaigns.",
-    color: "from-orange-500 to-amber-500",
+      "Boost your business credibility with professional talent endorsements. Perfect for product launches, company milestones, team motivation, or marketing campaigns that need that extra star power.",
+    color: "from-green-500 to-emerald-500",
     price: "Starting at $499",
     duration: "1-3 minutes",
     deliveryTime: "5-10 days",
@@ -159,35 +151,35 @@ const services = [
     ],
     popular: false,
     samples: [
-      { celebrity: "Shark Tank Investor", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Tech CEO", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Business Author", thumbnail: "/placeholder.svg?height=200&width=300" },
+      { celebrity: "Gary Vaynerchuk", thumbnail: "/talents/1.jpeg" },
+      { celebrity: "Tony Robbins", thumbnail: "/talents/2.jpg" },
+      { celebrity: "Shark Tank Cast", thumbnail: "/talents/3.jpg" },
     ],
   },
   {
-    id: "special",
+    id: "motivational-messages",
     icon: <Gift className="w-8 h-8" />,
-    title: "Special Occasions",
-    shortDescription: "Custom messages for weddings, graduations, and more",
+    title: "Motivational video messages",
+    shortDescription: "Inspiring and uplifting messages to boost confidence and motivation",
     fullDescription:
-      "Celebrate life's biggest moments with celebrity messages for weddings, graduations, promotions, retirements, and other milestone events.",
-    color: "from-violet-500 to-purple-500",
-    price: "Starting at $179",
-    duration: "2-4 minutes",
-    deliveryTime: "3-7 days",
+      "Get the inspiration you need from world-renowned motivational speakers and successful entrepreneurs. Perfect for overcoming challenges, achieving goals, or starting new ventures with confidence.",
+    color: "from-indigo-500 to-purple-500",
+    price: "Starting at $199",
+    duration: "3-7 minutes",
+    deliveryTime: "2-5 days",
     features: [
-      "Wedding congratulations",
-      "Graduation celebrations",
-      "Retirement wishes",
-      "Promotion acknowledgments",
-      "Anniversary messages",
-      "Custom occasion content",
+      "Personalized motivational content",
+      "Goal-specific encouragement",
+      "Success strategies shared",
+      "Confidence-building messages",
+      "Life coaching insights",
+      "Inspirational quotes included",
     ],
-    popular: false,
+    popular: true,
     samples: [
-      { celebrity: "Wedding Planner", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Life Coach", thumbnail: "/placeholder.svg?height=200&width=300" },
-      { celebrity: "Motivational Speaker", thumbnail: "/placeholder.svg?height=200&width=300" },
+      { celebrity: "Tony Robbins", thumbnail: "/talents/4.jpg" },
+      { celebrity: "Oprah Winfrey", thumbnail: "/talents/5.jpg" },
+      { celebrity: "Mel Robbins", thumbnail: "/talents/6.jpg" },
     ],
   },
 ]
@@ -214,21 +206,14 @@ const addOns = [
     description: "Custom soundtrack for your video",
     price: "+$29",
   },
-  {
-    id: "extended",
-    icon: <Clock className="w-6 h-6" />,
-    title: "Extended Length",
-    description: "Up to 10 minutes instead of standard",
-    price: "+$199",
-  },
 ]
 
 const testimonials = [
   {
     name: "Sarah Johnson",
-    service: "Birthday Message",
+    service: "Quick shout-out",
     rating: 5,
-    comment: "My daughter was absolutely thrilled! Emma Stone's birthday message made her day unforgettable.",
+    comment: "The quick shout-out from Kevin Hart made my daughter's day! So much energy and fun!",
     avatar: "/placeholder.svg?height=60&width=60",
   },
   {
@@ -242,122 +227,126 @@ const testimonials = [
     name: "Lisa Rodriguez",
     service: "Business Endorsement",
     rating: 5,
-    comment: "The celebrity endorsement boosted our product launch beyond expectations. Amazing service!",
+    comment: "The business endorsement boosted our product launch beyond expectations. Amazing service!",
     avatar: "/placeholder.svg?height=60&width=60",
   },
 ]
+
+// Subtle starfield component
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
+
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1
+      const type = Math.random()
+
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
+}
 
 export default function ServicesPage() {
   const [selectedService, setSelectedService] = useState<string | null>(null)
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [showSampleModal, setShowSampleModal] = useState(false)
   const [selectedSample, setSelectedSample] = useState<any>(null)
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([])
-
-  const [bookingData, setBookingData] = useState({
-    recipientName: "",
-    occasion: "",
-    personalMessage: "",
-    specialInstructions: "",
-    deliveryDate: "",
-    email: "",
-    phone: "",
-  })
-
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Add useEffect to handle URL parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const serviceParam = urlParams.get("service")
+
     if (serviceParam) {
-      setSelectedService(serviceParam)
-      // Scroll to service details section
-      setTimeout(() => {
-        document.getElementById("service-details")?.scrollIntoView({ behavior: "smooth" })
-      }, 100)
+      // Direct mapping since the URL param should match the service ID
+      const serviceExists = services.find((s) => s.id === serviceParam)
+      if (serviceExists) {
+        setSelectedService(serviceParam)
+        // Use a timeout to ensure the component has rendered before scrolling
+        setTimeout(() => {
+          const element = document.getElementById("service-details")
+          if (element) {
+            element.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            })
+          }
+        }, 500) // Increased timeout for better reliability
+      }
     }
   }, [])
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId)
     setShowBookingModal(true)
-    setCurrentStep(1)
-  }
-
-  const handleAddOnToggle = (addOnId: string) => {
-    setSelectedAddOns((prev) => (prev.includes(addOnId) ? prev.filter((id) => id !== addOnId) : [...prev, addOnId]))
-  }
-
-  const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    // Simulate booking submission
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    setIsSubmitting(false)
-    setCurrentStep(4) // Success step
-
-    // Reset after showing success
-    setTimeout(() => {
-      setShowBookingModal(false)
-      setCurrentStep(1)
-      setBookingData({
-        recipientName: "",
-        occasion: "",
-        personalMessage: "",
-        specialInstructions: "",
-        deliveryDate: "",
-        email: "",
-        phone: "",
-      })
-      setSelectedAddOns([])
-    }, 3000)
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setBookingData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const calculateTotal = () => {
-    const service = services.find((s) => s.id === selectedService)
-    if (!service) return 0
-
-    const basePrice = Number.parseInt(service.price.replace(/[^\d]/g, ""))
-    const addOnTotal = selectedAddOns.reduce((total, addOnId) => {
-      const addOn = addOns.find((a) => a.id === addOnId)
-      return total + (addOn ? Number.parseInt(addOn.price.replace(/[^\d]/g, "")) : 0)
-    }, 0)
-
-    return basePrice + addOnTotal
   }
 
   const selectedServiceData = services.find((s) => s.id === selectedService)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-black">
+      {/* Subtle Luxury Starfield Background */}
+      <SubtleLuxuryStarfield />
+
       <Navbar />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,215,0,0.3),transparent)]" />
         </div>
 
         <div className="relative max-w-7xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
+            <Badge className="mb-6 bg-yellow-500/20 text-yellow-200 border-yellow-500/30">
               <Sparkles className="w-4 h-4 mr-2" />
               Our Services
             </Badge>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6">
-              Celebrity Experiences for Every Occasion
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-6">
+              Talent Experiences for Every Occasion
             </h1>
-            <p className="text-xl sm:text-2xl text-purple-200 max-w-4xl mx-auto leading-relaxed">
-              From birthday wishes to business endorsements, discover the perfect celebrity service for your needs.
+            <p className="text-xl sm:text-2xl text-yellow-200 max-w-4xl mx-auto leading-relaxed">
+              From quick shout-outs to live interactions, discover the perfect talent service for your needs.
             </p>
           </motion.div>
         </div>
@@ -375,12 +364,18 @@ export default function ServicesPage() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.02 }}
-                className="group relative"
+                className="group relative cursor-pointer"
+                onClick={() => {
+                  setSelectedService(service.id)
+                  toast.info(`${service.title}`, { description: service.shortDescription })
+                }}
               >
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full overflow-hidden">
+                <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full overflow-hidden">
                   {service.popular && (
                     <div className="absolute top-4 right-4 z-10">
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">Most Popular</Badge>
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold">
+                        Most Popular
+                      </Badge>
                     </div>
                   )}
 
@@ -392,19 +387,19 @@ export default function ServicesPage() {
                     </div>
 
                     <h3 className="text-2xl font-bold text-white mb-3">{service.title}</h3>
-                    <p className="text-purple-200 mb-6 leading-relaxed">{service.shortDescription}</p>
+                    <p className="text-yellow-200 mb-6 leading-relaxed">{service.shortDescription}</p>
 
                     <div className="space-y-3 mb-6">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-purple-300">Starting Price:</span>
+                        <span className="text-yellow-300">Starting Price:</span>
                         <span className="text-white font-semibold">{service.price}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-purple-300">Duration:</span>
+                        <span className="text-yellow-300">Duration:</span>
                         <span className="text-white">{service.duration}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-purple-300">Delivery:</span>
+                        <span className="text-yellow-300">Delivery:</span>
                         <span className="text-white">{service.deliveryTime}</span>
                       </div>
                     </div>
@@ -417,7 +412,8 @@ export default function ServicesPage() {
                           <div
                             key={idx}
                             className="relative cursor-pointer group/sample"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation()
                               setSelectedSample({ ...sample, service: service.title })
                               setShowSampleModal(true)
                             }}
@@ -439,8 +435,11 @@ export default function ServicesPage() {
 
                     <div className="space-y-3">
                       <Button
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                        onClick={() => handleServiceSelect(service.id)}
+                        className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleServiceSelect(service.id)
+                        }}
                       >
                         Book Now
                         <ArrowRight className="w-4 h-4 ml-2" />
@@ -448,9 +447,9 @@ export default function ServicesPage() {
                       <Button
                         variant="outline"
                         className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setSelectedService(service.id)
-                          // Scroll to details section
                           document.getElementById("service-details")?.scrollIntoView({ behavior: "smooth" })
                         }}
                       >
@@ -482,11 +481,11 @@ export default function ServicesPage() {
                         </div>
                         <div>
                           <h2 className="text-4xl font-bold text-white">{selectedServiceData?.title}</h2>
-                          <p className="text-purple-200">{selectedServiceData?.price}</p>
+                          <p className="text-yellow-200">{selectedServiceData?.price}</p>
                         </div>
                       </div>
 
-                      <p className="text-lg text-purple-200 mb-8 leading-relaxed">
+                      <p className="text-lg text-yellow-200 mb-8 leading-relaxed">
                         {selectedServiceData?.fullDescription}
                       </p>
 
@@ -496,7 +495,7 @@ export default function ServicesPage() {
                           {selectedServiceData?.features.map((feature, idx) => (
                             <div key={idx} className="flex items-center gap-3">
                               <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                              <span className="text-purple-200">{feature}</span>
+                              <span className="text-yellow-200">{feature}</span>
                             </div>
                           ))}
                         </div>
@@ -509,19 +508,19 @@ export default function ServicesPage() {
                           <h3 className="text-xl font-bold text-white mb-4">Service Details</h3>
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <span className="text-purple-200">Duration:</span>
+                              <span className="text-yellow-200">Duration:</span>
                               <span className="text-white font-semibold">{selectedServiceData?.duration}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-purple-200">Delivery Time:</span>
+                              <span className="text-yellow-200">Delivery Time:</span>
                               <span className="text-white font-semibold">{selectedServiceData?.deliveryTime}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-purple-200">Format:</span>
+                              <span className="text-yellow-200">Format:</span>
                               <span className="text-white font-semibold">HD Video (MP4)</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-purple-200">Usage Rights:</span>
+                              <span className="text-yellow-200">Usage Rights:</span>
                               <span className="text-white font-semibold">Personal Use</span>
                             </div>
                           </div>
@@ -530,7 +529,7 @@ export default function ServicesPage() {
 
                       <Button
                         size="lg"
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 text-lg"
+                        className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold py-4 text-lg"
                         onClick={() => handleServiceSelect(selectedService)}
                       >
                         Book This Service
@@ -556,12 +555,12 @@ export default function ServicesPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Enhance Your Experience</h2>
-            <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-              Add these premium features to make your celebrity message even more special.
+            <p className="text-xl text-yellow-200 max-w-3xl mx-auto">
+              Add these premium features to make your talent message even more special.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {addOns.map((addOn, index) => (
               <motion.div
                 key={addOn.id}
@@ -570,14 +569,14 @@ export default function ServicesPage() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full">
+                <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
                   <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <div className="text-white">{addOn.icon}</div>
+                    <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="text-black">{addOn.icon}</div>
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">{addOn.title}</h3>
-                    <p className="text-purple-200 text-sm mb-4">{addOn.description}</p>
-                    <div className="text-2xl font-bold text-purple-300">{addOn.price}</div>
+                    <p className="text-yellow-200 text-sm mb-4">{addOn.description}</p>
+                    <div className="text-2xl font-bold text-yellow-300">{addOn.price}</div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -597,8 +596,8 @@ export default function ServicesPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">What Our Customers Say</h2>
-            <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-              Real stories from satisfied customers who've experienced the magic of celebrity messages.
+            <p className="text-xl text-yellow-200 max-w-3xl mx-auto">
+              Real stories from satisfied customers who've experienced the magic of talent messages.
             </p>
           </motion.div>
 
@@ -615,10 +614,10 @@ export default function ServicesPage() {
                   <CardContent className="p-8">
                     <div className="flex items-center gap-1 mb-4">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        <Sparkles key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
-                    <p className="text-purple-200 mb-6 leading-relaxed">"{testimonial.comment}"</p>
+                    <p className="text-yellow-200 mb-6 leading-relaxed">"{testimonial.comment}"</p>
                     <div className="flex items-center gap-4">
                       <Image
                         src={testimonial.avatar || "/placeholder.svg"}
@@ -629,7 +628,7 @@ export default function ServicesPage() {
                       />
                       <div>
                         <div className="text-white font-semibold">{testimonial.name}</div>
-                        <div className="text-purple-300 text-sm">{testimonial.service}</div>
+                        <div className="text-yellow-300 text-sm">{testimonial.service}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -649,19 +648,18 @@ export default function ServicesPage() {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center"
         >
-          <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
+          <div className="bg-gradient-to-r from-yellow-500/20 to-purple-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Ready to Create Magic?</h2>
-            <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              Join thousands of satisfied customers who have created unforgettable moments with their favorite
-              celebrities.
+            <p className="text-xl text-yellow-200 mb-8 max-w-2xl mx-auto">
+              Join thousands of satisfied customers who have created unforgettable moments with their favorite talent.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-12 py-4 text-lg"
+                className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-12 py-4 text-lg"
                 onClick={() => (window.location.href = "/celebrities")}
               >
-                Browse Celebrities
+                Browse Talent
               </Button>
               <Button
                 size="lg"
@@ -675,373 +673,6 @@ export default function ServicesPage() {
           </div>
         </motion.div>
       </section>
-
-      {/* Booking Modal */}
-      <AnimatePresence>
-        {showBookingModal && selectedServiceData && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowBookingModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 border border-white/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between p-6 border-b border-white/20">
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-r ${selectedServiceData.color} flex items-center justify-center`}
-                  >
-                    <div className="text-white">{selectedServiceData.icon}</div>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">Book {selectedServiceData.title}</h3>
-                    <p className="text-purple-200">Step {currentStep} of 3</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => setShowBookingModal(false)}>
-                  <X className="w-5 h-5 text-white" />
-                </Button>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="px-6 py-4">
-                <div className="flex items-center gap-4">
-                  {[1, 2, 3].map((step) => (
-                    <div key={step} className="flex items-center flex-1">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          currentStep >= step ? "bg-purple-500 text-white" : "bg-white/20 text-purple-300"
-                        }`}
-                      >
-                        {currentStep > step ? <CheckCircle className="w-5 h-5" /> : step}
-                      </div>
-                      {step < 3 && (
-                        <div className={`flex-1 h-1 mx-2 ${currentStep > step ? "bg-purple-500" : "bg-white/20"}`} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <form onSubmit={handleBookingSubmit} className="p-6">
-                {/* Step 1: Service Details */}
-                {currentStep === 1 && (
-                  <div className="space-y-6">
-                    <h4 className="text-xl font-bold text-white mb-4">Service Details</h4>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label className="text-white mb-2 block">Recipient Name *</Label>
-                        <Input
-                          name="recipientName"
-                          required
-                          value={bookingData.recipientName}
-                          onChange={handleInputChange}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
-                          placeholder="Who is this message for?"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-white mb-2 block">Occasion *</Label>
-                        <select
-                          name="occasion"
-                          required
-                          value={bookingData.occasion}
-                          onChange={handleInputChange}
-                          className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2"
-                        >
-                          <option value="" className="bg-slate-800">
-                            Select occasion
-                          </option>
-                          <option value="birthday" className="bg-slate-800">
-                            Birthday
-                          </option>
-                          <option value="graduation" className="bg-slate-800">
-                            Graduation
-                          </option>
-                          <option value="wedding" className="bg-slate-800">
-                            Wedding
-                          </option>
-                          <option value="anniversary" className="bg-slate-800">
-                            Anniversary
-                          </option>
-                          <option value="promotion" className="bg-slate-800">
-                            Promotion
-                          </option>
-                          <option value="motivation" className="bg-slate-800">
-                            Motivation
-                          </option>
-                          <option value="other" className="bg-slate-800">
-                            Other
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-white mb-2 block">Personal Message *</Label>
-                      <Textarea
-                        name="personalMessage"
-                        required
-                        rows={4}
-                        value={bookingData.personalMessage}
-                        onChange={handleInputChange}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 resize-none"
-                        placeholder="What would you like the celebrity to say? Include specific details, names, and any personal touches..."
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white mb-2 block">Special Instructions</Label>
-                      <Textarea
-                        name="specialInstructions"
-                        rows={3}
-                        value={bookingData.specialInstructions}
-                        onChange={handleInputChange}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 resize-none"
-                        placeholder="Any specific requests, pronunciation guides, or additional information..."
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white mb-2 block">Preferred Delivery Date</Label>
-                      <Input
-                        name="deliveryDate"
-                        type="date"
-                        value={bookingData.deliveryDate}
-                        onChange={handleInputChange}
-                        className="bg-white/10 border-white/20 text-white"
-                        min={new Date().toISOString().split("T")[0]}
-                      />
-                    </div>
-
-                    <Button
-                      type="button"
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
-                      onClick={() => setCurrentStep(2)}
-                    >
-                      Continue to Add-ons
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
-                )}
-
-                {/* Step 2: Add-ons */}
-                {currentStep === 2 && (
-                  <div className="space-y-6">
-                    <h4 className="text-xl font-bold text-white mb-4">Enhance Your Experience</h4>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {addOns.map((addOn) => (
-                        <div
-                          key={addOn.id}
-                          className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                            selectedAddOns.includes(addOn.id)
-                              ? "border-purple-500 bg-purple-500/20"
-                              : "border-white/20 bg-white/10 hover:bg-white/20"
-                          }`}
-                          onClick={() => handleAddOnToggle(addOn.id)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="text-purple-400">{addOn.icon}</div>
-                              <div>
-                                <h5 className="text-white font-semibold">{addOn.title}</h5>
-                                <p className="text-purple-200 text-sm">{addOn.description}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-purple-300 font-semibold">{addOn.price}</div>
-                              <div
-                                className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                                  selectedAddOns.includes(addOn.id)
-                                    ? "border-purple-500 bg-purple-500"
-                                    : "border-white/40"
-                                }`}
-                              >
-                                {selectedAddOns.includes(addOn.id) && <CheckCircle className="w-3 h-3 text-white" />}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="bg-white/10 rounded-lg p-6">
-                      <h5 className="text-white font-semibold mb-4">Order Summary</h5>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-purple-200">
-                          <span>{selectedServiceData.title}</span>
-                          <span>{selectedServiceData.price}</span>
-                        </div>
-                        {selectedAddOns.map((addOnId) => {
-                          const addOn = addOns.find((a) => a.id === addOnId)
-                          return addOn ? (
-                            <div key={addOnId} className="flex justify-between text-purple-200">
-                              <span>{addOn.title}</span>
-                              <span>{addOn.price}</span>
-                            </div>
-                          ) : null
-                        })}
-                        <div className="border-t border-white/20 pt-2 mt-4">
-                          <div className="flex justify-between text-white font-bold text-lg">
-                            <span>Total</span>
-                            <span>${calculateTotal()}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                        onClick={() => setCurrentStep(1)}
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        type="button"
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
-                        onClick={() => setCurrentStep(3)}
-                      >
-                        Continue to Payment
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 3: Contact & Payment */}
-                {currentStep === 3 && (
-                  <div className="space-y-6">
-                    <h4 className="text-xl font-bold text-white mb-4">Contact Information</h4>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label className="text-white mb-2 block">Email Address *</Label>
-                        <Input
-                          name="email"
-                          type="email"
-                          required
-                          value={bookingData.email}
-                          onChange={handleInputChange}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
-                          placeholder="your@email.com"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-white mb-2 block">Phone Number</Label>
-                        <Input
-                          name="phone"
-                          type="tel"
-                          value={bookingData.phone}
-                          onChange={handleInputChange}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
-                          placeholder="+1 (555) 123-4567"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="bg-white/10 rounded-lg p-6">
-                      <h5 className="text-white font-semibold mb-4">Final Order Summary</h5>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-purple-200">
-                          <span>Service: {selectedServiceData.title}</span>
-                          <span>{selectedServiceData.price}</span>
-                        </div>
-                        <div className="flex justify-between text-purple-200">
-                          <span>Recipient: {bookingData.recipientName}</span>
-                        </div>
-                        <div className="flex justify-between text-purple-200">
-                          <span>Occasion: {bookingData.occasion}</span>
-                        </div>
-                        {selectedAddOns.map((addOnId) => {
-                          const addOn = addOns.find((a) => a.id === addOnId)
-                          return addOn ? (
-                            <div key={addOnId} className="flex justify-between text-purple-200">
-                              <span>Add-on: {addOn.title}</span>
-                              <span>{addOn.price}</span>
-                            </div>
-                          ) : null
-                        })}
-                        <div className="border-t border-white/20 pt-3 mt-4">
-                          <div className="flex justify-between text-white font-bold text-xl">
-                            <span>Total Amount</span>
-                            <span>${calculateTotal()}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                        onClick={() => setCurrentStep(2)}
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            Complete Booking
-                            <Send className="w-4 h-4 ml-2" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 4: Success */}
-                {currentStep === 4 && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-12"
-                  >
-                    <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-6" />
-                    <h4 className="text-3xl font-bold text-white mb-4">Booking Confirmed!</h4>
-                    <p className="text-purple-200 mb-6 max-w-md mx-auto">
-                      Your booking has been submitted successfully. You'll receive a confirmation email shortly with all
-                      the details.
-                    </p>
-                    <div className="bg-white/10 rounded-lg p-6 max-w-md mx-auto">
-                      <h5 className="text-white font-semibold mb-2">What's Next?</h5>
-                      <div className="text-purple-200 text-sm space-y-2">
-                        <p>• You'll receive a confirmation email within 5 minutes</p>
-                        <p>• Your celebrity will be notified of your request</p>
-                        <p>• Expect delivery within {selectedServiceData.deliveryTime}</p>
-                        <p>• We'll send updates on your order status</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Sample Video Modal */}
       <AnimatePresence>
@@ -1057,13 +688,13 @@ export default function ServicesPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 border border-white/20 rounded-2xl max-w-2xl w-full"
+              className="bg-black border border-white/20 rounded-2xl max-w-2xl w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-white/20">
                 <div>
                   <h3 className="text-xl font-bold text-white">{selectedSample.celebrity}</h3>
-                  <p className="text-purple-200">Sample {selectedSample.service}</p>
+                  <p className="text-yellow-200">Sample {selectedSample.service}</p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setShowSampleModal(false)}>
                   <X className="w-5 h-5 text-white" />
@@ -1075,16 +706,15 @@ export default function ServicesPage() {
                   <div className="text-center">
                     <Play className="w-16 h-16 text-white mb-4 mx-auto" />
                     <p className="text-white">Sample video would play here</p>
-                    <p className="text-purple-200 text-sm">In a real implementation, this would be a video player</p>
+                    <p className="text-yellow-200 text-sm">In a real implementation, this would be a video player</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
                   <Button
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                    className="flex-1 bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-bold"
                     onClick={() => {
                       setShowSampleModal(false)
-                      // Find the service this sample belongs to and open booking
                       const service = services.find((s) =>
                         s.samples.some((sample) => sample.celebrity === selectedSample.celebrity),
                       )

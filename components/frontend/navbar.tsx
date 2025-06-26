@@ -21,18 +21,18 @@ export default function Navbar() {
   }, [])
 
   const navItems = [
-    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Services", href: "/services" },
     { name: "Celebrities", href: "/celebrities" },
     { name: "Categories", href: "/categories" },
     { name: "How It Works", href: "/how-it-works" },
-    { name: "About", href: "/about" },
   ]
 
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-slate-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-purple-500/10"
+          ? "bg-black/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-yellow-500/10"
           : "bg-transparent"
       }`}
       initial={{ y: -100 }}
@@ -51,8 +51,8 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                 <Star className="w-5 h-5 text-white" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
-                Kia Ora
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                Kia Ora Kahi
               </span>
             </motion.div>
           </Link>
