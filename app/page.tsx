@@ -166,7 +166,7 @@ const SubtleLuxuryStarfield = () => {
     const createStar = () => {
       const star = document.createElement("div")
       const size = Math.random() * 2 + 1 // Smaller, more subtle stars
-      const type = Math.random()
+      const type = Math.random
 
       if (type > 0.97) {
         star.className = "star diamond"
@@ -344,7 +344,10 @@ export default function KiaOraHomepage() {
                 className="flex items-center justify-center gap-2 text-lg sm:text-xl lg:text-2xl text-yellow-200"
               >
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
-                <span>Connect with your favourite talent</span>
+                <span>
+                  Connect with your favourite celebrity or social media personality to receive a bespoke message
+                  especially for you or as a special gift for someone else
+                </span>
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
               </motion.div>
             </motion.div>
