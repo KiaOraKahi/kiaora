@@ -1,16 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
-import { Play, MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift } from "lucide-react"
+import { MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 import Footer from "@/components/frontend/footer"
 import LiveChatWidget from "@/components/frontend/live-chat-widget"
+import VideoSamplesCarousel from "@/components/frontend/video-samples-carousel"
 import { useRouter } from "next/navigation"
 
 // Update the services array to use correct image extensions
@@ -230,18 +230,13 @@ export default function KiaOraHomepage() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // Rotate through services and talents
+  // Rotate through talent images to show variety
   useEffect(() => {
-    const serviceInterval = setInterval(() => {
-      setCurrentServiceIndex((prev) => (prev + 1) % services.length)
-    }, 4000)
-
     const talentInterval = setInterval(() => {
       setCurrentTalentIndex((prev) => (prev + 1) % 3)
-    }, 3000)
+    }, 4000)
 
     return () => {
-      clearInterval(serviceInterval)
       clearInterval(talentInterval)
     }
   }, [])
@@ -365,104 +360,73 @@ export default function KiaOraHomepage() {
                 <h2 className="text-2xl font-bold text-white mb-8">Featured Talents</h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
-                  {services.map((service, index) => (
-                    <motion.div
-                      key={service.title}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex flex-col items-center group cursor-pointer"
-                      onClick={() => router.push(`/services?service=${service.id}`)}
-                    >
-                      {/* Service Circle with Rotating Talent */}
-                      <div className="relative mb-4">
-                        <div
-                          className={`w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
-                        >
-                          <AnimatePresence mode="wait">
-                            <motion.div
-                              key={`${index}-${currentTalentIndex}`}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 1.2 }}
-                              transition={{ duration: 0.5 }}
-                              className="absolute inset-1 rounded-full overflow-hidden"
-                            >
+                  {services.map((service, index) => {
+                    // Show different talents for variety - cycle through all 3 talents per service
+                    const talentIndex = (currentTalentIndex + index) % service.talents.length
+                    const currentTalent = service.talents[talentIndex]
+
+                    return (
+                      <motion.div
+                        key={service.title}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex flex-col items-center group cursor-pointer"
+                        onClick={() => router.push(`/services?service=${service.id}`)}
+                      >
+                        {/* Service Circle with Rotating Talent */}
+                        <div className="relative mb-4">
+                          <div
+                            className={`w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
+                          >
+                            <div className="absolute inset-1 rounded-full overflow-hidden">
                               <Image
-                                src={
-                                  service.talents[currentTalentIndex % service.talents.length].image ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg"
-                                }
-                                alt={service.talents[currentTalentIndex % service.talents.length].name}
+                                src={currentTalent.image || "/placeholder.svg"}
+                                alt={currentTalent.name}
                                 fill
                                 className="object-cover rounded-full"
                                 sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
                                 priority={index < 3}
                               />
-                            </motion.div>
-                          </AnimatePresence>
+                            </div>
 
-                          {/* Service Icon Overlay */}
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="text-white">{service.icon}</div>
+                            {/* Service Icon Overlay */}
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="text-white">{service.icon}</div>
+                            </div>
                           </div>
+
+                          {/* Sparkle Effect */}
+                          <motion.div
+                            className="absolute -inset-2 rounded-full"
+                            animate={{
+                              boxShadow: [
+                                "0 0 0 0 rgba(255, 215, 0, 0)",
+                                "0 0 0 4px rgba(255, 215, 0, 0.3)",
+                                "0 0 0 0 rgba(255, 215, 0, 0)",
+                              ],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Number.POSITIVE_INFINITY,
+                              delay: index * 0.3,
+                            }}
+                          />
                         </div>
 
-                        {/* Sparkle Effect */}
-                        <motion.div
-                          className="absolute -inset-2 rounded-full"
-                          animate={{
-                            boxShadow: [
-                              "0 0 0 0 rgba(255, 215, 0, 0)",
-                              "0 0 0 4px rgba(255, 215, 0, 0.3)",
-                              "0 0 0 0 rgba(255, 215, 0, 0)",
-                            ],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Number.POSITIVE_INFINITY,
-                            delay: index * 0.3,
-                          }}
-                        />
-                      </div>
-
-                      {/* Current Talent Name */}
-                      <p className="text-yellow-200 text-xs mt-1 opacity-75">
-                        {service.talents[currentTalentIndex % service.talents.length].name}
-                      </p>
-                    </motion.div>
-                  ))}
+                        {/* Current Talent Name */}
+                        <p className="text-yellow-200 text-xs mt-1 opacity-75">{currentTalent.name}</p>
+                      </motion.div>
+                    )
+                  })}
                 </div>
               </div>
             </motion.div>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
-              className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-16"
-            >
-              <Button
-                size={isMobile ? "default" : "lg"}
-                className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
-                onClick={() =>
-                  toast.info("Video Samples", {
-                    description: "Check out our talent video samples!",
-                  })
-                }
-              >
-                <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                See Video Samples
-              </Button>
-            </motion.div>
           </div>
         </section>
+
+        {/* Video Samples Carousel */}
+        <VideoSamplesCarousel />
 
         {/* Services Section */}
         <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
@@ -525,9 +489,6 @@ export default function KiaOraHomepage() {
             </div>
           </div>
         </section>
-
-        {/* Video Testimonials Carousel */}
-        {/* <VideoTestimonialsCarousel /> */}
       </div>
 
       <Footer />

@@ -33,10 +33,11 @@ interface VideoPlayerProps {
   isOpen: boolean
   onClose: () => void
   autoPlay?: boolean
+  videoUrl?: string
 }
 
 export default function VideoPlayer({
-  src = "/placeholder-video.mp4", // In real app, this would be actual video URLs
+  src = "/placeholder-video.mp4",
   poster,
   title = "Sample Video",
   description,
@@ -45,6 +46,7 @@ export default function VideoPlayer({
   isOpen,
   onClose,
   autoPlay = false,
+  videoUrl,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -60,39 +62,57 @@ export default function VideoPlayer({
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
 
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+  // Convert YouTube URL to embed URL
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return null
 
-    const handleLoadedMetadata = () => {
-      setVideoDuration(video.duration)
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+    const match = url.match(regExp)
+
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}?autoplay=${autoPlay ? 1 : 0}&rel=0&modestbranding=1`
     }
 
-    const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime)
-    }
+    return null
+  }
 
-    const handlePlay = () => setIsPlaying(true)
-    const handlePause = () => setIsPlaying(false)
-
-    video.addEventListener("loadedmetadata", handleLoadedMetadata)
-    video.addEventListener("timeupdate", handleTimeUpdate)
-    video.addEventListener("play", handlePlay)
-    video.addEventListener("pause", handlePause)
-
-    return () => {
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata)
-      video.removeEventListener("timeupdate", handleTimeUpdate)
-      video.removeEventListener("play", handlePlay)
-      video.removeEventListener("pause", handlePause)
-    }
-  }, [])
+  const embedUrl = videoUrl ? getYouTubeEmbedUrl(videoUrl) : null
 
   useEffect(() => {
-    if (autoPlay && isOpen) {
+    if (!embedUrl) {
+      const video = videoRef.current
+      if (!video) return
+
+      const handleLoadedMetadata = () => {
+        setVideoDuration(video.duration)
+      }
+
+      const handleTimeUpdate = () => {
+        setCurrentTime(video.currentTime)
+      }
+
+      const handlePlay = () => setIsPlaying(true)
+      const handlePause = () => setIsPlaying(false)
+
+      video.addEventListener("loadedmetadata", handleLoadedMetadata)
+      video.addEventListener("timeupdate", handleTimeUpdate)
+      video.addEventListener("play", handlePlay)
+      video.addEventListener("pause", handlePause)
+
+      return () => {
+        video.removeEventListener("loadedmetadata", handleLoadedMetadata)
+        video.removeEventListener("timeupdate", handleTimeUpdate)
+        video.removeEventListener("play", handlePlay)
+        video.removeEventListener("pause", handlePause)
+      }
+    }
+  }, [embedUrl])
+
+  useEffect(() => {
+    if (autoPlay && isOpen && !embedUrl) {
       handlePlay()
     }
-  }, [autoPlay, isOpen])
+  }, [autoPlay, isOpen, embedUrl])
 
   const handlePlay = () => {
     const video = videoRef.current
@@ -175,7 +195,7 @@ export default function VideoPlayer({
       clearTimeout(controlsTimeoutRef.current)
     }
     controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying) {
+      if (isPlaying && !embedUrl) {
         setShowControls(false)
       }
     }, 3000)
@@ -202,186 +222,216 @@ export default function VideoPlayer({
         >
           {/* Video Container */}
           <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl">
-            {/* Video Element */}
-            <video ref={videoRef} className="w-full aspect-video" poster={poster} preload="metadata">
-              {/* In a real implementation, you would have actual video sources */}
-              <source src={src} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-
-            {/* Video Placeholder (since we don't have real videos) */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/50 to-pink-900/50 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                  <Play className="w-12 h-12 text-white ml-1" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-                {celebrity && <p className="text-purple-200">by {celebrity}</p>}
-                {duration && <p className="text-purple-300 text-sm mt-2">{duration}</p>}
-                <p className="text-purple-300 text-sm mt-4 max-w-md">
-                  This is a sample video player. In a real implementation, this would play actual celebrity videos.
-                </p>
+            {/* YouTube Embed or Regular Video */}
+            {embedUrl ? (
+              <div className="relative w-full aspect-video">
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={title}
+                />
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Regular Video Element */}
+                <video ref={videoRef} className="w-full aspect-video" poster={poster} preload="metadata">
+                  <source src={src} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
 
-            {/* Controls Overlay */}
-            <AnimatePresence>
-              {showControls && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/60"
-                >
-                  {/* Top Controls */}
-                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      {celebrity && <Badge className="bg-purple-500/80 text-white">{celebrity}</Badge>}
-                      <h3 className="text-white font-semibold">{title}</h3>
+                {/* Video Placeholder (since we don't have real videos) */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/50 to-pink-900/50 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                      <Play className="w-12 h-12 text-white ml-1" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsLiked(!isLiked)}
-                        className={`text-white hover:bg-white/20 ${isLiked ? "text-red-400" : ""}`}
-                      >
-                        <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                        <Share2 className="w-5 h-5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                        <Download className="w-5 h-5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/20">
-                        <X className="w-5 h-5" />
-                      </Button>
-                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
+                    {celebrity && <p className="text-purple-200">by {celebrity}</p>}
+                    {duration && <p className="text-purple-300 text-sm mt-2">{duration}</p>}
+                    <p className="text-purple-300 text-sm mt-4 max-w-md">
+                      This is a sample video player. In a real implementation, this would play actual celebrity videos.
+                    </p>
                   </div>
+                </div>
+              </>
+            )}
 
-                  {/* Center Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Button
-                      onClick={handlePlay}
-                      className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-all"
-                    >
-                      {isPlaying ? (
-                        <Pause className="w-8 h-8 text-white" />
-                      ) : (
-                        <Play className="w-8 h-8 text-white ml-1" />
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Bottom Controls */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    {/* Progress Bar */}
-                    <div className="w-full h-2 bg-white/20 rounded-full mb-4 cursor-pointer" onClick={handleSeek}>
-                      <div
-                        className="h-full bg-purple-500 rounded-full transition-all"
-                        style={{ width: `${(currentTime / videoDuration) * 100}%` }}
-                      />
-                    </div>
-
-                    {/* Control Buttons */}
-                    <div className="flex items-center justify-between">
+            {/* Controls Overlay - Only show for non-YouTube videos */}
+            {!embedUrl && (
+              <AnimatePresence>
+                {showControls && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/60"
+                  >
+                    {/* Top Controls */}
+                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
                       <div className="flex items-center gap-4">
+                        {celebrity && <Badge className="bg-purple-500/80 text-white">{celebrity}</Badge>}
+                        <h3 className="text-white font-semibold">{title}</h3>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={handlePlay}
-                          className="text-white hover:bg-white/20"
+                          onClick={() => setIsLiked(!isLiked)}
+                          className={`text-white hover:bg-white/20 ${isLiked ? "text-red-400" : ""}`}
                         >
-                          {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                          <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
                         </Button>
+                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                          <Share2 className="w-5 h-5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                          <Download className="w-5 h-5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/20">
+                          <X className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    </div>
 
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => skip(-10)}
-                          className="text-white hover:bg-white/20"
-                        >
-                          <SkipBack className="w-5 h-5" />
-                        </Button>
+                    {/* Center Play Button */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Button
+                        onClick={handlePlay}
+                        className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-all"
+                      >
+                        {isPlaying ? (
+                          <Pause className="w-8 h-8 text-white" />
+                        ) : (
+                          <Play className="w-8 h-8 text-white ml-1" />
+                        )}
+                      </Button>
+                    </div>
 
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => skip(10)}
-                          className="text-white hover:bg-white/20"
-                        >
-                          <SkipForward className="w-5 h-5" />
-                        </Button>
+                    {/* Bottom Controls */}
+                    <div className="absolute bottom-4 left-4 right-4">
+                      {/* Progress Bar */}
+                      <div className="w-full h-2 bg-white/20 rounded-full mb-4 cursor-pointer" onClick={handleSeek}>
+                        <div
+                          className="h-full bg-purple-500 rounded-full transition-all"
+                          style={{ width: `${(currentTime / videoDuration) * 100}%` }}
+                        />
+                      </div>
+
+                      {/* Control Buttons */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handlePlay}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => skip(-10)}
+                            className="text-white hover:bg-white/20"
+                          >
+                            <SkipBack className="w-5 h-5" />
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => skip(10)}
+                            className="text-white hover:bg-white/20"
+                          >
+                            <SkipForward className="w-5 h-5" />
+                          </Button>
+
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={toggleMute}
+                              className="text-white hover:bg-white/20"
+                            >
+                              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                            </Button>
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.1"
+                              value={isMuted ? 0 : volume}
+                              onChange={handleVolumeChange}
+                              className="w-20 accent-purple-500"
+                            />
+                          </div>
+
+                          <span className="text-white text-sm">
+                            {formatTime(currentTime)} / {formatTime(videoDuration)}
+                          </span>
+                        </div>
 
                         <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setShowSettings(!showSettings)}
+                              className="text-white hover:bg-white/20"
+                            >
+                              <Settings className="w-5 h-5" />
+                            </Button>
+
+                            {showSettings && (
+                              <div className="absolute bottom-full right-0 mb-2 bg-black/80 backdrop-blur-sm rounded-lg p-3 min-w-32">
+                                <div className="text-white text-sm mb-2">Playback Speed</div>
+                                {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                                  <button
+                                    key={rate}
+                                    onClick={() => changePlaybackRate(rate)}
+                                    className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-white/20 ${
+                                      playbackRate === rate ? "text-purple-400" : "text-white"
+                                    }`}
+                                  >
+                                    {rate}x
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={toggleMute}
+                            onClick={toggleFullscreen}
                             className="text-white hover:bg-white/20"
                           >
-                            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
                           </Button>
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.1"
-                            value={isMuted ? 0 : volume}
-                            onChange={handleVolumeChange}
-                            className="w-20 accent-purple-500"
-                          />
                         </div>
-
-                        <span className="text-white text-sm">
-                          {formatTime(currentTime)} / {formatTime(videoDuration)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowSettings(!showSettings)}
-                            className="text-white hover:bg-white/20"
-                          >
-                            <Settings className="w-5 h-5" />
-                          </Button>
-
-                          {showSettings && (
-                            <div className="absolute bottom-full right-0 mb-2 bg-black/80 backdrop-blur-sm rounded-lg p-3 min-w-32">
-                              <div className="text-white text-sm mb-2">Playback Speed</div>
-                              {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                                <button
-                                  key={rate}
-                                  onClick={() => changePlaybackRate(rate)}
-                                  className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-white/20 ${
-                                    playbackRate === rate ? "text-purple-400" : "text-white"
-                                  }`}
-                                >
-                                  {rate}x
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={toggleFullscreen}
-                          className="text-white hover:bg-white/20"
-                        >
-                          {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-                        </Button>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
+
+            {/* YouTube Video Controls - Simple overlay */}
+            {embedUrl && (
+              <div className="absolute top-4 right-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  className="text-white hover:bg-white/20 bg-black/50"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Video Info */}
