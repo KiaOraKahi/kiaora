@@ -364,7 +364,7 @@ export default function KiaOraHomepage() {
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
                 <h2 className="text-2xl font-bold text-white mb-8">Featured Talents</h2>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
                   {services.map((service, index) => (
                     <motion.div
                       key={service.title}
@@ -377,7 +377,7 @@ export default function KiaOraHomepage() {
                       {/* Service Circle with Rotating Talent */}
                       <div className="relative mb-4">
                         <div
-                          className={`w-40 h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
+                          className={`w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
                         >
                           <AnimatePresence mode="wait">
                             <motion.div
@@ -394,12 +394,14 @@ export default function KiaOraHomepage() {
                                   "/placeholder.svg" ||
                                   "/placeholder.svg" ||
                                   "/placeholder.svg" ||
+                                  "/placeholder.svg" ||
+                                  "/placeholder.svg" ||
                                   "/placeholder.svg"
                                 }
                                 alt={service.talents[currentTalentIndex % service.talents.length].name}
                                 fill
                                 className="object-cover rounded-full"
-                                sizes="160px"
+                                sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
                                 priority={index < 3}
                               />
                             </motion.div>
@@ -494,12 +496,12 @@ export default function KiaOraHomepage() {
                   onClick={() => {
                     // Map service titles to service IDs for URL
                     const serviceMap: { [key: string]: string } = {
-                      "Quick shout-outs": "quick-shoutouts",
-                      "Personalised video messages": "personalised-messages",
-                      "Roast someone": "roast-someone",
-                      "5min Live interaction": "live-interaction",
-                      "Business endorsements": "business-endorsements",
-                      "Motivational video messages": "motivational-messages",
+                      "Quick shout-outs": "shoutouts",
+                      "Personalised video messages": "personal",
+                      "Roast someone": "roast",
+                      "5min Live interaction": "live",
+                      "Business endorsements": "business",
+                      "Motivational video messages": "motivation",
                     }
                     const serviceId = serviceMap[service.title]
                     if (serviceId) {

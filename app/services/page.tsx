@@ -24,10 +24,10 @@ import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 import { toast } from "sonner"
 
-// Updated services to match the new premium services
+// Updated services to match the footer URL parameters
 const services = [
   {
-    id: "quick-shoutouts",
+    id: "shoutouts",
     icon: <Zap className="w-8 h-8" />,
     title: "Quick shout-outs",
     shortDescription: "Fast and fun personalized shout-outs from your favorite talent",
@@ -53,7 +53,7 @@ const services = [
     ],
   },
   {
-    id: "personalised-messages",
+    id: "personal",
     icon: <MessageCircle className="w-8 h-8" />,
     title: "Personalised video messages",
     shortDescription: "Custom video messages tailored specifically for you or your loved ones",
@@ -79,7 +79,7 @@ const services = [
     ],
   },
   {
-    id: "roast-someone",
+    id: "roast",
     icon: <Laugh className="w-8 h-8" />,
     title: "Roast someone",
     shortDescription: "Hilarious roasts and playful banter from comedy legends",
@@ -105,7 +105,7 @@ const services = [
     ],
   },
   {
-    id: "live-interaction",
+    id: "live",
     icon: <Video className="w-8 h-8" />,
     title: "5min Live interaction",
     shortDescription: "Real-time video calls and live interactions with talent",
@@ -131,7 +131,7 @@ const services = [
     ],
   },
   {
-    id: "business-endorsements",
+    id: "business",
     icon: <Briefcase className="w-8 h-8" />,
     title: "Business endorsements",
     shortDescription: "Professional endorsements and business shoutouts",
@@ -157,7 +157,7 @@ const services = [
     ],
   },
   {
-    id: "motivational-messages",
+    id: "motivation",
     icon: <Gift className="w-8 h-8" />,
     title: "Motivational video messages",
     shortDescription: "Inspiring and uplifting messages to boost confidence and motivation",
