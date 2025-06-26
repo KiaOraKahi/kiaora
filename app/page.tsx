@@ -4,40 +4,92 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import {
-  Play,
-  Star,
-  Calendar,
-  MessageCircle,
-  Video,
-  Heart,
-  Briefcase,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
-  Users,
-  Clock,
-  Award,
-  TrendingUp,
-} from "lucide-react"
+import { Play, MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 import Footer from "@/components/frontend/footer"
-import VideoTestimonialsCarousel from "@/components/frontend/video-testimonials-carousel"
-import { MobileCarousel, TouchOptimizedCelebrityCard } from "@/components/frontend/mobile-carousel"
 import LiveChatWidget from "@/components/frontend/live-chat-widget"
 
-const celebrities = [
+// Update the services array to use correct image extensions
+const services = [
+  {
+    icon: <Zap className="w-8 h-8" />,
+    title: "Quick shout-outs",
+    description: "Fast and fun personalized shout-outs from your favorite talent",
+    color: "from-yellow-500 to-orange-500",
+    talents: [
+      { name: "Kevin Hart", image: "/talents/1.jpeg" },
+      { name: "Ryan Reynolds", image: "/talents/2.jpg" },
+      { name: "Emma Stone", image: "/talents/3.jpg" },
+    ],
+  },
+  {
+    icon: <MessageCircle className="w-8 h-8" />,
+    title: "Personalised video messages",
+    description: "Custom video messages tailored specifically for you or your loved ones",
+    color: "from-blue-500 to-cyan-500",
+    talents: [
+      { name: "John Legend", image: "/talents/4.jpg" },
+      { name: "Oprah Winfrey", image: "/talents/5.jpg" },
+      { name: "Taylor Swift", image: "/talents/6.jpg" },
+    ],
+  },
+  {
+    icon: <Laugh className="w-8 h-8" />,
+    title: "Roast someone",
+    description: "Hilarious roasts and playful banter from comedy legends",
+    color: "from-red-500 to-pink-500",
+    talents: [
+      { name: "Dave Chappelle", image: "/talents/1.jpeg" },
+      { name: "Amy Schumer", image: "/talents/2.jpg" },
+      { name: "Kevin Hart", image: "/talents/3.jpg" },
+    ],
+  },
+  {
+    icon: <Video className="w-8 h-8" />,
+    title: "5min Live interaction",
+    description: "Real-time video calls and live interactions with talent",
+    color: "from-purple-500 to-indigo-500",
+    talents: [
+      { name: "MrBeast", image: "/talents/4.jpg" },
+      { name: "Emma Chamberlain", image: "/talents/5.jpg" },
+      { name: "PewDiePie", image: "/talents/6.jpg" },
+    ],
+  },
+  {
+    icon: <Briefcase className="w-8 h-8" />,
+    title: "Business endorsements",
+    description: "Professional endorsements and business shoutouts",
+    color: "from-green-500 to-emerald-500",
+    talents: [
+      { name: "Gary Vaynerchuk", image: "/talents/1.jpeg" },
+      { name: "Tony Robbins", image: "/talents/2.jpg" },
+      { name: "Shark Tank Cast", image: "/talents/3.jpg" },
+    ],
+  },
+  {
+    icon: <Gift className="w-8 h-8" />,
+    title: "Motivational video messages",
+    description: "Inspiring and uplifting messages to boost confidence and motivation",
+    color: "from-indigo-500 to-purple-500",
+    talents: [
+      { name: "Tony Robbins", image: "/talents/4.jpg" },
+      { name: "Oprah Winfrey", image: "/talents/5.jpg" },
+      { name: "Mel Robbins", image: "/talents/6.jpg" },
+    ],
+  },
+]
+
+const talents = [
   {
     id: 1,
     name: "Emma Stone",
     category: "Actor",
     rating: 4.9,
     price: "$299",
-    image: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300&text=Emma+Stone",
     badge: "Trending",
     discount: "20% OFF",
   },
@@ -47,7 +99,7 @@ const celebrities = [
     category: "Musician",
     rating: 5.0,
     price: "$599",
-    image: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300&text=John+Legend",
     badge: "New",
     discount: "Limited Time",
   },
@@ -57,7 +109,7 @@ const celebrities = [
     category: "Motivator",
     rating: 4.8,
     price: "$899",
-    image: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300&text=Tony+Robbins",
     badge: "Popular",
     discount: "15% OFF",
   },
@@ -67,7 +119,7 @@ const celebrities = [
     category: "Influencer",
     rating: 4.9,
     price: "$1299",
-    image: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300&text=MrBeast",
     badge: "Hot",
     discount: "New Offer",
   },
@@ -77,7 +129,7 @@ const celebrities = [
     category: "Motivator",
     rating: 5.0,
     price: "$1999",
-    image: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300&text=Oprah+Winfrey",
     badge: "Premium",
     discount: "Exclusive",
   },
@@ -87,7 +139,7 @@ const celebrities = [
     category: "Actor",
     rating: 4.7,
     price: "$799",
-    image: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300&text=Ryan+Reynolds",
     badge: "Comedy",
     discount: "25% OFF",
   },
@@ -95,86 +147,69 @@ const celebrities = [
 
 const categories = ["All", "Actors", "Musicians", "Motivators", "Influencers"]
 
-const services = [
-  {
-    icon: <Calendar className="w-6 h-6" />,
-    title: "Birthday Greetings",
-    description: "Personalized birthday messages from your favorite celebrities",
-    color: "from-pink-500 to-rose-500",
-  },
-  {
-    icon: <MessageCircle className="w-6 h-6" />,
-    title: "Personal Messages",
-    description: "Custom video messages for any special occasion",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    icon: <Video className="w-6 h-6" />,
-    title: "Live Video Requests",
-    description: "Real-time video calls with celebrities",
-    color: "from-purple-500 to-indigo-500",
-  },
-  {
-    icon: <Heart className="w-6 h-6" />,
-    title: "Motivational Messages",
-    description: "Inspiring words to boost your confidence",
-    color: "from-green-500 to-emerald-500",
-  },
-  {
-    icon: <Briefcase className="w-6 h-6" />,
-    title: "Business Endorsements",
-    description: "Professional shoutouts for your business",
-    color: "from-orange-500 to-amber-500",
-  },
-]
+// Subtle starfield component with fewer, more elegant stars
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    // Remove any existing starfield
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
 
-const stats = [
-  { icon: <Users className="w-8 h-8" />, value: "50K+", label: "Happy Customers" },
-  { icon: <Star className="w-8 h-8" />, value: "500+", label: "Celebrities" },
-  { icon: <Clock className="w-8 h-8" />, value: "24/7", label: "Support" },
-  { icon: <Award className="w-8 h-8" />, value: "4.9", label: "Rating" },
-]
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1 // Smaller, more subtle stars
+      const type = Math.random()
 
-const successStories = [
-  {
-    title: "Birthday Surprise That Made Headlines",
-    story:
-      "When Sarah booked Gordon Ramsay for her husband's 40th birthday, she never expected it to go viral. The personalized cooking tips and birthday wishes got over 2M views on social media!",
-    customer: "Sarah M.",
-    celebrity: "Gordon Ramsay",
-    impact: "2M+ views",
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    title: "Graduation Message That Changed Everything",
-    story:
-      "Marcus was struggling with confidence until Dwayne Johnson sent him a personalized graduation message. That motivation helped him land his dream job at a Fortune 500 company.",
-    customer: "Marcus T.",
-    celebrity: "Dwayne Johnson",
-    impact: "Dream job achieved",
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    title: "Anniversary Surprise of a Lifetime",
-    story:
-      "After 25 years of marriage, Tom wanted something special. John Legend's personalized anniversary song brought tears to his wife's eyes and renewed their romance.",
-    customer: "Tom & Linda K.",
-    celebrity: "John Legend",
-    impact: "Marriage renewed",
-    image: "/placeholder.svg?height=200&width=300",
-  },
-]
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    // Fewer stars for subtlety - only 60 total
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
+}
 
 export default function KiaOraHomepage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [isLoaded, setIsLoaded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [liveStats, setLiveStats] = useState({
-    customers: 50000,
-    celebrities: 500,
-    rating: 4.9,
-  })
+  const [currentServiceIndex, setCurrentServiceIndex] = useState(0)
+  const [currentTalentIndex, setCurrentTalentIndex] = useState(0)
 
   // Check if mobile
   useEffect(() => {
@@ -187,218 +222,66 @@ export default function KiaOraHomepage() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // Live stats counter
+  // Rotate through services and talents
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveStats((prev) => ({
-        customers: prev.customers + Math.floor(Math.random() * 3),
-        celebrities: prev.celebrities + (Math.random() > 0.95 ? 1 : 0),
-        rating: Math.min(5.0, prev.rating + (Math.random() > 0.8 ? 0.01 : 0)),
-      }))
-    }, 5000)
+    const serviceInterval = setInterval(() => {
+      setCurrentServiceIndex((prev) => (prev + 1) % services.length)
+    }, 4000)
 
-    return () => clearInterval(interval)
-  }, [])
+    const talentInterval = setInterval(() => {
+      setCurrentTalentIndex((prev) => (prev + 1) % 3)
+    }, 1500)
 
-  // Interactive Stars Component
-  const InteractiveStars = () => {
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-    const [scrollY, setScrollY] = useState(0)
-    const [isClient, setIsClient] = useState(false)
-
-    useEffect(() => {
-      setIsClient(true)
-
-      const handleMouseMove = (e: MouseEvent) => {
-        setMousePos({ x: e.clientX, y: e.clientY })
-      }
-
-      const handleScroll = () => {
-        setScrollY(window.scrollY)
-      }
-
-      window.addEventListener("mousemove", handleMouseMove)
-      window.addEventListener("scroll", handleScroll)
-
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove)
-        window.removeEventListener("scroll", handleScroll)
-      }
-    }, [])
-
-    if (!isClient) {
-      return null
+    return () => {
+      clearInterval(serviceInterval)
+      clearInterval(talentInterval)
     }
-
-    return (
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(100)].map((_, i) => {
-          const initialX = Math.random() * 100
-          const initialY = Math.random() * 100
-          const size = Math.random() * 3 + 1
-          const twinkleDelay = Math.random() * 5
-
-          // Calculate distance from mouse for interaction
-          const windowWidth = typeof window !== "undefined" ? window.innerWidth : 1920
-          const windowHeight = typeof window !== "undefined" ? window.innerHeight : 1080
-
-          const distanceFromMouse = Math.sqrt(
-            Math.pow((mousePos.x / windowWidth) * 100 - initialX, 2) +
-              Math.pow((mousePos.y / windowHeight) * 100 - initialY, 2),
-          )
-
-          const isNearMouse = distanceFromMouse < 15
-          const scrollOffset = (scrollY * 0.1 * ((i % 3) + 1)) % 100
-
-          return (
-            <motion.div
-              key={i}
-              className="absolute rounded-full bg-white"
-              style={{
-                left: `${initialX}%`,
-                top: `${(initialY + scrollOffset) % 100}%`,
-                width: `${size}px`,
-                height: `${size}px`,
-              }}
-              animate={{
-                opacity: [0.3, 1, 0.3],
-                scale: isNearMouse ? [1, 1.5, 1] : [0.5, 1, 0.5],
-                boxShadow: isNearMouse
-                  ? ["0 0 5px rgba(255,255,255,0.5)", "0 0 20px rgba(139,92,246,0.8)", "0 0 5px rgba(255,255,255,0.5)"]
-                  : ["0 0 2px rgba(255,255,255,0.3)", "0 0 8px rgba(255,255,255,0.6)", "0 0 2px rgba(255,255,255,0.3)"],
-              }}
-              transition={{
-                opacity: {
-                  duration: Math.random() * 3 + 2,
-                  delay: twinkleDelay,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "easeInOut",
-                },
-                scale: {
-                  duration: isNearMouse ? 0.3 : Math.random() * 2 + 1,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "easeInOut",
-                },
-                boxShadow: {
-                  duration: isNearMouse ? 0.5 : 2,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "easeInOut",
-                },
-              }}
-            />
-          )
-        })}
-
-        {/* Subtle thin lightning streaks */}
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={`streak-${i}`}
-            className="absolute w-px bg-gradient-to-b from-transparent via-purple-400 to-transparent"
-            style={{
-              left: `${20 + i * 30}%`,
-              height: "200px",
-              top: `${Math.random() * 50}%`,
-            }}
-            animate={{
-              opacity: [0, 0.6, 0],
-              scaleY: [0, 1, 0],
-            }}
-            transition={{
-              duration: 0.3,
-              delay: i * 2 + Math.random() * 5,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatDelay: Math.random() * 8 + 6,
-            }}
-          />
-        ))}
-      </div>
-    )
-  }
-
-  // Electric Particles Component
-  const ElectricParticles = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-purple-400 rounded-full"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            scale: [0, 1, 0],
-            opacity: [0, 1, 0],
-            x: [0, Math.random() * 100 - 50],
-            y: [0, Math.random() * 100 - 50],
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            delay: Math.random() * 5,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatDelay: Math.random() * 3 + 2,
-          }}
-        />
-      ))}
-    </div>
-  )
+  }, [])
 
   useEffect(() => {
     setIsLoaded(true)
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % Math.ceil(celebrities.length / 3))
+      setCurrentSlide((prev) => (prev + 1) % Math.ceil(talents.length / 3))
     }, 4000)
     return () => clearInterval(interval)
   }, [])
 
-  const filteredCelebrities =
-    selectedCategory === "All"
-      ? celebrities
-      : celebrities.filter((celeb) => celeb.category === selectedCategory.slice(0, -1))
+  const filteredTalents =
+    selectedCategory === "All" ? talents : talents.filter((talent) => talent.category === selectedCategory.slice(0, -1))
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % Math.ceil(celebrities.length / 3))
+    setCurrentSlide((prev) => (prev + 1) % Math.ceil(talents.length / 3))
   }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + Math.ceil(celebrities.length / 3)) % Math.ceil(celebrities.length / 3))
+    setCurrentSlide((prev) => (prev - 1 + Math.ceil(talents.length / 3)) % Math.ceil(talents.length / 3))
   }
 
-  const handleBookNow = (celebrity: any) => {
+  const handleBookNow = (talent: any) => {
     toast.success("Booking Started!", {
-      description: `Starting booking process for ${celebrity.name}`,
+      description: `Starting booking process for ${talent.name}`,
       action: {
         label: "View Details",
-        onClick: () => (window.location.href = `/celebrities/${celebrity.id}`),
+        onClick: () => (window.location.href = `/celebrities/${talent.id}`),
       },
     })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-black">
+      {/* Subtle Luxury Starfield Background */}
+      <SubtleLuxuryStarfield />
+
       {/* Conditional Navbar */}
       {isMobile ? <MobileNavbar /> : <Navbar />}
 
-      <div className="overflow-hidden">
-        {/* Animated Background */}
-        <div className="fixed inset-0 opacity-30">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(120,119,198,0.2),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.2),transparent)]" />
-        </div>
-
+      <div className="overflow-hidden relative">
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 lg:pt-20">
-          {/* Interactive Stars and Subtle Lightning */}
-          <div className="absolute inset-0 overflow-hidden">
-            <InteractiveStars />
-            <ElectricParticles />
-          </div>
-
-          {/* Electric Glow Around Title */}
+          {/* Luxury Glow Around Title */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <motion.div
-              className="w-96 h-96 rounded-full bg-purple-500/10 blur-3xl"
+              className="w-96 h-96 rounded-full bg-gradient-to-r from-yellow-400/10 via-purple-500/10 to-blue-500/10 blur-3xl"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.3, 0.6, 0.3],
@@ -411,7 +294,7 @@ export default function KiaOraHomepage() {
             />
           </div>
 
-          <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-7xl mx-auto text-center relative z-10">
             {/* Animated Logo/Title */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -420,7 +303,7 @@ export default function KiaOraHomepage() {
               className="mb-8"
             >
               <motion.h1
-                className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-4"
+                className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-4"
                 animate={{
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                 }}
@@ -431,15 +314,15 @@ export default function KiaOraHomepage() {
                 }}
                 style={{
                   backgroundSize: "200% 200%",
-                  filter: "drop-shadow(0 0 20px rgba(139, 92, 246, 0.3))",
+                  filter: "drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))",
                 }}
               >
                 <motion.span
                   animate={{
                     textShadow: [
-                      "0 0 20px rgba(139, 92, 246, 0.5)",
-                      "0 0 40px rgba(236, 72, 153, 0.5)",
-                      "0 0 20px rgba(139, 92, 246, 0.5)",
+                      "0 0 20px rgba(255, 215, 0, 0.5)",
+                      "0 0 40px rgba(138, 43, 226, 0.5)",
+                      "0 0 20px rgba(255, 215, 0, 0.5)",
                     ],
                   }}
                   transition={{
@@ -448,150 +331,105 @@ export default function KiaOraHomepage() {
                     ease: "easeInOut",
                   }}
                 >
-                  Kia Ora
+                  Kia Ora Kahi
                 </motion.span>
               </motion.h1>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1, duration: 1 }}
-                className="flex items-center justify-center gap-2 text-lg sm:text-xl lg:text-2xl text-purple-200"
+                className="flex items-center justify-center gap-2 text-lg sm:text-xl lg:text-2xl text-yellow-200"
               >
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
-                <span>Connect with your favorite celebrities</span>
+                <span>Connect with your favourite talent</span>
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
               </motion.div>
             </motion.div>
 
-            {/* Celebrity Carousel - Mobile vs Desktop */}
+            {/* Premium Services Circles */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.8 }}
               transition={{ duration: 1, delay: 0.4 }}
               className="relative mb-12"
             >
-              {isMobile ? (
-                <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6">
-                  <h2 className="text-xl font-bold text-white mb-6">Featured Celebrities</h2>
-                  <MobileCarousel
-                    items={celebrities}
-                    renderItem={(celebrity) => (
-                      <TouchOptimizedCelebrityCard celebrity={celebrity} onBook={() => handleBookNow(celebrity)} />
-                    )}
-                  />
-                </div>
-              ) : (
-                <div className="relative overflow-hidden rounded-3xl bg-white/10 backdrop-blur-lg border border-white/20 p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-white">Featured Celebrities</h2>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={prevSlide}
-                        className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={nextSlide}
-                        className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
+                <h2 className="text-2xl font-bold text-white mb-8">Featured Talents</h2>
 
-                  <AnimatePresence mode="wait">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                  {services.map((service, index) => (
                     <motion.div
-                      key={currentSlide}
-                      initial={{ opacity: 0, x: 300 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -300 }}
-                      transition={{ duration: 0.5 }}
-                      className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                      key={service.title}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex flex-col items-center group cursor-pointer"
+                      onClick={() => toast.info(`${service.title}`, { description: service.description })}
                     >
-                      {celebrities.slice(currentSlide * 3, (currentSlide + 1) * 3).map((celebrity, index) => (
-                        <motion.div
-                          key={celebrity.id}
-                          initial={{ opacity: 0, y: 50 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="group"
+                      {/* Service Circle with Rotating Talent */}
+                      <div className="relative mb-4">
+                        <div
+                          className={`w-20 h-20 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
                         >
-                          <Card className="bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 group-hover:scale-105">
-                            <CardContent className="p-6">
-                              <div className="relative mb-4">
-                                <Image
-                                  src={celebrity.image || "/placeholder.svg"}
-                                  alt={celebrity.name}
-                                  width={200}
-                                  height={250}
-                                  className="w-full h-48 object-cover rounded-lg"
-                                />
-                                <Badge className="absolute top-2 right-2 bg-purple-500/80 text-white">
-                                  {celebrity.category}
-                                </Badge>
-                                {celebrity.discount && (
-                                  <Badge className="absolute top-2 left-2 bg-green-500/80 text-white">
-                                    {celebrity.discount}
-                                  </Badge>
-                                )}
-                              </div>
-                              <h3 className="text-xl font-bold text-white mb-2">{celebrity.name}</h3>
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-1">
-                                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-white">{celebrity.rating}</span>
-                                </div>
-                                <span className="text-2xl font-bold text-purple-300">{celebrity.price}</span>
-                              </div>
-                              <Button
-                                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                                onClick={() => handleBookNow(celebrity)}
-                              >
-                                Book Now
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              )}
-            </motion.div>
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={`${index}-${currentTalentIndex}`}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 1.2 }}
+                              transition={{ duration: 0.5 }}
+                              className="absolute inset-1 rounded-full overflow-hidden"
+                            >
+                              <Image
+                                src={
+                                  service.talents[currentTalentIndex % service.talents.length].image ||
+                                  "/placeholder.svg" ||
+                                  "/placeholder.svg"
+                                }
+                                alt={service.talents[currentTalentIndex % service.talents.length].name}
+                                fill
+                                className="object-cover rounded-full"
+                                sizes="80px"
+                                priority={index < 3}
+                              />
+                            </motion.div>
+                          </AnimatePresence>
 
-            {/* Live Statistics */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto"
-            >
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 text-center"
-                >
-                  <div className="text-purple-300 mb-2 flex justify-center">{stat.icon}</div>
-                  <div className="text-2xl font-bold text-white mb-1">
-                    {stat.label === "Happy Customers"
-                      ? `${Math.floor(liveStats.customers / 1000)}K+`
-                      : stat.label === "Celebrities"
-                        ? `${liveStats.celebrities}+`
-                        : stat.label === "Rating"
-                          ? liveStats.rating.toFixed(1)
-                          : stat.value}
-                  </div>
-                  <div className="text-purple-200 text-sm">{stat.label}</div>
-                </motion.div>
-              ))}
+                          {/* Service Icon Overlay */}
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="text-white">{service.icon}</div>
+                          </div>
+                        </div>
+
+                        {/* Sparkle Effect */}
+                        <motion.div
+                          className="absolute -inset-2 rounded-full"
+                          animate={{
+                            boxShadow: [
+                              "0 0 0 0 rgba(255, 215, 0, 0)",
+                              "0 0 0 4px rgba(255, 215, 0, 0.3)",
+                              "0 0 0 0 rgba(255, 215, 0, 0)",
+                            ],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Number.POSITIVE_INFINITY,
+                            delay: index * 0.3,
+                          }}
+                        />
+                      </div>
+
+                      {/* Service Title */}
+                      <h3 className="text-white font-semibold text-center text-sm leading-tight">{service.title}</h3>
+
+                      {/* Current Talent Name */}
+                      <p className="text-yellow-200 text-xs mt-1 opacity-75">
+                        {service.talents[currentTalentIndex % service.talents.length].name}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
 
             {/* Category Filters */}
@@ -609,7 +447,7 @@ export default function KiaOraHomepage() {
                   size={isMobile ? "sm" : "default"}
                   className={`touch-manipulation ${
                     selectedCategory === category
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                      ? "bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-bold"
                       : "bg-white/10 border-white/20 text-white hover:bg-white/20"
                   }`}
                 >
@@ -627,10 +465,10 @@ export default function KiaOraHomepage() {
             >
               <Button
                 size={isMobile ? "default" : "lg"}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
+                className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
                 onClick={() =>
                   toast.info("Video Samples", {
-                    description: "Check out our celebrity video samples!",
+                    description: "Check out our talent video samples!",
                   })
                 }
               >
@@ -643,7 +481,7 @@ export default function KiaOraHomepage() {
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
                 onClick={() =>
                   toast.success("Request Started", {
-                    description: "Let's find the perfect celebrity for you!",
+                    description: "Let's find the perfect talent for you!",
                   })
                 }
               >
@@ -651,81 +489,6 @@ export default function KiaOraHomepage() {
                 Send a Request
               </Button>
             </motion.div>
-          </div>
-        </section>
-
-        {/* Success Stories Section */}
-        <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="text-center mb-12 sm:mb-16"
-            >
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">Success Stories</h2>
-              <p className="text-lg sm:text-xl text-purple-200 max-w-3xl mx-auto">
-                Real moments, real emotions, real impact from our amazing community
-              </p>
-            </motion.div>
-
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="space-y-8">
-                {successStories.map((story, index) => (
-                  <motion.div
-                    key={story.title}
-                    initial={{ opacity: 0, x: -50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.2 }}
-                    viewport={{ once: true }}
-                    className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20"
-                  >
-                    <h3 className="text-xl font-bold text-white mb-3">{story.title}</h3>
-                    <p className="text-purple-200 mb-4">{story.story}</p>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-white font-semibold">{story.customer}</p>
-                        <p className="text-purple-300 text-sm">featuring {story.celebrity}</p>
-                      </div>
-                      <Badge className="bg-green-500/20 text-green-300 border-green-500/30">{story.impact}</Badge>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="relative">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8 }}
-                  viewport={{ once: true }}
-                  className="relative"
-                >
-                  <Image
-                    src="/placeholder.svg?height=600&width=800"
-                    alt="Collage of happy Kia Ora customers"
-                    width={800}
-                    height={600}
-                    className="rounded-2xl shadow-2xl"
-                  />
-                  <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 blur-xl" />
-                </motion.div>
-
-                {/* Floating stats */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  viewport={{ once: true }}
-                  className="absolute -top-4 -right-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 text-center"
-                >
-                  <TrendingUp className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-white">98%</div>
-                  <div className="text-purple-200 text-sm">Satisfaction Rate</div>
-                </motion.div>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -742,9 +505,8 @@ export default function KiaOraHomepage() {
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
                 Our Premium Services
               </h2>
-              <p className="text-lg sm:text-xl text-purple-200 max-w-3xl mx-auto">
-                From birthday greetings to business endorsements, we offer personalized celebrity experiences for every
-                occasion
+              <p className="text-lg sm:text-xl text-yellow-200 max-w-3xl mx-auto">
+                From quick shout-outs to live interactions, we offer personalized talent experiences for every occasion
               </p>
             </motion.div>
 
@@ -760,7 +522,7 @@ export default function KiaOraHomepage() {
                   whileTap={{ scale: 0.95 }}
                   className="group touch-manipulation"
                 >
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full">
+                  <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
                     <CardContent className="p-6 sm:p-8">
                       <div
                         className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}
@@ -768,7 +530,7 @@ export default function KiaOraHomepage() {
                         <div className="text-white">{service.icon}</div>
                       </div>
                       <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">{service.title}</h3>
-                      <p className="text-purple-200 leading-relaxed">{service.description}</p>
+                      <p className="text-yellow-200 leading-relaxed">{service.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -778,7 +540,7 @@ export default function KiaOraHomepage() {
         </section>
 
         {/* Video Testimonials Carousel */}
-        <VideoTestimonialsCarousel />
+        {/* <VideoTestimonialsCarousel /> */}
 
         {/* Final CTA Section */}
         <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
@@ -789,19 +551,18 @@ export default function KiaOraHomepage() {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto text-center"
           >
-            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-2xl sm:rounded-3xl p-8 sm:p-12">
+            <div className="bg-gradient-to-r from-yellow-500/20 to-purple-500/20 backdrop-blur-lg border border-white/20 rounded-2xl sm:rounded-3xl p-8 sm:p-12">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">Ready to Connect?</h2>
-              <p className="text-lg sm:text-xl text-purple-200 mb-6 sm:mb-8 max-w-2xl mx-auto">
-                Join thousands of satisfied customers who have created unforgettable moments with their favorite
-                celebrities
+              <p className="text-lg sm:text-xl text-yellow-200 mb-6 sm:mb-8 max-w-2xl mx-auto">
+                Join thousands of satisfied customers who have created unforgettable moments with their favorite talent
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   size={isMobile ? "default" : "lg"}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
+                  className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
                   onClick={() =>
                     toast.success("Let's Get Started!", {
-                      description: "Browse our amazing celebrities and start booking!",
+                      description: "Browse our amazing talent and start booking!",
                     })
                   }
                 >
@@ -813,7 +574,7 @@ export default function KiaOraHomepage() {
                   className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg touch-manipulation"
                   onClick={() =>
                     toast.info("Learn More", {
-                      description: "Discover how Kia Ora works!",
+                      description: "Discover how Kia Ora Kahi works!",
                     })
                   }
                 >

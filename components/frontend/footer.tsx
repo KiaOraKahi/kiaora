@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Heart } from "lucide-react"
 import Link from "next/link"
 
@@ -11,7 +10,7 @@ export default function Footer() {
     {
       title: "Platform",
       links: [
-        { name: "Browse Celebrities", href: "/celebrities" },
+        { name: "Browse Talent", href: "/celebrities" },
         { name: "Categories", href: "/categories" },
         { name: "How It Works", href: "/how-it-works" },
         { name: "Pricing", href: "/pricing" },
@@ -20,10 +19,12 @@ export default function Footer() {
     {
       title: "Services",
       links: [
-        { name: "Birthday Messages", href: "/services?service=birthday" },
-        { name: "Personal Messages", href: "/services?service=personal" },
-        { name: "Business Endorsements", href: "/services?service=business" },
-        { name: "Live Calls", href: "/services?service=live" },
+        { name: "Quick shout-outs", href: "/services?service=shoutouts" },
+        { name: "Personalised video messages", href: "/services?service=personal" },
+        { name: "Roast someone", href: "/services?service=roast" },
+        { name: "5min Live interaction", href: "/services?service=live" },
+        { name: "Business endorsements", href: "/services?service=business" },
+        { name: "Motivational video messages", href: "/services?service=motivation" },
       ],
     },
     {
@@ -39,7 +40,7 @@ export default function Footer() {
       title: "Company",
       links: [
         { name: "About Us", href: "/about" },
-        { name: "Become a Celebrity", href: "/join-celebrity" },
+        { name: "Become Talent", href: "/join-celebrity" },
         { name: "Brand Partnerships", href: "/partnerships" },
         { name: "Newsroom", href: "/newsroom" },
       ],
@@ -58,34 +59,34 @@ export default function Footer() {
     <footer className="relative bg-gradient-to-b from-slate-900 to-black border-t border-white/10">
       {/* Background Effects */}
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.2),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(236,72,153,0.1),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,215,0,0.1),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(138,43,226,0.1),transparent)]" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Newsletter Section */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
           className="py-16 text-center border-b border-white/10"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Stay Updated with Celebrity News</h2>
-          <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-            Get the latest updates on new celebrities, exclusive offers, and platform features.
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Stay Updated with Talent News</h2>
+          <p className="text-xl text-yellow-200 mb-8 max-w-2xl mx-auto">
+            Get the latest updates on new talent, exclusive offers, and platform features.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
             <Input
               type="email"
               placeholder="Enter your email"
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-purple-500"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-500"
             />
-            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8">
+            <Button className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-8">
               Subscribe
             </Button>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Main Footer Content */}
         <div className="py-16">
@@ -99,27 +100,27 @@ export default function Footer() {
               className="lg:col-span-2"
             >
               <Link href="/" className="flex items-center space-x-2 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                  <Star className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-purple-500 rounded-xl flex items-center justify-center">
+                  <Star className="w-6 h-6 text-black" />
                 </div>
-                <span className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
-                  Kia Ora
+                <span className="text-3xl font-bold bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+                  Kia Ora Kahi
                 </span>
               </Link>
-              <p className="text-purple-200 mb-6 leading-relaxed">
-                Connect with your favorite celebrities for personalized messages, birthday greetings, and exclusive
+              <p className="text-yellow-200 mb-6 leading-relaxed">
+                Connect with your favorite talent for personalized messages, birthday greetings, and exclusive
                 experiences. Making dreams come true, one message at a time.
               </p>
               <div className="space-y-3">
-                <div className="flex items-center space-x-3 text-purple-200">
+                <div className="flex items-center space-x-3 text-yellow-200">
                   <Mail className="w-5 h-5" />
                   <span>hello@kiaora.com</span>
                 </div>
-                <div className="flex items-center space-x-3 text-purple-200">
+                <div className="flex items-center space-x-3 text-yellow-200">
                   <Phone className="w-5 h-5" />
                   <span>+1 (555) 123-4567</span>
                 </div>
-                <div className="flex items-center space-x-3 text-purple-200">
+                <div className="flex items-center space-x-3 text-yellow-200">
                   <MapPin className="w-5 h-5" />
                   <span>Los Angeles, CA</span>
                 </div>
@@ -141,7 +142,7 @@ export default function Footer() {
                     <li key={link.name}>
                       <Link
                         href={link.href}
-                        className="text-purple-200 hover:text-white transition-colors duration-200"
+                        className="text-yellow-200 hover:text-white transition-colors duration-200"
                       >
                         {link.name}
                       </Link>
@@ -163,20 +164,21 @@ export default function Footer() {
         >
           <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0">
             {/* Copyright */}
-            <div className="flex items-center space-x-2 text-purple-200">
-              <span>© 2025 Kia Ora.</span>
-                <span>All rights reserved.</span>
+            <div className="flex items-center space-x-2 text-yellow-200">
+              <span>© 2024 Kia Ora Kahi. Made with</span>
+              <Heart className="w-4 h-4 text-yellow-500" />
+              <span>in Los Angeles</span>
             </div>
 
             {/* Legal Links */}
             <div className="flex items-center space-x-6">
-              <Link href="/privacy" className="text-purple-200 hover:text-white transition-colors duration-200">
+              <Link href="/privacy" className="text-yellow-200 hover:text-white transition-colors duration-200">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-purple-200 hover:text-white transition-colors duration-200">
+              <Link href="/terms" className="text-yellow-200 hover:text-white transition-colors duration-200">
                 Terms of Service
               </Link>
-              <Link href="/cookies" className="text-purple-200 hover:text-white transition-colors duration-200">
+              <Link href="/cookies" className="text-yellow-200 hover:text-white transition-colors duration-200">
                 Cookie Policy
               </Link>
             </div>
@@ -188,7 +190,7 @@ export default function Footer() {
                   key={social.label}
                   variant="ghost"
                   size="icon"
-                  className="text-purple-200 hover:text-white hover:bg-white/10 transition-colors duration-200"
+                  className="text-yellow-200 hover:text-white hover:bg-white/10 transition-colors duration-200"
                   asChild
                 >
                   <Link href={social.href} aria-label={social.label}>
