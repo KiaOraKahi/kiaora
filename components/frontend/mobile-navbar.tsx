@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, Search, Home, Users, HelpCircle, Phone } from "lucide-react"
+import { Menu, X, Star, User, Search, Users, HelpCircle, Phone } from "lucide-react"
 import Link from "next/link"
 import SearchAutocomplete from "@/components/frontend/search-autocomplete"
 
@@ -22,11 +22,12 @@ export default function MobileNavbar() {
   }, [])
 
   const navItems = [
-    { name: "Home", href: "/", icon: <Home className="w-5 h-5" /> },
+    { name: "About", href: "/about", icon: <Star className="w-5 h-5" /> },
     { name: "Celebrities", href: "/celebrities", icon: <Users className="w-5 h-5" /> },
-    { name: "Categories", href: "/categories", icon: <Star className="w-5 h-5" /> },
     { name: "How It Works", href: "/how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
     { name: "Contact", href: "/contact", icon: <Phone className="w-5 h-5" /> },
+    { name: "Become Talent", href: "/join-celebrity", icon: <Star className="w-5 h-5" /> },
+
   ]
 
   // Close menu when route changes

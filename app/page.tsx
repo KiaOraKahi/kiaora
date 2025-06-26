@@ -19,7 +19,7 @@ const services = [
     id: 1,
     icon: <Zap className="w-8 h-8" />,
     title: "Quick shout-outs",
-    description: "Fast and fun personalized shout-outs from your favorite talent",
+    description: "Fast and fun personalised shout-outs",
     color: "from-yellow-500 to-orange-500",
     talents: [
       { name: "Kevin Hart", image: "/talents/1.jpeg" },
@@ -43,7 +43,7 @@ const services = [
     id: 3,
     icon: <Laugh className="w-8 h-8" />,
     title: "Roast someone",
-    description: "Hilarious roasts and playful banter from comedy legends",
+    description: "Videos that tease or make fun of someone, in a good-natured way",
     color: "from-red-500 to-pink-500",
     talents: [
       { name: "Dave Chappelle", image: "/talents/1.jpeg" },
@@ -55,7 +55,7 @@ const services = [
     id: 4,
     icon: <Video className="w-8 h-8" />,
     title: "5min Live interaction",
-    description: "Real-time video calls and live interactions with talent",
+    description: "Real-time video calls and live one on one interactions",
     color: "from-purple-500 to-indigo-500",
     talents: [
       { name: "MrBeast", image: "/talents/4.jpg" },
@@ -67,7 +67,7 @@ const services = [
     id: 5,
     icon: <Briefcase className="w-8 h-8" />,
     title: "Business endorsements",
-    description: "Professional endorsements and business shoutouts",
+    description: "Professional endorsements and business shout-outs",
     color: "from-green-500 to-emerald-500",
     talents: [
       { name: "Gary Vaynerchuk", image: "/talents/1.jpeg" },
@@ -166,7 +166,7 @@ const SubtleLuxuryStarfield = () => {
     const createStar = () => {
       const star = document.createElement("div")
       const size = Math.random() * 2 + 1 // Smaller, more subtle stars
-      const type = Math.random
+      const type = Math.random()
 
       if (type > 0.97) {
         star.className = "star diamond"
@@ -303,10 +303,10 @@ export default function KiaOraHomepage() {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 50 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="mb-8"
+              className="mb-8 relative"
             >
               <motion.h1
-                className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-4"
+                className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-2"
                 animate={{
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                 }}
@@ -337,6 +337,38 @@ export default function KiaOraHomepage() {
                   Kia Ora Kahi
                 </motion.span>
               </motion.h1>
+
+              {/* Personalised Videos Stamp - Directly under the text */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, rotate: -8 }}
+                animate={{ opacity: 1, scale: 1, rotate: -8 }}
+                transition={{ delay: 1.5, duration: 0.8, type: "spring", stiffness: 200 }}
+                className="flex justify-center mb-4"
+              >
+                <div className="relative">
+                  {/* Stamp background with border */}
+                  <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 rounded-lg border-2 border-white/30 shadow-lg transform">
+                    <div className="text-sm sm:text-base lg:text-lg font-bold tracking-wider uppercase leading-tight text-center">
+                      PERSONALISED VIDEOS
+                    </div>
+                  </div>
+
+                  {/* Stamp glow effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-red-500/30 to-pink-500/30 rounded-lg blur-md -z-10"
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      opacity: [0.5, 0.8, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </div>
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -345,7 +377,7 @@ export default function KiaOraHomepage() {
               >
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
                 <span>
-                  Connect with your favourite celebrity or social media personality to receive a bespoke message
+                  Connect with your favourite celebrity or social media personality to receive a bespoke video message
                   especially for you or as a special gift for someone else
                 </span>
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
@@ -445,7 +477,7 @@ export default function KiaOraHomepage() {
                 Our Premium Services
               </h2>
               <p className="text-lg sm:text-xl text-yellow-200 max-w-3xl mx-auto">
-                From quick shout-outs to live interactions, we offer personalized talent experiences for every occasion
+                From shout-outs to live interactions, we offer personalized experiences for every occasion
               </p>
             </motion.div>
 
@@ -463,7 +495,7 @@ export default function KiaOraHomepage() {
                   onClick={() => {
                     // Map service titles to service IDs for URL
                     const serviceMap: { [key: string]: string } = {
-                      "Quick shout-outs": "shoutouts",
+                      "Quick shout-outs": "shout-outs",
                       "Personalised video messages": "personal",
                       "Roast someone": "roast",
                       "5min Live interaction": "live",
