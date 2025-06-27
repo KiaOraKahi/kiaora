@@ -74,6 +74,59 @@ model Celebrity {
   reviews  Review[]
 }
 
+model CelebrityApplication {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Personal Information
+  fullName     String
+  email        String    @unique
+  phone        String
+  dateOfBirth  String
+  nationality  String
+
+  // Professional Information
+  profession   String
+  category     String
+  experience   String    @db.Text
+  achievements String    @db.Text
+
+  // Social Media
+  instagramHandle   String?
+  twitterHandle     String?
+  tiktokHandle      String?
+  youtubeHandle     String?
+  otherSocialMedia  String?
+  followerCount     String
+
+  // Pricing
+  basePrice  Float
+  rushPrice  Float
+
+  // Additional Info
+  languages        String[]
+  availability     String
+  specialRequests  String?   @db.Text
+  motivation       String    @db.Text
+
+  // Documents
+  hasProfilePhoto          Boolean @default(false)
+  hasIdDocument           Boolean @default(false)
+  hasVerificationDocument Boolean @default(false)
+  profilePhotoUrl         String?
+  idDocumentUrl          String?
+  verificationDocumentUrl String?
+
+  // Application Status
+  status        ApplicationStatus @default(PENDING)
+  reviewNotes   String?          @db.Text
+  reviewedAt    DateTime?
+  reviewedBy    String?
+
+  @@map("celebrity_applications")
+}
+
 model Booking {
   id          String        @id @default(cuid())
   userId      String
@@ -131,4 +184,12 @@ enum BookingStatus {
 enum TokenType {
   EMAIL_VERIFICATION
   PASSWORD_RESET
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  REQUIRES_CHANGES
 }

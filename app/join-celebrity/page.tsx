@@ -1,9 +1,6 @@
 "use client"
-
-import type React from "react"
-
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,19 +8,27 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
-  Star,
   DollarSign,
   Clock,
   Users,
-  TrendingUp,
   Shield,
   CheckCircle,
   ArrowRight,
   Sparkles,
-  Send,
+  Upload,
+  User,
+  Briefcase,
+  Camera,
+  FileText,
+  Globe,
+  Award,
+  Heart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import { toast } from "sonner"
 
 const benefits = [
   {
@@ -38,7 +43,7 @@ const benefits = [
     title: "Connect with Fans",
     description: "Build deeper relationships with your audience",
     color: "from-blue-500 to-cyan-500",
-    details: ["Direct fan interaction", "Personalized messages", "Global reach", "Meaningful connections"],
+    details: ["Direct fan interaction", "Personalised messages", "Global reach", "Meaningful connections"],
   },
   {
     icon: <Clock className="w-8 h-8" />,
@@ -67,81 +72,843 @@ const requirements = [
 const steps = [
   {
     step: 1,
-    title: "Submit Application",
-    description: "Fill out our celebrity application form",
-    icon: <Send className="w-6 h-6" />,
+    title: "Personal Information",
+    description: "Basic details and contact information",
+    icon: <User className="w-6 h-6" />,
   },
   {
     step: 2,
-    title: "Verification Process",
-    description: "We verify your identity and credentials",
-    icon: <Shield className="w-6 h-6" />,
+    title: "Professional Details",
+    description: "Career background and achievements",
+    icon: <Briefcase className="w-6 h-6" />,
   },
   {
     step: 3,
-    title: "Profile Setup",
-    description: "Create your celebrity profile and set rates",
-    icon: <Star className="w-6 h-6" />,
+    title: "Social Media & Pricing",
+    description: "Online presence and rate setting",
+    icon: <Globe className="w-6 h-6" />,
   },
   {
     step: 4,
-    title: "Start Earning",
-    description: "Begin receiving and fulfilling fan requests",
-    icon: <TrendingUp className="w-6 h-6" />,
+    title: "Documents & Verification",
+    description: "Upload required documents",
+    icon: <FileText className="w-6 h-6" />,
   },
 ]
 
+const categories = [
+  "Actor/Actress",
+  "Musician/Artist",
+  "Athlete",
+  "Social Media Influencer",
+  "Comedian",
+  "Author/Writer",
+  "Business Leader",
+  "Reality TV Star",
+  "Model",
+  "Chef",
+  "Fitness Trainer",
+  "Other",
+]
+
+const languages = [
+  "English",
+  "Spanish",
+  "French",
+  "German",
+  "Italian",
+  "Portuguese",
+  "Chinese",
+  "Japanese",
+  "Korean",
+  "Arabic",
+  "Hindi",
+  "Other",
+]
+
+interface ApplicationData {
+  // Personal Information
+  fullName: string
+  email: string
+  phone: string
+  dateOfBirth: string
+  nationality: string
+
+  // Professional Information
+  profession: string
+  category: string
+  experience: string
+  achievements: string
+
+  // Social Media
+  socialMedia: {
+    instagram: string
+    twitter: string
+    tiktok: string
+    youtube: string
+    other: string
+  }
+  followerCount: string
+
+  // Pricing
+  basePrice: number
+  rushPrice: number
+
+  // Additional Info
+  languages: string[]
+  availability: string
+  specialRequests: string
+  motivation: string
+
+  // Documents
+  profilePhoto: File | null
+  idDocument: File | null
+  verificationDocument: File | null
+}
+
 export default function JoinCelebrityPage() {
-  const [formData, setFormData] = useState({
+  const [currentStep, setCurrentStep] = useState(0)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [uploadingFiles, setUploadingFiles] = useState<{ [key: string]: boolean }>({})
+
+  const [formData, setFormData] = useState<ApplicationData>({
     fullName: "",
     email: "",
     phone: "",
+    dateOfBirth: "",
+    nationality: "",
     profession: "",
-    socialMedia: "",
-    followers: "",
+    category: "",
     experience: "",
+    achievements: "",
+    socialMedia: {
+      instagram: "",
+      twitter: "",
+      tiktok: "",
+      youtube: "",
+      other: "",
+    },
+    followerCount: "",
+    basePrice: 50,
+    rushPrice: 100,
+    languages: [],
+    availability: "",
+    specialRequests: "",
     motivation: "",
+    profilePhoto: null,
+    idDocument: null,
+    verificationDocument: null,
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleInputChange = (field: string, value: any) => {
+    if (field.includes(".")) {
+      const [parent, child] = field.split(".")
+      setFormData((prev) => ({
+        ...prev,
+        [parent]: {
+          ...(prev as any)[parent],
+          [child]: value,
+        },
+      }))
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }))
+    }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLanguageToggle = (language: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      languages: prev.languages.includes(language)
+        ? prev.languages.filter((l) => l !== language)
+        : [...prev.languages, language],
+    }))
+  }
+
+  const handleFileUpload = async (file: File, type: string) => {
+    if (!file) return
+
+    setUploadingFiles((prev) => ({ ...prev, [type]: true }))
+
+    try {
+      const formDataUpload = new FormData()
+      formDataUpload.append("file", file)
+      formDataUpload.append("type", type)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setFormData((prev) => ({ ...prev, [type]: file }))
+        toast.success(`${type.replace(/([A-Z])/g, " $1").toLowerCase()} uploaded successfully!`)
+      } else {
+        toast.error(result.error || "Upload failed. Please try again.")
+      }
+    } catch (error) {
+      console.error("Upload error:", error)
+      toast.error("Upload failed. Please try again.")
+    } finally {
+      setUploadingFiles((prev) => ({ ...prev, [type]: false }))
+    }
+  }
+
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 0:
+        return !!(formData.fullName && formData.email && formData.phone && formData.dateOfBirth && formData.nationality)
+      case 1:
+        return !!(
+          formData.profession &&
+          formData.category &&
+          formData.experience.length >= 50 &&
+          formData.achievements.length >= 50
+        )
+      case 2:
+        return !!(
+          formData.followerCount &&
+          formData.basePrice >= 10 &&
+          formData.rushPrice >= 10 &&
+          formData.languages.length > 0 &&
+          formData.availability &&
+          formData.motivation.length >= 50
+        )
+      case 3:
+        return !!(formData.profilePhoto && formData.idDocument && formData.verificationDocument)
+      default:
+        return false
+    }
+  }
+
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
+    } else {
+      toast.error("Please fill in all required fields before continuing.")
+    }
+  }
+
+  const prevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0))
+  }
+
+  const handleSubmit = async () => {
+    if (!validateStep(currentStep)) {
+      toast.error("Please complete all required fields.")
+      return
+    }
+
     setIsSubmitting(true)
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const applicationData = {
+        ...formData,
+        hasProfilePhoto: !!formData.profilePhoto,
+        hasIdDocument: !!formData.idDocument,
+        hasVerificationDocument: !!formData.verificationDocument,
+      }
 
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false)
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        profession: "",
-        socialMedia: "",
-        followers: "",
-        experience: "",
-        motivation: "",
+      const response = await fetch("/api/celebrity/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(applicationData),
       })
-    }, 3000)
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setIsSubmitted(true)
+        toast.success("Application submitted successfully!")
+      } else {
+        toast.error(result.error || "Something went wrong")
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <User className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">Personal Information</h3>
+              <p className="text-purple-200">Let's start with your basic details</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label className="text-white mb-2 block">Full Name *</Label>
+                <Input
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange("fullName", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                  placeholder="Your full legal name"
+                />
+              </div>
+              <div>
+                <Label className="text-white mb-2 block">Email Address *</Label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                  placeholder="your@email.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label className="text-white mb-2 block">Phone Number *</Label>
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+              <div>
+                <Label className="text-white mb-2 block">Date of Birth *</Label>
+                <Input
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">Nationality *</Label>
+              <Input
+                value={formData.nationality}
+                onChange={(e) => handleInputChange("nationality", e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                placeholder="Your nationality"
+              />
+            </div>
+          </div>
+        )
+
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <Briefcase className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">Professional Details</h3>
+              <p className="text-purple-200">Tell us about your career and achievements</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label className="text-white mb-2 block">Profession *</Label>
+                <Input
+                  value={formData.profession}
+                  onChange={(e) => handleInputChange("profession", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                  placeholder="e.g., Actor, Musician, Athlete"
+                />
+              </div>
+              <div>
+                <Label className="text-white mb-2 block">Category *</Label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleInputChange("category", e.target.value)}
+                  className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
+                >
+                  <option value="" className="bg-slate-800">
+                    Select your category
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category} value={category} className="bg-slate-800">
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">Professional Experience * (minimum 50 characters)</Label>
+              <Textarea
+                rows={4}
+                value={formData.experience}
+                onChange={(e) => handleInputChange("experience", e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
+                placeholder="Describe your professional background, career highlights, and relevant experience..."
+              />
+              <p className="text-sm text-purple-300 mt-1">{formData.experience.length}/50 characters</p>
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">Notable Achievements * (minimum 50 characters)</Label>
+              <Textarea
+                rows={4}
+                value={formData.achievements}
+                onChange={(e) => handleInputChange("achievements", e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
+                placeholder="List your awards, recognitions, major projects, or career milestones..."
+              />
+              <p className="text-sm text-purple-300 mt-1">{formData.achievements.length}/50 characters</p>
+            </div>
+          </div>
+        )
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <Globe className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">Social Media & Pricing</h3>
+              <p className="text-purple-200">Your online presence and rates</p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-white">Social Media Profiles</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-white mb-2 block">Instagram</Label>
+                  <Input
+                    value={formData.socialMedia.instagram}
+                    onChange={(e) => handleInputChange("socialMedia.instagram", e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                    placeholder="@username or profile URL"
+                  />
+                </div>
+                <div>
+                  <Label className="text-white mb-2 block">Twitter/X</Label>
+                  <Input
+                    value={formData.socialMedia.twitter}
+                    onChange={(e) => handleInputChange("socialMedia.twitter", e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                    placeholder="@username or profile URL"
+                  />
+                </div>
+                <div>
+                  <Label className="text-white mb-2 block">TikTok</Label>
+                  <Input
+                    value={formData.socialMedia.tiktok}
+                    onChange={(e) => handleInputChange("socialMedia.tiktok", e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                    placeholder="@username or profile URL"
+                  />
+                </div>
+                <div>
+                  <Label className="text-white mb-2 block">YouTube</Label>
+                  <Input
+                    value={formData.socialMedia.youtube}
+                    onChange={(e) => handleInputChange("socialMedia.youtube", e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                    placeholder="Channel URL"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-white mb-2 block">Other Platform</Label>
+                <Input
+                  value={formData.socialMedia.other}
+                  onChange={(e) => handleInputChange("socialMedia.other", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                  placeholder="Any other social media platform"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">Total Follower Count *</Label>
+              <select
+                value={formData.followerCount}
+                onChange={(e) => handleInputChange("followerCount", e.target.value)}
+                className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
+              >
+                <option value="" className="bg-slate-800">
+                  Select follower range
+                </option>
+                <option value="10k-50k" className="bg-slate-800">
+                  10K - 50K
+                </option>
+                <option value="50k-100k" className="bg-slate-800">
+                  50K - 100K
+                </option>
+                <option value="100k-500k" className="bg-slate-800">
+                  100K - 500K
+                </option>
+                <option value="500k-1m" className="bg-slate-800">
+                  500K - 1M
+                </option>
+                <option value="1m+" className="bg-slate-800">
+                  1M+
+                </option>
+              </select>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-white">Pricing (USD)</h4>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <Label className="text-white mb-2 block">Base Price * (minimum $10)</Label>
+                  <Input
+                    type="number"
+                    min="10"
+                    value={formData.basePrice}
+                    onChange={(e) => handleInputChange("basePrice", Number(e.target.value))}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                    placeholder="50"
+                  />
+                  <p className="text-sm text-purple-300 mt-1">Standard video message price</p>
+                </div>
+                <div>
+                  <Label className="text-white mb-2 block">Rush Price * (24hr delivery)</Label>
+                  <Input
+                    type="number"
+                    min="10"
+                    value={formData.rushPrice}
+                    onChange={(e) => handleInputChange("rushPrice", Number(e.target.value))}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
+                    placeholder="100"
+                  />
+                  <p className="text-sm text-purple-300 mt-1">Rush delivery premium price</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">Languages Spoken * (select all that apply)</Label>
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                {languages.map((language) => (
+                  <Button
+                    key={language}
+                    type="button"
+                    variant={formData.languages.includes(language) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleLanguageToggle(language)}
+                    className={
+                      formData.languages.includes(language)
+                        ? "bg-purple-600 hover:bg-purple-700"
+                        : "border-white/20 text-white hover:bg-white/10"
+                    }
+                  >
+                    {language}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">Availability *</Label>
+              <select
+                value={formData.availability}
+                onChange={(e) => handleInputChange("availability", e.target.value)}
+                className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
+              >
+                <option value="" className="bg-slate-800">
+                  Select your availability
+                </option>
+                <option value="1-3 days" className="bg-slate-800">
+                  1-3 days
+                </option>
+                <option value="3-7 days" className="bg-slate-800">
+                  3-7 days
+                </option>
+                <option value="1-2 weeks" className="bg-slate-800">
+                  1-2 weeks
+                </option>
+                <option value="Flexible" className="bg-slate-800">
+                  Flexible
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">Special Requests (optional)</Label>
+              <Textarea
+                rows={3}
+                value={formData.specialRequests}
+                onChange={(e) => handleInputChange("specialRequests", e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
+                placeholder="Any special requirements or limitations for video requests..."
+              />
+            </div>
+
+            <div>
+              <Label className="text-white mb-2 block">
+                Why do you want to join Kia Ora? * (minimum 50 characters)
+              </Label>
+              <Textarea
+                rows={3}
+                value={formData.motivation}
+                onChange={(e) => handleInputChange("motivation", e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
+                placeholder="Tell us why you're interested in connecting with fans through personalised messages..."
+              />
+              <p className="text-sm text-purple-300 mt-1">{formData.motivation.length}/50 characters</p>
+            </div>
+          </div>
+        )
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <FileText className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">Documents & Verification</h3>
+              <p className="text-purple-200">Upload required documents for verification</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="p-6 bg-white/5 border border-white/20 rounded-lg">
+                <div className="flex items-center gap-3 mb-4">
+                  <Camera className="w-6 h-6 text-purple-400" />
+                  <h4 className="text-lg font-semibold text-white">Profile Photo *</h4>
+                </div>
+                <p className="text-purple-200 mb-4">
+                  High-quality headshot that will be used on your profile (JPG, PNG, or WebP, max 5MB)
+                </p>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleFileUpload(file, "profilePhoto")
+                    }}
+                    className="hidden"
+                    id="profile-photo"
+                  />
+                  <label htmlFor="profile-photo" className="cursor-pointer">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10 bg-transparent"
+                      disabled={uploadingFiles.profilePhoto}
+                      asChild
+                    >
+                      <span>
+                        {uploadingFiles.profilePhoto ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose File
+                          </>
+                        )}
+                      </span>
+                    </Button>
+                  </label>
+                  {formData.profilePhoto && (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm">{formData.profilePhoto.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 bg-white/5 border border-white/20 rounded-lg">
+                <div className="flex items-center gap-3 mb-4">
+                  <FileText className="w-6 h-6 text-purple-400" />
+                  <h4 className="text-lg font-semibold text-white">Government ID *</h4>
+                </div>
+                <p className="text-purple-200 mb-4">
+                  Valid government-issued photo ID (driver's license, passport, etc.) for identity verification
+                </p>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleFileUpload(file, "idDocument")
+                    }}
+                    className="hidden"
+                    id="id-document"
+                  />
+                  <label htmlFor="id-document" className="cursor-pointer">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10 bg-transparent"
+                      disabled={uploadingFiles.idDocument}
+                      asChild
+                    >
+                      <span>
+                        {uploadingFiles.idDocument ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose File
+                          </>
+                        )}
+                      </span>
+                    </Button>
+                  </label>
+                  {formData.idDocument && (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm">{formData.idDocument.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 bg-white/5 border border-white/20 rounded-lg">
+                <div className="flex items-center gap-3 mb-4">
+                  <Award className="w-6 h-6 text-purple-400" />
+                  <h4 className="text-lg font-semibold text-white">Verification Document *</h4>
+                </div>
+                <p className="text-purple-200 mb-4">
+                  Document proving your professional status (press kit, agency contract, verified social media
+                  screenshot, etc.)
+                </p>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleFileUpload(file, "verificationDocument")
+                    }}
+                    className="hidden"
+                    id="verification-document"
+                  />
+                  <label htmlFor="verification-document" className="cursor-pointer">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10 bg-transparent"
+                      disabled={uploadingFiles.verificationDocument}
+                      asChild
+                    >
+                      <span>
+                        {uploadingFiles.verificationDocument ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose File
+                          </>
+                        )}
+                      </span>
+                    </Button>
+                  </label>
+                  {formData.verificationDocument && (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm">{formData.verificationDocument.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
+              <p className="text-sm text-purple-200">
+                <Shield className="w-4 h-4 inline mr-2" />
+                All documents are securely stored and used only for verification purposes. Your privacy is our priority.
+              </p>
+            </div>
+          </div>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-black">
+        <div className="starfield">
+          {Array.from({ length: 50 }).map((_, i) => (
+            <div
+              key={i}
+              className={`star ${i % 10 === 0 ? "diamond" : i % 7 === 0 ? "sapphire" : ""}`}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 3 + 1}px`,
+                height: `${Math.random() * 3 + 1}px`,
+                animationDelay: `${Math.random() * 4}s`,
+              }}
+            />
+          ))}
+        </div>
+        <Navbar />
+        <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-2xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                <CardContent className="p-12">
+                  <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-6" />
+                  <h1 className="text-3xl font-bold text-white mb-4">Application Submitted!</h1>
+                  <p className="text-purple-200 mb-6">
+                    Thank you for your interest in joining Kia Ora as talent. We've received your application and will
+                    review it within 5-7 business days.
+                  </p>
+                  <p className="text-purple-200 mb-8">
+                    You'll receive an email notification once we've completed our review process.
+                  </p>
+                  <Button
+                    onClick={() => (window.location.href = "/")}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    Back to Home
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-black">
+      <div className="starfield">
+        {Array.from({ length: 50 }).map((_, i) => (
+          <div
+            key={i}
+            className={`star ${i % 10 === 0 ? "diamond" : i % 7 === 0 ? "sapphire" : ""}`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 3 + 1}px`,
+              height: `${Math.random() * 3 + 1}px`,
+              animationDelay: `${Math.random() * 4}s`,
+            }}
+          />
+        ))}
+      </div>
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 z-10">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
@@ -149,40 +916,19 @@ export default function JoinCelebrityPage() {
               Join Our Platform
             </Badge>
             <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6">
-              Become a Kia Ora Celebrity
+              Become Kia Ora Talent
             </h1>
             <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
-              Join thousands of celebrities earning extra income while connecting with fans through personalized video
+              Join thousands of celebrities earning extra income while connecting with fans through personalised video
               messages.
             </p>
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-12 py-4 text-lg"
-              onClick={() => document.getElementById("application-form")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Apply Now
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
           </motion.div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* Benefits Section - No heading/subheading */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Why Join Kia Ora?</h2>
-            <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-              Discover the benefits of becoming a Kia Ora celebrity partner.
-            </p>
-          </motion.div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
               <motion.div
@@ -217,51 +963,8 @@ export default function JoinCelebrityPage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">How to Get Started</h2>
-            <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-              Follow these simple steps to join our celebrity community.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.step}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg text-center h-full">
-                  <CardContent className="p-6">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-white font-bold text-xl">{step.step}</span>
-                    </div>
-                    <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <div className="text-purple-400">{step.icon}</div>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-3">{step.title}</h3>
-                    <p className="text-purple-200 text-sm">{step.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Requirements */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 relative z-10">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -287,7 +990,7 @@ export default function JoinCelebrityPage() {
       </section>
 
       {/* Application Form */}
-      <section id="application-form" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -297,219 +1000,94 @@ export default function JoinCelebrityPage() {
           >
             <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
               <CardContent className="p-8">
-                <h2 className="text-3xl font-bold text-white mb-6 text-center">Celebrity Application</h2>
-                <p className="text-purple-200 mb-8 text-center">
-                  Fill out this form to apply to become a Kia Ora celebrity partner.
-                </p>
+                <h2 className="text-3xl font-bold text-white mb-6 text-center">Talent Application</h2>
 
-                {isSubmitted ? (
+                {/* Progress Steps */}
+                <div className="mb-8">
+                  <div className="flex justify-between items-center mb-4">
+                    {steps.map((step, index) => (
+                      <div key={step.step} className="flex items-center">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            index <= currentStep
+                              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                              : "bg-white/10 text-purple-300"
+                          }`}
+                        >
+                          {index < currentStep ? <CheckCircle className="w-5 h-5" /> : step.step}
+                        </div>
+                        {index < steps.length - 1 && (
+                          <div
+                            className={`w-full h-1 mx-2 ${
+                              index < currentStep ? "bg-gradient-to-r from-purple-500 to-pink-500" : "bg-white/10"
+                            }`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-white">{steps[currentStep].title}</h3>
+                    <p className="text-purple-200 text-sm">{steps[currentStep].description}</p>
+                  </div>
+                </div>
+
+                {/* Step Content */}
+                <AnimatePresence mode="wait">
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-12"
+                    key={currentStep}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-white mb-2">Application Submitted!</h3>
-                    <p className="text-purple-200">
-                      Thank you for your interest. We'll review your application and get back to you within 5-7 business
-                      days.
-                    </p>
+                    {renderStepContent()}
                   </motion.div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="fullName" className="text-white mb-2 block">
-                          Full Name *
-                        </Label>
-                        <Input
-                          id="fullName"
-                          name="fullName"
-                          type="text"
-                          required
-                          value={formData.fullName}
-                          onChange={handleInputChange}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                          placeholder="Your full legal name"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email" className="text-white mb-2 block">
-                          Email Address *
-                        </Label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          required
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                          placeholder="your@email.com"
-                        />
-                      </div>
-                    </div>
+                </AnimatePresence>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="phone" className="text-white mb-2 block">
-                          Phone Number *
-                        </Label>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          type="tel"
-                          required
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                          placeholder="+1 (555) 123-4567"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="profession" className="text-white mb-2 block">
-                          Profession/Industry *
-                        </Label>
-                        <select
-                          id="profession"
-                          name="profession"
-                          required
-                          value={formData.profession}
-                          onChange={handleInputChange}
-                          className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
-                        >
-                          <option value="" className="bg-slate-800">
-                            Select your profession
-                          </option>
-                          <option value="actor" className="bg-slate-800">
-                            Actor/Actress
-                          </option>
-                          <option value="musician" className="bg-slate-800">
-                            Musician/Artist
-                          </option>
-                          <option value="athlete" className="bg-slate-800">
-                            Athlete
-                          </option>
-                          <option value="influencer" className="bg-slate-800">
-                            Social Media Influencer
-                          </option>
-                          <option value="comedian" className="bg-slate-800">
-                            Comedian
-                          </option>
-                          <option value="author" className="bg-slate-800">
-                            Author/Writer
-                          </option>
-                          <option value="business" className="bg-slate-800">
-                            Business Leader
-                          </option>
-                          <option value="other" className="bg-slate-800">
-                            Other
-                          </option>
-                        </select>
-                      </div>
-                    </div>
+                {/* Navigation Buttons */}
+                <div className="flex justify-between mt-8">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    disabled={currentStep === 0}
+                    className="border-white/20 text-white hover:bg-white/10 disabled:opacity-50 bg-transparent"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Previous
+                  </Button>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="socialMedia" className="text-white mb-2 block">
-                          Primary Social Media Handle *
-                        </Label>
-                        <Input
-                          id="socialMedia"
-                          name="socialMedia"
-                          type="text"
-                          required
-                          value={formData.socialMedia}
-                          onChange={handleInputChange}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                          placeholder="@yourusername or profile URL"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="followers" className="text-white mb-2 block">
-                          Follower Count *
-                        </Label>
-                        <select
-                          id="followers"
-                          name="followers"
-                          required
-                          value={formData.followers}
-                          onChange={handleInputChange}
-                          className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
-                        >
-                          <option value="" className="bg-slate-800">
-                            Select follower range
-                          </option>
-                          <option value="10k-50k" className="bg-slate-800">
-                            10K - 50K
-                          </option>
-                          <option value="50k-100k" className="bg-slate-800">
-                            50K - 100K
-                          </option>
-                          <option value="100k-500k" className="bg-slate-800">
-                            100K - 500K
-                          </option>
-                          <option value="500k-1m" className="bg-slate-800">
-                            500K - 1M
-                          </option>
-                          <option value="1m+" className="bg-slate-800">
-                            1M+
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="experience" className="text-white mb-2 block">
-                        Professional Experience *
-                      </Label>
-                      <Textarea
-                        id="experience"
-                        name="experience"
-                        required
-                        rows={4}
-                        value={formData.experience}
-                        onChange={handleInputChange}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
-                        placeholder="Describe your professional background, notable achievements, and relevant experience..."
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="motivation" className="text-white mb-2 block">
-                        Why do you want to join Kia Ora? *
-                      </Label>
-                      <Textarea
-                        id="motivation"
-                        name="motivation"
-                        required
-                        rows={3}
-                        value={formData.motivation}
-                        onChange={handleInputChange}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
-                        placeholder="Tell us why you're interested in connecting with fans through personalized messages..."
-                      />
-                    </div>
-
+                  {currentStep === steps.length - 1 ? (
                     <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 text-lg"
+                      onClick={handleSubmit}
+                      disabled={isSubmitting || !validateStep(currentStep)}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                          Submitting Application...
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                          Submitting...
                         </>
                       ) : (
                         <>
-                          <Send className="w-5 h-5 mr-2" />
+                          <Heart className="w-4 h-4 mr-2" />
                           Submit Application
                         </>
                       )}
                     </Button>
-                  </form>
-                )}
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={nextStep}
+                      disabled={!validateStep(currentStep)}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
