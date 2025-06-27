@@ -10,7 +10,6 @@ import Navbar from "@/components/frontend/navbar"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 import Footer from "@/components/frontend/footer"
 import LiveChatWidget from "@/components/frontend/live-chat-widget"
-import VideoSamplesCarousel from "@/components/frontend/video-samples-carousel"
 import { useRouter } from "next/navigation"
 
 // Update the services array to use correct image extensions
@@ -461,7 +460,7 @@ export default function KiaOraHomepage() {
         </section>
 
         {/* Video Samples Carousel */}
-        <VideoSamplesCarousel />
+        {/* <VideoSamplesCarousel /> */}
 
         {/* Services Section */}
         <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
@@ -477,7 +476,7 @@ export default function KiaOraHomepage() {
                 Our Premium Services
               </h2>
               <p className="text-lg sm:text-xl text-yellow-200 max-w-3xl mx-auto">
-                From shout-outs to live interactions, we offer personalized experiences for every occasion
+                From shout-outs to live interactions, we offer personalised experiences for every occasion
               </p>
             </motion.div>
 

@@ -140,10 +140,9 @@ export default function VideoSamplesCarousel() {
             <Play className="w-4 h-4 mr-2" />
             Video Samples
           </Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">See Our Talent in Action</h2>
           <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-            Watch sample videos from our amazing celebrities and see the quality of personalized messages you can
-            expect.
+            Watch sample videos from our celebrities and social media personalities to see the quality of personalised
+            messages you can expect.
           </p>
         </motion.div>
 
