@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, XCircle, Loader2 } from "lucide-react"
+import Link from "next/link"
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
@@ -23,18 +23,18 @@ export default function VerifyEmailPage() {
     const verifyEmail = async () => {
       try {
         const response = await fetch(`/api/auth/verify-email?token=${token}`)
-        const result = await response.json()
+        const data = await response.json()
 
         if (response.ok) {
           setStatus("success")
-          setMessage(result.message)
+          setMessage(data.message)
         } else {
           setStatus("error")
-          setMessage(result.error)
+          setMessage(data.error || "Verification failed")
         }
       } catch (error) {
         setStatus("error")
-        setMessage("Something went wrong")
+        setMessage("Something went wrong. Please try again.")
       }
     }
 
@@ -42,39 +42,51 @@ export default function VerifyEmailPage() {
   }, [token])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white/10 backdrop-blur-lg border-white/20">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 p-4">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-white">Email Verification</CardTitle>
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Email Verification
+          </CardTitle>
+          <CardDescription>
+            {status === "loading" && "Verifying your email address..."}
+            {status === "success" && "Your email has been verified!"}
+            {status === "error" && "Verification failed"}
+          </CardDescription>
         </CardHeader>
         <CardContent className="text-center space-y-4">
           {status === "loading" && (
-            <>
-              <Loader2 className="h-12 w-12 animate-spin text-purple-400 mx-auto" />
-              <p className="text-white/80">Verifying your email...</p>
-            </>
+            <div className="flex justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+            </div>
           )}
 
           {status === "success" && (
             <>
-              <CheckCircle className="h-12 w-12 text-green-400 mx-auto" />
-              <p className="text-white/80">{message}</p>
-              <Button
-                asChild
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                <Link href="/">Continue to Kia Ora</Link>
+              <div className="flex justify-center">
+                <CheckCircle className="h-16 w-16 text-green-500" />
+              </div>
+              <p className="text-green-600 font-medium">{message}</p>
+              <Button asChild className="w-full">
+                <Link href="/">Continue to Homepage</Link>
               </Button>
             </>
           )}
 
           {status === "error" && (
             <>
-              <XCircle className="h-12 w-12 text-red-400 mx-auto" />
-              <p className="text-white/80">{message}</p>
-              <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
-                <Link href="/">Back to Home</Link>
-              </Button>
+              <div className="flex justify-center">
+                <XCircle className="h-16 w-16 text-red-500" />
+              </div>
+              <p className="text-red-600 font-medium">{message}</p>
+              <div className="space-y-2">
+                <Button asChild variant="outline" className="w-full bg-transparent">
+                  <Link href="/">Back to Homepage</Link>
+                </Button>
+                <Button asChild variant="ghost" className="w-full">
+                  <Link href="/contact">Contact Support</Link>
+                </Button>
+              </div>
             </>
           )}
         </CardContent>

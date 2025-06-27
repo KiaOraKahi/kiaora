@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
+    const { searchParams } = new URL(request.url)
     const token = searchParams.get("token")
 
     if (!token) {
@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
     // Find verification token
     const verificationToken = await prisma.verificationToken.findUnique({
       where: { token },
-      include: { user: true },
     })
 
     if (!verificationToken) {
@@ -24,10 +23,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Token has expired" }, { status: 400 })
     }
 
-    // Update user as verified
+    // Update user verification status
     await prisma.user.update({
-      where: { email: verificationToken.email },
-      data: { isVerified: true },
+      where: { email: verificationToken.email }, // Use 'email' field from your schema
+      data: {
+        isVerified: true,
+        emailVerified: new Date(), // Set the emailVerified timestamp
+      },
     })
 
     // Delete verification token
@@ -35,9 +37,7 @@ export async function GET(req: NextRequest) {
       where: { token },
     })
 
-    return NextResponse.json({
-      message: "Email verified successfully",
-    })
+    return NextResponse.json({ message: "Email verified successfully" }, { status: 200 })
   } catch (error) {
     console.error("Email verification error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

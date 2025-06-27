@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -51,76 +48,70 @@ model User {
 
   accounts Account[]
   sessions Session[]
-  
-  // Fan relationships
-  bookings     Booking[]
-  reviews      Review[]
-  
-  // Celebrity relationships
-  celebrity    Celebrity?
-  
-  // Verification tokens
-  verificationTokens VerificationToken[]
-}
 
-model VerificationToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  type      TokenType
-  expires   DateTime
-  createdAt DateTime @default(now())
-  
-  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+  // Celebrity specific fields
+  celebrity Celebrity?
 
-  @@unique([email, token])
+  // Fan specific fields
+  bookings Booking[]
+  reviews  Review[]
 }
 
 model Celebrity {
   id          String   @id @default(cuid())
   userId      String   @unique
   bio         String?
-  category    String
-  price       Float
-  isActive    Boolean  @default(true)
-  rating      Float    @default(0)
+  category    String?
+  price       Float?
+  rating      Float?   @default(0)
   totalReviews Int     @default(0)
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookings    Booking[]
-  reviews     Review[]
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+  reviews  Review[]
 }
 
 model Booking {
   id          String        @id @default(cuid())
-  fanId       String
+  userId      String
   celebrityId String
   message     String
-  occasion    String
+  occasion    String?
   status      BookingStatus @default(PENDING)
   price       Float
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  fan         User      @relation(fields: [fanId], references: [id])
-  celebrity   Celebrity @relation(fields: [celebrityId], references: [id])
-  review      Review?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  reviews   Review[]
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  bookingId String   @unique
-  fanId     String
+  id          String   @id @default(cuid())
+  userId      String
   celebrityId String
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
+  bookingId   String?
+  rating      Int
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  booking   Booking   @relation(fields: [bookingId], references: [id])
-  fan       User      @relation(fields: [fanId], references: [id])
-  celebrity Celebrity @relation(fields: [celebrityId], references: [id])
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celebrity Celebrity  @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  booking   Booking?   @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+}
+
+model VerificationToken {
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  type       TokenType
+  expires    DateTime
+  createdAt  DateTime  @default(now())
 }
 
 enum Role {
@@ -129,15 +120,15 @@ enum Role {
   ADMIN
 }
 
-enum TokenType {
-  EMAIL_VERIFICATION
-  PASSWORD_RESET
-}
-
 enum BookingStatus {
   PENDING
   ACCEPTED
   COMPLETED
   CANCELLED
   REFUNDED
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
 }

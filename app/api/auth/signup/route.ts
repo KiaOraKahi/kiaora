@@ -5,9 +5,9 @@ import { signUpSchema } from "@/lib/validations/auth"
 import { sendVerificationEmail } from "@/lib/email"
 import crypto from "crypto"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await request.json()
     const { name, email, password, role } = signUpSchema.parse(body)
 
     // Check if user already exists
@@ -33,23 +33,26 @@ export async function POST(req: NextRequest) {
     })
 
     // Generate verification token
-    const token = crypto.randomBytes(32).toString("hex")
+    const verificationToken = crypto.randomBytes(32).toString("hex")
 
     await prisma.verificationToken.create({
       data: {
-        email,
-        token,
-        type: "EMAIL_VERIFICATION",
+        email, // Use 'email' field as per your schema
+        token: verificationToken,
+        type: "EMAIL_VERIFICATION", // Use the TokenType enum
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       },
     })
 
     // Send verification email
-    await sendVerificationEmail(email, token)
+    await sendVerificationEmail(email, verificationToken)
 
-    return NextResponse.json({
-      message: "User created successfully. Please check your email to verify your account.",
-    })
+    return NextResponse.json(
+      {
+        message: "Account created successfully! Check your email to verify your account.",
+      },
+      { status: 201 },
+    )
   } catch (error) {
     console.error("Signup error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

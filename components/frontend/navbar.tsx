@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, LogOut, Settings } from "lucide-react"
+import { Menu, X, Star, User, LogOut, Settings, Crown } from "lucide-react"
 import Link from "next/link"
-import SearchAutocomplete from "@/components/frontend/search-autocomplete"
 import { useSession, signOut } from "next-auth/react"
 import { AuthModal } from "@/components/auth/auth-modal"
+import SearchAutocomplete from "@/components/frontend/search-autocomplete"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin")
   const { data: session, status } = useSession()
 
   useEffect(() => {
@@ -33,16 +34,26 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
-  }
-
   const navItems = [
     { name: "About", href: "/about" },
     { name: "Celebrities", href: "/celebrities" },
     { name: "How It Works", href: "/how-it-works" },
     { name: "Become Talent", href: "/join-celebrity" },
   ]
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" })
+  }
+
+  const handleSignInClick = () => {
+    setAuthModalTab("signin")
+    setShowAuthModal(true)
+  }
+
+  const handleSignUpClick = () => {
+    setAuthModalTab("signup")
+    setShowAuthModal(true)
+  }
 
   return (
     <>
@@ -65,7 +76,7 @@ export default function Navbar() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-lg flex items-center justify-center">
                   <Star className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
@@ -91,7 +102,7 @@ export default function Navbar() {
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center space-x-4">
               <div className="w-64">
-                <SearchAutocomplete placeholder="Search..." className="w-full" />
+                <SearchAutocomplete placeholder="Search celebrities..." className="w-full" />
               </div>
 
               {status === "loading" ? (
@@ -99,47 +110,43 @@ export default function Navbar() {
               ) : session ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10">
                         <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500">
+                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                           {session.user?.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
+                      {session.user?.role === "CELEBRITY" && (
+                        <Crown className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400" />
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-gray-900 border-gray-700" align="end" forceMount>
+                  <DropdownMenuContent
+                    className="w-56 bg-slate-900/95 backdrop-blur-xl border-white/10"
+                    align="end"
+                    forceMount
+                  >
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none text-white">{session.user?.name}</p>
-                        <p className="text-xs leading-none text-gray-400">{session.user?.email}</p>
-                        <p className="text-xs leading-none text-purple-400 capitalize">
-                          {session.user?.role?.toLowerCase()}
-                        </p>
+                        <p className="text-xs leading-none text-white/60">{session.user?.email}</p>
+                        {session.user?.role === "CELEBRITY" && (
+                          <span className="inline-flex items-center gap-1 text-xs text-yellow-400">
+                            <Crown className="w-3 h-3" />
+                            Celebrity
+                          </span>
+                        )}
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-gray-700" />
-                    <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
-                    {session.user?.role === "CELEBRITY" && (
-                      <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800">
-                        <Star className="mr-2 h-4 w-4" />
-                        <span>Celebrity Dashboard</span>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800">
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem className="text-white hover:bg-white/10">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-gray-700" />
-                    <DropdownMenuItem
-                      className="text-gray-300 hover:text-white hover:bg-gray-800"
-                      onClick={handleSignOut}
-                    >
+                    <DropdownMenuItem className="text-white hover:bg-white/10" onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
+                      <span>Sign out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -148,14 +155,14 @@ export default function Navbar() {
                   <Button
                     variant="outline"
                     className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    onClick={() => setShowAuthModal(true)}
+                    onClick={handleSignInClick}
                   >
                     <User className="w-4 h-4 mr-2" />
                     Sign In
                   </Button>
                   <Button
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                    onClick={() => setShowAuthModal(true)}
+                    onClick={handleSignUpClick}
                   >
                     Get Started
                   </Button>
@@ -197,18 +204,24 @@ export default function Navbar() {
               ))}
               <div className="px-4 pt-4 space-y-3 border-t border-white/10">
                 {session ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2 text-white">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                        <span className="text-sm font-bold">{session.user?.name?.charAt(0) || "U"}</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
+                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm">
+                          {session.user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{session.user?.name}</p>
+                        <p className="text-xs text-white/60 truncate">{session.user?.email}</p>
                       </div>
-                      <span className="text-sm font-medium">{session.user?.name}</span>
-                      {session.user?.role === "CELEBRITY" && <Star className="w-4 h-4 text-yellow-400" />}
+                      {session.user?.role === "CELEBRITY" && <Crown className="w-4 h-4 text-yellow-400" />}
                     </div>
                     <Button
-                      variant="ghost"
+                      variant="outline"
+                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
                       onClick={handleSignOut}
-                      className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
@@ -220,7 +233,7 @@ export default function Navbar() {
                       variant="outline"
                       className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
                       onClick={() => {
-                        setShowAuthModal(true)
+                        handleSignInClick()
                         setIsMobileMenuOpen(false)
                       }}
                     >
@@ -230,7 +243,7 @@ export default function Navbar() {
                     <Button
                       className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                       onClick={() => {
-                        setShowAuthModal(true)
+                        handleSignUpClick()
                         setIsMobileMenuOpen(false)
                       }}
                     >
@@ -244,8 +257,7 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Auth Modal */}
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authModalTab} />
     </>
   )
 }

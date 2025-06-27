@@ -3,17 +3,19 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, Search, Users, HelpCircle, LogOut } from "lucide-react"
+import { Menu, X, Star, User, Search, Users, HelpCircle, LogOut, Crown } from "lucide-react"
 import Link from "next/link"
-import SearchAutocomplete from "@/components/frontend/search-autocomplete"
 import { useSession, signOut } from "next-auth/react"
 import { AuthModal } from "@/components/auth/auth-modal"
+import SearchAutocomplete from "@/components/frontend/search-autocomplete"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function MobileNavbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin")
   const { data: session, status } = useSession()
 
   useEffect(() => {
@@ -24,10 +26,6 @@ export default function MobileNavbar() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
-
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
-  }
 
   const navItems = [
     { name: "About", href: "/about", icon: <Star className="w-5 h-5" /> },
@@ -41,6 +39,23 @@ export default function MobileNavbar() {
     setIsMobileMenuOpen(false)
     setShowSearch(false)
   }, [])
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" })
+    setIsMobileMenuOpen(false)
+  }
+
+  const handleSignInClick = () => {
+    setAuthModalTab("signin")
+    setShowAuthModal(true)
+    setIsMobileMenuOpen(false)
+  }
+
+  const handleSignUpClick = () => {
+    setAuthModalTab("signup")
+    setShowAuthModal(true)
+    setIsMobileMenuOpen(false)
+  }
 
   return (
     <>
@@ -58,7 +73,7 @@ export default function MobileNavbar() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-lg flex items-center justify-center">
                 <Star className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
@@ -98,7 +113,7 @@ export default function MobileNavbar() {
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden border-t border-white/10 pt-4 pb-4"
               >
-                <SearchAutocomplete placeholder="Search..." onSearch={() => setShowSearch(false)} />
+                <SearchAutocomplete placeholder="Search celebrities..." onSearch={() => setShowSearch(false)} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -128,7 +143,7 @@ export default function MobileNavbar() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-lg flex items-center justify-center">
                       <Star className="w-5 h-5 text-white" />
                     </div>
                     <span className="text-xl font-bold text-white">Kia Ora Kahi</span>
@@ -142,6 +157,30 @@ export default function MobileNavbar() {
                     <X className="w-5 h-5" />
                   </Button>
                 </div>
+
+                {/* User Section */}
+                {session && (
+                  <div className="mb-6 p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
+                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                          {session.user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{session.user?.name}</p>
+                        <p className="text-xs text-white/60 truncate">{session.user?.email}</p>
+                        {session.user?.role === "CELEBRITY" && (
+                          <span className="inline-flex items-center gap-1 text-xs text-yellow-400 mt-1">
+                            <Crown className="w-3 h-3" />
+                            Celebrity
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Navigation Items */}
                 <div className="space-y-2 mb-8">
@@ -159,49 +198,29 @@ export default function MobileNavbar() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-3">
+                <div className="space-y-3 mb-8">
                   {session ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2 text-white p-3 bg-white/5 rounded-lg">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                          <span className="text-sm font-bold">{session.user?.name?.charAt(0) || "U"}</span>
-                        </div>
-                        <div className="flex-1">
-                          <span className="text-sm font-medium block">{session.user?.name}</span>
-                          <span className="text-xs text-purple-400 capitalize">
-                            {session.user?.role?.toLowerCase()}
-                          </span>
-                        </div>
-                        {session.user?.role === "CELEBRITY" && <Star className="w-4 h-4 text-yellow-400" />}
-                      </div>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
-                        onClick={handleSignOut}
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sign Out
-                      </Button>
-                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
                   ) : (
                     <>
                       <Button
                         variant="outline"
                         className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
-                        onClick={() => {
-                          setShowAuthModal(true)
-                          setIsMobileMenuOpen(false)
-                        }}
+                        onClick={handleSignInClick}
                       >
                         <User className="w-4 h-4 mr-2" />
                         Sign In
                       </Button>
                       <Button
                         className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white touch-manipulation"
-                        onClick={() => {
-                          setShowAuthModal(true)
-                          setIsMobileMenuOpen(false)
-                        }}
+                        onClick={handleSignUpClick}
                       >
                         Get Started
                       </Button>
@@ -210,7 +229,7 @@ export default function MobileNavbar() {
                 </div>
 
                 {/* Quick Links */}
-                <div className="mt-8 pt-6 border-t border-white/10">
+                <div className="pt-6 border-t border-white/10">
                   <h4 className="text-white font-semibold mb-4">Quick Links</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <Link
@@ -249,8 +268,7 @@ export default function MobileNavbar() {
         )}
       </AnimatePresence>
 
-      {/* Auth Modal */}
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authModalTab} />
     </>
   )
 }
