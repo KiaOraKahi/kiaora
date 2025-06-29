@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error("Invalid credentials")
         }
 
         const user = await prisma.user.findUnique({
@@ -29,18 +29,32 @@ export const authOptions: NextAuthOptions = {
           },
         })
 
-        if (!user || !user.password) {
-          return null
+        if (!user) {
+          throw new Error("Invalid credentials")
+        }
+
+        // Handle auto-login after email verification
+        if (credentials.password === "auto-login" && user.isVerified) {
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          }
+        }
+
+        if (!user.password) {
+          throw new Error("Invalid credentials")
+        }
+
+        if (!user.isVerified) {
+          throw new Error("Please verify your email before signing in")
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
 
         if (!isPasswordValid) {
-          return null
-        }
-
-        if (!user.isVerified) {
-          throw new Error("Please verify your email before signing in.")
+          throw new Error("Invalid credentials")
         }
 
         return {

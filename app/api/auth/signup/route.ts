@@ -16,7 +16,36 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
-      return NextResponse.json({ error: "User with this email already exists" }, { status: 400 })
+      if (!existingUser.isVerified) {
+        // User exists but not verified, resend verification email
+        const verificationToken = crypto.randomBytes(32).toString("hex")
+
+        // Delete old verification tokens
+        await prisma.verificationToken.deleteMany({
+          where: { email },
+        })
+
+        // Create new verification token
+        await prisma.verificationToken.create({
+          data: {
+            email,
+            token: verificationToken,
+            type: "EMAIL_VERIFICATION",
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+          },
+        })
+
+        await sendVerificationEmail(email, verificationToken)
+
+        return NextResponse.json(
+          {
+            message: "Account already exists but not verified. We've sent a new verification email.",
+          },
+          { status: 200 },
+        )
+      }
+
+      return NextResponse.json({ error: "User with this email already exists and is verified" }, { status: 400 })
     }
 
     // Hash password
@@ -37,9 +66,9 @@ export async function POST(request: NextRequest) {
 
     await prisma.verificationToken.create({
       data: {
-        email, // Use 'email' field as per your schema
+        email,
         token: verificationToken,
-        type: "EMAIL_VERIFICATION", // Use the TokenType enum
+        type: "EMAIL_VERIFICATION",
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       },
     })
@@ -49,7 +78,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Account created successfully! Check your email to verify your account.",
+        message:
+          "Account created successfully! Check your email to verify your account and get automatically logged in.",
       },
       { status: 201 },
     )

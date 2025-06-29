@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import jwt from "jsonwebtoken"
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,12 +25,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Token has expired" }, { status: 400 })
     }
 
-    // Update user as verified
-    await prisma.user.update({
+    // Update user as verified and get user data
+    const user = await prisma.user.update({
       where: { email: verificationToken.email },
       data: {
         isVerified: true,
         emailVerified: new Date(),
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
       },
     })
 
@@ -38,7 +45,18 @@ export async function GET(request: NextRequest) {
       where: { token },
     })
 
-    return NextResponse.json({ message: "Email verified successfully" })
+    // Create a temporary login token for auto-login
+    const loginToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.NEXTAUTH_SECRET!,
+      { expiresIn: "5m" }, // Short-lived token just for auto-login
+    )
+
+    return NextResponse.json({
+      message: "Email verified successfully",
+      user,
+      loginToken,
+    })
   } catch (error) {
     console.error("Email verification error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
