@@ -25,7 +25,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
-import EnhancedBookingModal from "@/components/frontend/enhanced-booking-modal"
+import EnhancedBookingModal from "@/components/enhanced-booking-modal"
 import VideoPlayer from "@/components/frontend/video-player"
 
 // Extended celebrity data with more details
@@ -207,7 +207,6 @@ export default function CelebrityDetailPage() {
   const [selectedPricing, setSelectedPricing] = useState<"personal" | "business" | "charity">("personal")
   const [isBookingOpen, setIsBookingOpen] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
-  const [selectedVideo, setSelectedVideo] = useState(0)
 
   const [selectedSampleVideo, setSelectedSampleVideo] = useState<any>(null)
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false)
@@ -357,12 +356,13 @@ export default function CelebrityDetailPage() {
                       </option>
                     </select>
                   </div>
+                  {/* Direct Booking Button - No Toast! */}
                   <Button
                     onClick={() => setIsBookingOpen(true)}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 text-lg"
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <MessageCircle className="w-5 h-5 mr-2" />
-                    Book Now
+                    Book Now - ${celebrity.pricing[selectedPricing]}
                   </Button>
                 </div>
               </div>
