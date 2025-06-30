@@ -1,7 +1,7 @@
 "use client"
 
-import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
+import { Elements } from "@stripe/react-stripe-js"
 import type { ReactNode } from "react"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
@@ -21,7 +21,7 @@ export default function StripeProvider({ children, clientSecret }: StripeProvide
         colorBackground: "#1e293b",
         colorText: "#ffffff",
         colorDanger: "#ef4444",
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "Inter, system-ui, sans-serif",
         spacingUnit: "4px",
         borderRadius: "8px",
       },

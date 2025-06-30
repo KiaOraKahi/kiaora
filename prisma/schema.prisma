@@ -55,23 +55,25 @@ model User {
   // Fan specific fields
   bookings Booking[]
   reviews  Review[]
+  orders   Order[]
 }
 
 model Celebrity {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  bio         String?
-  category    String?
-  price       Float?
-  rating      Float?   @default(0)
-  totalReviews Int     @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  bio          String?
+  category     String?
+  price        Float?
+  rating       Float?   @default(0)
+  totalReviews Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings Booking[]
   reviews  Review[]
+  orders   Order[]
 }
 
 model CelebrityApplication {
@@ -127,17 +129,75 @@ model CelebrityApplication {
   @@map("celebrity_applications")
 }
 
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String
+  celebrityId     String
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  currency        String      @default("usd")
+  
+  // Payment Information - Make this unique for webhook lookups
+  paymentIntentId String?     @unique
+  paymentStatus   PaymentStatus @default(PENDING)
+  paidAt          DateTime?
+  
+  // Booking Details
+  recipientName       String
+  occasion           String
+  personalMessage    String    @db.Text
+  specialInstructions String?  @db.Text
+  messageType        String    // personal, business, charity
+  
+  // Contact Information
+  email              String
+  phone              String?
+  
+  // Scheduling
+  scheduledDate      DateTime?
+  scheduledTime      String?
+  
+  // Delivery
+  deliveredAt        DateTime?
+  videoUrl           String?
+  
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celebrity Celebrity  @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+  booking   Booking?
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  type        String  // base, addon, premium
+  name        String
+  description String?
+  quantity    Int     @default(1)
+  unitPrice   Float
+  totalPrice  Float
+  metadata    Json?   // Store additional data like addOnId, premiumType, etc.
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
 model Booking {
   id          String        @id @default(cuid())
+  orderId     String        @unique
   userId      String
   celebrityId String
-  message     String
+  message     String        @db.Text
   occasion    String?
   status      BookingStatus @default(PENDING)
   price       Float
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
   reviews   Review[]
@@ -171,6 +231,24 @@ enum Role {
   FAN
   CELEBRITY
   ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
 }
 
 enum BookingStatus {

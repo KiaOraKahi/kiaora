@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js"
 import { Button } from "@/components/ui/button"
-import { Loader2, CreditCard, Shield } from "lucide-react"
+import { CreditCard, Loader2 } from "lucide-react"
 
 interface PaymentFormProps {
   onSuccess: (paymentIntent: any) => void
@@ -17,7 +17,7 @@ interface PaymentFormProps {
 export default function PaymentForm({ onSuccess, onError, amount, orderNumber }: PaymentFormProps) {
   const stripe = useStripe()
   const elements = useElements()
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -26,34 +26,28 @@ export default function PaymentForm({ onSuccess, onError, amount, orderNumber }:
       return
     }
 
-    setIsProcessing(true)
+    setIsLoading(true)
 
-    try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        redirect: "if_required",
-      })
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/orders/${orderNumber}`,
+      },
+      redirect: "if_required",
+    })
 
-      if (error) {
-        onError(error.message || "Payment failed")
-      } else if (paymentIntent && paymentIntent.status === "succeeded") {
-        onSuccess(paymentIntent)
-      }
-    } catch (err) {
-      onError("An unexpected error occurred")
-    } finally {
-      setIsProcessing(false)
+    if (error) {
+      onError(error.message || "An unexpected error occurred.")
+    } else if (paymentIntent && paymentIntent.status === "succeeded") {
+      onSuccess(paymentIntent)
     }
+
+    setIsLoading(false)
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white/10 rounded-lg p-6">
-        <h5 className="text-white font-semibold mb-4 flex items-center gap-2">
-          <CreditCard className="w-5 h-5" />
-          Payment Details
-        </h5>
-
+      <div className="p-4 bg-white/5 rounded-lg border border-white/10">
         <PaymentElement
           options={{
             layout: "tabs",
@@ -61,37 +55,29 @@ export default function PaymentForm({ onSuccess, onError, amount, orderNumber }:
         />
       </div>
 
-      <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
-        <div className="flex items-center gap-2 text-blue-300 mb-2">
-          <Shield className="w-4 h-4" />
-          <span className="font-semibold">Secure Payment</span>
+      <div className="flex items-center justify-between pt-4 border-t border-white/20">
+        <div className="text-purple-200">
+          <p className="text-sm">Total Amount</p>
+          <p className="text-2xl font-bold text-white">${amount}</p>
         </div>
-        <p className="text-blue-200 text-sm">
-          Your payment information is encrypted and secure. We use Stripe for processing payments.
-        </p>
+        <Button
+          type="submit"
+          disabled={!stripe || isLoading}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-8 py-3"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <CreditCard className="w-4 h-4 mr-2" />
+              Pay ${amount}
+            </>
+          )}
+        </Button>
       </div>
-
-      <Button
-        type="submit"
-        disabled={!stripe || isProcessing}
-        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 h-12"
-      >
-        {isProcessing ? (
-          <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Processing Payment...
-          </>
-        ) : (
-          <>
-            <CreditCard className="w-5 h-5 mr-2" />
-            Pay ${amount} - {orderNumber}
-          </>
-        )}
-      </Button>
-
-      <p className="text-purple-300 text-xs text-center">
-        By completing this payment, you agree to our Terms of Service and Privacy Policy.
-      </p>
     </form>
   )
 }

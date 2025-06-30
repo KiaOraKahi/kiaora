@@ -1,210 +1,93 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { headers } from "next/headers"
 import { stripe } from "@/lib/stripe"
-import { neon } from "@neondatabase/serverless"
-import { sendEmail } from "@/lib/email"
-
-const sql = neon(process.env.DATABASE_URL!)
+import { prisma } from "@/lib/prisma"
+import type Stripe from "stripe"
 
 export async function POST(request: NextRequest) {
-  const body = await request.text()
-  const signature = request.headers.get("stripe-signature")
-
-  if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return NextResponse.json({ error: "Missing signature" }, { status: 400 })
-  }
-
   try {
-    const event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET)
+    const body = await request.text()
+    const headersList = await headers()
+    const signature = headersList.get("stripe-signature")
 
-    switch (event.type) {
-      case "payment_intent.succeeded": {
-        const paymentIntent = event.data.object
-        const { bookingId, orderId, orderNumber } = paymentIntent.metadata
+    if (!signature) {
+      console.log("❌ No Stripe signature found")
+      return NextResponse.json({ error: "No signature" }, { status: 400 })
+    }
 
-        // Update booking status
-        await sql`
-          UPDATE "Booking" 
-          SET status = 'accepted'
-          WHERE id = ${bookingId}
-        `
+    let event: Stripe.Event
 
-        // Update order status
-        await sql`
-          UPDATE "Order" 
-          SET status = 'confirmed', "paymentStatus" = 'paid'
-          WHERE id = ${orderId}
-        `
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
+    } catch (err) {
+      console.log("❌ Webhook signature verification failed:", err)
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
+    }
 
-        // Update payment transaction
-        await sql`
-          UPDATE "PaymentTransaction" 
-          SET status = 'completed'
-          WHERE "stripePaymentIntentId" = ${paymentIntent.id}
-        `
+    console.log("🎣 Webhook received:", event.type)
 
-        // Get booking details for email
-        const bookingDetails = await sql`
-          SELECT 
-            b.*,
-            u.name as "userName",
-            u.email as "userEmail",
-            cu.name as "celebrityName",
-            cu.email as "celebrityEmail"
-          FROM "Booking" b
-          JOIN "User" u ON b."userId" = u.id
-          JOIN "Celebrity" c ON b."celebrityId" = c.id
-          JOIN "User" cu ON c."userId" = cu.id
-          WHERE b.id = ${bookingId}
-        `
+    if (event.type === "payment_intent.succeeded") {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      console.log("✅ Payment succeeded:", paymentIntent.id)
 
-        if (bookingDetails.length > 0) {
-          const booking = bookingDetails[0]
+      try {
+        // Find and update the order
+        const order = await prisma.order.findUnique({
+          where: { paymentIntentId: paymentIntent.id },
+          include: { booking: true },
+        })
 
-          // Send confirmation email to customer
-          await sendEmail({
-            to: booking.userEmail,
-            subject: `Booking Confirmed - ${orderNumber}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-                  <h1 style="color: white; margin: 0;">Booking Confirmed! 🎉</h1>
-                </div>
-                
-                <div style="padding: 30px; background: #f8f9fa;">
-                  <h2 style="color: #333;">Hi ${booking.userName}!</h2>
-                  <p style="color: #666; font-size: 16px;">
-                    Great news! Your booking with <strong>${booking.celebrityName}</strong> has been confirmed and payment received.
-                  </p>
-                  
-                  <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="color: #333; margin-top: 0;">Booking Details</h3>
-                    <p><strong>Order Number:</strong> ${orderNumber}</p>
-                    <p><strong>Celebrity:</strong> ${booking.celebrityName}</p>
-                    <p><strong>Recipient:</strong> ${booking.recipientName}</p>
-                    <p><strong>Occasion:</strong> ${booking.occasion}</p>
-                    <p><strong>Scheduled:</strong> ${new Date(booking.scheduledDate).toLocaleDateString()} at ${booking.scheduledTime}</p>
-                    <p><strong>Amount Paid:</strong> $${booking.price}</p>
-                  </div>
-                  
-                  <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <h4 style="color: #1976d2; margin-top: 0;">What's Next?</h4>
-                    <ul style="color: #666;">
-                      <li>${booking.celebrityName} will be notified of your request</li>
-                      <li>You'll receive updates on your order progress</li>
-                      <li>Your personalized video will be delivered within 7 days</li>
-                      <li>You can track your order status in your dashboard</li>
-                    </ul>
-                  </div>
-                  
-                  <div style="text-align: center; margin: 30px 0;">
-                    <a href="${process.env.NEXTAUTH_URL}/orders/${orderNumber}" 
-                       style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                              color: white; padding: 12px 30px; text-decoration: none; 
-                              border-radius: 6px; display: inline-block;">
-                      Track Your Order
-                    </a>
-                  </div>
-                </div>
-                
-                <div style="background: #333; color: white; padding: 20px; text-align: center;">
-                  <p style="margin: 0;">Thank you for choosing Kia Ora! 🌟</p>
-                </div>
-              </div>
-            `,
+        if (order) {
+          // Update order status
+          await prisma.order.update({
+            where: { paymentIntentId: paymentIntent.id },
+            data: {
+              paymentStatus: "SUCCEEDED",
+              status: "CONFIRMED",
+              paidAt: new Date(),
+            },
           })
 
-          // Send notification to celebrity
-          await sendEmail({
-            to: booking.celebrityEmail,
-            subject: `New Booking Request - ${orderNumber}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-                  <h1 style="color: white; margin: 0;">New Booking Request! 🎬</h1>
-                </div>
-                
-                <div style="padding: 30px; background: #f8f9fa;">
-                  <h2 style="color: #333;">Hi ${booking.celebrityName}!</h2>
-                  <p style="color: #666; font-size: 16px;">
-                    You have a new confirmed booking request. Payment has been received.
-                  </p>
-                  
-                  <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="color: #333; margin-top: 0;">Booking Details</h3>
-                    <p><strong>Order Number:</strong> ${orderNumber}</p>
-                    <p><strong>Customer:</strong> ${booking.userName}</p>
-                    <p><strong>Recipient:</strong> ${booking.recipientName}</p>
-                    <p><strong>Occasion:</strong> ${booking.occasion}</p>
-                    <p><strong>Scheduled:</strong> ${new Date(booking.scheduledDate).toLocaleDateString()} at ${booking.scheduledTime}</p>
-                    <p><strong>Amount:</strong> $${booking.price}</p>
-                  </div>
-                  
-                  <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h4 style="color: #333; margin-top: 0;">Message Request</h4>
-                    <p style="color: #666; font-style: italic;">"${booking.message}"</p>
-                    ${
-                      booking.specialInstructions
-                        ? `
-                      <h5 style="color: #333;">Special Instructions:</h5>
-                      <p style="color: #666; font-style: italic;">"${booking.specialInstructions}"</p>
-                    `
-                        : ""
-                    }
-                  </div>
-                  
-                  <div style="text-align: center; margin: 30px 0;">
-                    <a href="${process.env.NEXTAUTH_URL}/celebrity/dashboard" 
-                       style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                              color: white; padding: 12px 30px; text-decoration: none; 
-                              border-radius: 6px; display: inline-block;">
-                      View in Dashboard
-                    </a>
-                  </div>
-                </div>
-                
-                <div style="background: #333; color: white; padding: 20px; text-align: center;">
-                  <p style="margin: 0;">Please deliver within 7 days. Thank you! 🌟</p>
-                </div>
-              </div>
-            `,
-          })
+          // Update booking status if exists
+          if (order.booking) {
+            await prisma.booking.update({
+              where: { id: order.booking.id },
+              data: { status: "ACCEPTED" },
+            })
+          }
+
+          console.log("✅ Order and booking updated successfully")
+        } else {
+          console.log("⚠️ Order not found for payment intent:", paymentIntent.id)
         }
-
-        break
+      } catch (error) {
+        console.error("❌ Error updating order:", error)
       }
+    }
 
-      case "payment_intent.payment_failed": {
-        const paymentIntent = event.data.object
-        const { bookingId, orderId } = paymentIntent.metadata
+    if (event.type === "payment_intent.payment_failed") {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      console.log("❌ Payment failed:", paymentIntent.id)
 
-        // Update booking status
-        await sql`
-          UPDATE "Booking" 
-          SET status = 'cancelled'
-          WHERE id = ${bookingId}
-        `
+      try {
+        // Update order status to failed
+        await prisma.order.update({
+          where: { paymentIntentId: paymentIntent.id },
+          data: {
+            paymentStatus: "FAILED",
+            status: "CANCELLED",
+          },
+        })
 
-        // Update order status
-        await sql`
-          UPDATE "Order" 
-          SET status = 'failed', "paymentStatus" = 'failed'
-          WHERE id = ${orderId}
-        `
-
-        // Update payment transaction
-        await sql`
-          UPDATE "PaymentTransaction" 
-          SET status = 'failed'
-          WHERE "stripePaymentIntentId" = ${paymentIntent.id}
-        `
-
-        break
+        console.log("✅ Order marked as failed")
+      } catch (error) {
+        console.error("❌ Error updating failed order:", error)
       }
     }
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error("Webhook error:", error)
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 400 })
+    console.error("❌ Webhook error:", error)
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 })
   }
 }

@@ -24,6 +24,8 @@ import {
   Music,
 } from "lucide-react"
 import { format } from "date-fns"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import StripeProvider from "./stripe-provider"
 import PaymentForm from "./payment-form"
 
@@ -85,6 +87,8 @@ const getAvailabilityData = (date: Date) => {
 }
 
 export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: BookingModalProps) {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedSlot, setSelectedSlot] = useState<string>()
@@ -97,15 +101,23 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
   const [clientSecret, setClientSecret] = useState<string>()
   const [orderConfirmed, setOrderConfirmed] = useState(false)
   const [orderNumber, setOrderNumber] = useState<string>()
+  const [paymentError, setPaymentError] = useState<string>("")
 
   const [formData, setFormData] = useState({
     recipientName: "",
     occasion: "",
     personalMessage: "",
     specialInstructions: "",
-    email: "",
+    email: session?.user?.email || "",
     phone: "",
   })
+
+  // Update email when session changes
+  useEffect(() => {
+    if (session?.user?.email) {
+      setFormData((prev) => ({ ...prev, email: session.user.email }))
+    }
+  }, [session])
 
   // Check availability when date changes
   useEffect(() => {
@@ -147,9 +159,17 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
   }
 
   const createPaymentIntent = async () => {
+    if (!session) {
+      setPaymentError("Please sign in to continue with booking")
+      return
+    }
+
     setIsCreatingPayment(true)
+    setPaymentError("")
 
     try {
+      console.log("🔄 Creating payment intent for celebrity:", celebrity)
+
       const totalAmount = calculateTotal()
 
       // Prepare order items
@@ -200,6 +220,13 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
         scheduledTime: selectedSlot,
       }
 
+      console.log("📝 Sending payment request:", {
+        celebrityId: celebrity.id,
+        amount: totalAmount,
+        bookingData,
+        orderItems,
+      })
+
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -212,17 +239,19 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
       })
 
       const data = await response.json()
+      console.log("📨 Payment response:", data)
 
       if (response.ok) {
         setClientSecret(data.clientSecret)
         setOrderNumber(data.orderNumber)
         setCurrentStep(5) // Move to payment step
       } else {
-        throw new Error(data.error || "Failed to create payment")
+        throw new Error(data.error || data.details || "Failed to create payment")
       }
     } catch (error) {
-      console.error("Payment creation error:", error)
-      alert("Failed to create payment. Please try again.")
+      console.error("❌ Payment creation error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to create payment. Please try again."
+      setPaymentError(errorMessage)
     } finally {
       setIsCreatingPayment(false)
     }
@@ -234,7 +263,7 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
   }
 
   const handlePaymentError = (error: string) => {
-    alert(`Payment failed: ${error}`)
+    setPaymentError(`Payment failed: ${error}`)
   }
 
   const resetModal = () => {
@@ -247,12 +276,13 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
     setOrderConfirmed(false)
     setOrderNumber(undefined)
     setClientSecret(undefined)
+    setPaymentError("")
     setFormData({
       recipientName: "",
       occasion: "",
       personalMessage: "",
       specialInstructions: "",
-      email: "",
+      email: session?.user?.email || "",
       phone: "",
     })
   }
@@ -260,6 +290,54 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
   const handleClose = () => {
     onClose()
     setTimeout(resetModal, 300)
+  }
+
+  // Check if user is logged in
+  if (!session) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={handleClose}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-900 border border-white/20 rounded-2xl max-w-md w-full p-8 text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Star className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Sign In Required</h3>
+              <p className="text-purple-200 mb-6">
+                Please sign in to your account to book a personalized message from {celebrity.name}.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => router.push("/auth/signin")}
+                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  onClick={handleClose}
+                  variant="outline"
+                  className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
   }
 
   if (!isOpen) return null
@@ -297,6 +375,17 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
               <X className="w-5 h-5" />
             </Button>
           </div>
+
+          {/* Error Display */}
+          {paymentError && (
+            <div className="mx-6 mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+              <div className="flex items-center gap-2 text-red-300">
+                <AlertCircle className="w-4 h-4" />
+                <span className="font-semibold">Payment Error</span>
+              </div>
+              <p className="text-red-200 text-sm mt-1">{paymentError}</p>
+            </div>
+          )}
 
           {/* Progress Bar */}
           {!orderConfirmed && currentStep < 5 && (
