@@ -41,6 +41,7 @@ import {
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import { useRouter } from "next/navigation"
 
 interface Application {
   id: string
@@ -105,6 +106,8 @@ export default function AdminDashboard() {
   const [reviewStatus, setReviewStatus] = useState("")
   const [reviewNotes, setReviewNotes] = useState("")
   const [updating, setUpdating] = useState(false)
+
+  const router = useRouter()
 
   useEffect(() => {
     fetchApplications()
@@ -268,10 +271,20 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-300">Manage celebrity applications and review submissions</p>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                  Admin Dashboard
+                </h1>
+                <p className="text-gray-300">Manage celebrity applications and review submissions</p>
+              </div>
+              <Button
+                onClick={() => router.push("/admin/applications")}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                View All Applications
+              </Button>
+            </div>
           </motion.div>
 
           {/* Stats Cards */}
@@ -390,7 +403,8 @@ export default function AdminDashboard() {
                         {applications.map((application) => (
                           <TableRow
                             key={application.id}
-                            className="border-gray-700 hover:bg-gray-800/50 transition-colors"
+                            className="border-gray-700 hover:bg-gray-800/50 transition-colors cursor-pointer"
+                            onClick={() => router.push(`/admin/applications/${application.id}`)}
                           >
                             <TableCell className="text-white font-medium">{application.fullName}</TableCell>
                             <TableCell className="text-gray-300">{application.email}</TableCell>
@@ -405,7 +419,10 @@ export default function AdminDashboard() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => setSelectedApplication(application)}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setSelectedApplication(application)
+                                    }}
                                     className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
                                   >
                                     <Eye className="w-4 h-4 mr-2" />

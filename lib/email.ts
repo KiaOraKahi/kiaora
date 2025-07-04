@@ -172,3 +172,294 @@ export async function sendApplicationStatusEmail(
     throw new Error("Failed to send application status email")
   }
 }
+
+// New booking-related email functions
+export async function sendNewBookingNotificationToCelebrity(
+  celebrityEmail: string,
+  celebrityName: string,
+  bookingDetails: {
+    orderNumber: string
+    customerName: string
+    recipientName: string
+    occasion: string
+    amount: number
+    instructions: string
+    deadline: string
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: celebrityEmail,
+      subject: `New Booking Request - ${bookingDetails.orderNumber}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">🎉 New Booking Request!</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Hello ${celebrityName}, you have a new booking request waiting for your response.</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${bookingDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>From:</strong> ${bookingDetails.customerName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>For:</strong> ${bookingDetails.recipientName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Occasion:</strong> ${bookingDetails.occasion}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Amount:</strong> $${bookingDetails.amount.toLocaleString()}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Deadline:</strong> ${new Date(bookingDetails.deadline).toLocaleDateString()}</p>
+            </div>
+            <a href="${process.env.NEXTAUTH_URL}/celebrity-dashboard" style="display: inline-block; background: white; color: #8b5cf6; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Request</a>
+          </div>
+          
+          ${
+            bookingDetails.instructions
+              ? `
+          <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h3 style="color: #333; margin: 0 0 10px 0;">Special Instructions:</h3>
+            <p style="color: #666; margin: 0;">${bookingDetails.instructions}</p>
+          </div>
+          `
+              : ""
+          }
+          
+          <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p>Please respond to this request as soon as possible to maintain your response rate.</p>
+            <p>Log in to your celebrity dashboard to accept or decline this request.</p>
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - New Booking Request
+        
+        Hello ${celebrityName},
+        
+        You have a new booking request:
+        
+        Order: ${bookingDetails.orderNumber}
+        From: ${bookingDetails.customerName}
+        For: ${bookingDetails.recipientName}
+        Occasion: ${bookingDetails.occasion}
+        Amount: $${bookingDetails.amount.toLocaleString()}
+        Deadline: ${new Date(bookingDetails.deadline).toLocaleDateString()}
+        
+        ${bookingDetails.instructions ? `Special Instructions: ${bookingDetails.instructions}` : ""}
+        
+        Please log in to your celebrity dashboard to respond: ${process.env.NEXTAUTH_URL}/celebrity-dashboard
+      `,
+    })
+
+    console.log("✅ New booking notification email sent to celebrity!")
+  } catch (error) {
+    console.error("❌ Failed to send new booking notification email:", error)
+    throw new Error("Failed to send new booking notification email")
+  }
+}
+
+export async function sendBookingConfirmationToCustomer(
+  customerEmail: string,
+  customerName: string,
+  bookingDetails: {
+    orderNumber: string
+    celebrityName: string
+    recipientName: string
+    occasion: string
+    amount: number
+    estimatedDelivery: string
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: customerEmail,
+      subject: `Booking Confirmed - ${bookingDetails.orderNumber}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">🎉 Booking Confirmed!</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Great news ${customerName}! ${bookingDetails.celebrityName} has accepted your booking request.</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${bookingDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Celebrity:</strong> ${bookingDetails.celebrityName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>For:</strong> ${bookingDetails.recipientName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Occasion:</strong> ${bookingDetails.occasion}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Amount:</strong> $${bookingDetails.amount.toLocaleString()}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Expected Delivery:</strong> ${new Date(bookingDetails.estimatedDelivery).toLocaleDateString()}</p>
+            </div>
+            <a href="${process.env.NEXTAUTH_URL}/orders/${bookingDetails.orderNumber}" style="display: inline-block; background: white; color: #10b981; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Track Order</a>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p>Your personalized video message is now being created!</p>
+            <p>You'll receive another email when it's ready for download.</p>
+            <p>Track your order status anytime in your account dashboard.</p>
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - Booking Confirmed
+        
+        Great news ${customerName}!
+        
+        ${bookingDetails.celebrityName} has accepted your booking request.
+        
+        Order: ${bookingDetails.orderNumber}
+        Celebrity: ${bookingDetails.celebrityName}
+        For: ${bookingDetails.recipientName}
+        Occasion: ${bookingDetails.occasion}
+        Amount: $${bookingDetails.amount.toLocaleString()}
+        Expected Delivery: ${new Date(bookingDetails.estimatedDelivery).toLocaleDateString()}
+        
+        Track your order: ${process.env.NEXTAUTH_URL}/orders/${bookingDetails.orderNumber}
+      `,
+    })
+
+    console.log("✅ Booking confirmation email sent to customer!")
+  } catch (error) {
+    console.error("❌ Failed to send booking confirmation email:", error)
+    throw new Error("Failed to send booking confirmation email")
+  }
+}
+
+export async function sendBookingRejectionToCustomer(
+  customerEmail: string,
+  customerName: string,
+  bookingDetails: {
+    orderNumber: string
+    celebrityName: string
+    recipientName: string
+    occasion: string
+    amount: number
+    refundAmount: number
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: customerEmail,
+      subject: `Booking Update - ${bookingDetails.orderNumber}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #8b5cf6 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">Booking Update</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Hello ${customerName}, we have an update regarding your booking request.</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${bookingDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Celebrity:</strong> ${bookingDetails.celebrityName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Status:</strong> Unable to fulfill</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Refund Amount:</strong> $${bookingDetails.refundAmount.toLocaleString()}</p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h3 style="color: #333; margin: 0 0 10px 0;">What happens next?</h3>
+            <ul style="color: #666; margin: 0; padding-left: 20px;">
+              <li>Your payment will be fully refunded within 3-5 business days</li>
+              <li>You can browse other celebrities who might be available</li>
+              <li>Our support team is here to help you find alternatives</li>
+            </ul>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <a href="${process.env.NEXTAUTH_URL}/celebrities" style="display: inline-block; background: #8b5cf6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">Browse Celebrities</a>
+            <a href="${process.env.NEXTAUTH_URL}/contact" style="display: inline-block; background: transparent; color: #8b5cf6; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; border: 2px solid #8b5cf6;">Contact Support</a>
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - Booking Update
+        
+        Hello ${customerName},
+        
+        Unfortunately, ${bookingDetails.celebrityName} is unable to fulfill your booking request for order ${bookingDetails.orderNumber}.
+        
+        Your payment of $${bookingDetails.refundAmount.toLocaleString()} will be fully refunded within 3-5 business days.
+        
+        You can browse other celebrities or contact our support team for assistance.
+        
+        Browse celebrities: ${process.env.NEXTAUTH_URL}/celebrities
+        Contact support: ${process.env.NEXTAUTH_URL}/contact
+      `,
+    })
+
+    console.log("✅ Booking rejection email sent to customer!")
+  } catch (error) {
+    console.error("❌ Failed to send booking rejection email:", error)
+    throw new Error("Failed to send booking rejection email")
+  }
+}
+
+// Send video delivery notification to customer
+export async function sendVideoDeliveryNotification(
+  email: string,
+  customerName: string,
+  orderDetails: {
+    orderNumber: string
+    celebrityName: string
+    recipientName: string
+    occasion: string
+    videoUrl: string
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `🎬 Your video from ${orderDetails.celebrityName} is ready!`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">🎬 Your Video is Ready!</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Exciting news ${customerName}! ${orderDetails.celebrityName} has completed your personalized video message for ${orderDetails.recipientName}!</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${orderDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Celebrity:</strong> ${orderDetails.celebrityName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>For:</strong> ${orderDetails.recipientName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Occasion:</strong> ${orderDetails.occasion}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Status:</strong> ✅ Delivered</p>
+            </div>
+            <a href="${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}" style="display: inline-block; background: white; color: #10b981; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Watch Your Video</a>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p>Your video is now available to watch and download!</p>
+            <p>Share this special moment with ${orderDetails.recipientName}!</p>
+            <p style="font-size: 14px;"><strong>Tip:</strong> You can download the video to save it permanently or share it on social media!</p>
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - Your Video is Ready!
+        
+        Exciting news ${customerName}!
+        
+        ${orderDetails.celebrityName} has completed your personalized video message for ${orderDetails.recipientName}!
+        
+        Order: ${orderDetails.orderNumber}
+        Celebrity: ${orderDetails.celebrityName}
+        For: ${orderDetails.recipientName}
+        Occasion: ${orderDetails.occasion}
+        Status: ✅ Delivered
+        
+        Watch your video: ${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}
+      `,
+    })
+
+    console.log("✅ Video delivery notification email sent successfully!")
+  } catch (error) {
+    console.error("❌ Failed to send video delivery notification email:", error)
+    throw new Error("Failed to send video delivery notification email")
+  }
+}

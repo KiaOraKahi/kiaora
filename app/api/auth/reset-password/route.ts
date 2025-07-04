@@ -3,23 +3,31 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { resetPasswordSchema } from "@/lib/validations/auth"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await request.json()
     const { token, password } = resetPasswordSchema.parse(body)
 
     // Find reset token
     const resetToken = await prisma.verificationToken.findUnique({
       where: { token },
-      include: { user: true },
     })
 
-    if (!resetToken || resetToken.type !== "PASSWORD_RESET") {
+    if (!resetToken) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 })
     }
 
     if (resetToken.expires < new Date()) {
       return NextResponse.json({ error: "Token has expired" }, { status: 400 })
+    }
+
+    // Find user by email from the token
+    const user = await prisma.user.findUnique({
+      where: { email: resetToken.email },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 400 })
     }
 
     // Hash new password
@@ -36,11 +44,9 @@ export async function POST(req: NextRequest) {
       where: { token },
     })
 
-    return NextResponse.json({
-      message: "Password reset successfully",
-    })
+    return NextResponse.json({ message: "Password reset successfully" }, { status: 200 })
   } catch (error) {
-    console.error("Reset password error:", error)
+    console.error("Password reset error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

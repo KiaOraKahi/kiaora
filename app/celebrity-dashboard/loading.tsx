@@ -1,12 +1,11 @@
 "use client"
 
-import { Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
+import { Loader2 } from "lucide-react"
 
 export default function CelebrityDashboardLoading() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      {/* Animated Stars Background */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(100)].map((_, i) => (
           <motion.div
@@ -28,11 +27,9 @@ export default function CelebrityDashboardLoading() {
           />
         ))}
       </div>
-
       <div className="relative z-10 text-center">
-        <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-white mb-2">Loading Dashboard</h2>
-        <p className="text-purple-200">Preparing your celebrity dashboard...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500 mx-auto mb-4" />
+        <p className="text-white">Loading celebrity dashboard...</p>
       </div>
     </div>
   )

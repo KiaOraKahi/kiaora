@@ -1,29 +1,30 @@
 "use client"
 
+import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import { ReviewModal } from "@/components/review-modal"
 import {
-  ArrowLeft,
-  Calendar,
+  Download,
+  Play,
+  Star,
   Clock,
   User,
-  Package,
-  CreditCard,
-  Download,
   MessageSquare,
-  Star,
   CheckCircle,
   AlertCircle,
   Loader2,
-  Play,
+  ArrowLeft,
+  Heart,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
+import { useParams } from "next/navigation"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 
@@ -31,94 +32,148 @@ interface OrderDetails {
   id: string
   orderNumber: string
   status: string
-  paymentStatus: string
   totalAmount: number
   currency: string
+  paymentStatus: string
   createdAt: string
+  deliveredAt: string | null
+  videoUrl: string | null
   recipientName: string
   occasion: string
-  message: string
-  specialInstructions: string
-  scheduledDate: string
-  scheduledTime: string
-  videoUrl: string
-  bookingStatus: string
-  celebrityName: string
-  celebrityImage: string
-  celebrityCategory: string
-  userName: string
-  userEmail: string
-  items: Array<{
+  personalMessage: string
+  specialInstructions: string | null
+  messageType: string
+  email: string
+  phone: string | null
+  scheduledDate: string | null
+  scheduledTime: string | null
+  celebrity: {
     id: string
-    type: string
     name: string
-    description: string
-    quantity: number
-    unitPrice: number
-    totalPrice: number
-  }>
-  transactions: Array<{
+    image: string | null
+    category: string
+    verified: boolean
+  }
+  user: {
     id: string
-    amount: number
-    currency: string
+    name: string
+    email: string
+    image: string | null
+  }
+  booking: {
+    id: string
     status: string
-    paymentMethod: string
-    createdAt: string
-  }>
-}
-
-const statusColors = {
-  pending: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  confirmed: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  in_progress: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-  completed: "bg-green-500/20 text-green-300 border-green-500/30",
-  cancelled: "bg-red-500/20 text-red-300 border-red-500/30",
-  failed: "bg-red-500/20 text-red-300 border-red-500/30",
-}
-
-const paymentStatusColors = {
-  pending: "bg-yellow-500/20 text-yellow-300",
-  paid: "bg-green-500/20 text-green-300",
-  failed: "bg-red-500/20 text-red-300",
-  refunded: "bg-gray-500/20 text-gray-300",
+  } | null
+  hasReviewed: boolean
 }
 
 export default function OrderDetailsPage() {
-  const { data: session, status } = useSession()
   const params = useParams()
-  const orderNumber = params.orderNumber as string
+  const { data: session } = useSession()
+  const orderNumber = params?.orderNumber as string
   const [order, setOrder] = useState<OrderDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [videoLoading, setVideoLoading] = useState(false)
 
   useEffect(() => {
-    if (session && orderNumber) {
+    if (orderNumber) {
       fetchOrderDetails()
     }
-  }, [session, orderNumber])
+  }, [orderNumber])
 
   const fetchOrderDetails = async () => {
     try {
       setLoading(true)
+      setError(null)
+
       const response = await fetch(`/api/orders/${orderNumber}`)
       const data = await response.json()
 
       if (response.ok) {
-        setOrder(data.order)
+        setOrder(data)
       } else {
-        setError(data.error || "Failed to fetch order details")
+        setError(data.error || "Order not found")
       }
-    } catch (err) {
-      setError("An error occurred while fetching order details")
+    } catch (error) {
+      console.error("Error fetching order:", error)
+      setError("Failed to load order details")
     } finally {
       setLoading(false)
     }
   }
 
-  if (status === "loading" || loading) {
+  const handleVideoDownload = async () => {
+    if (!order?.videoUrl) return
+
+    try {
+      setVideoLoading(true)
+      const response = await fetch(order.videoUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${order.orderNumber}-video.mp4`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error("Error downloading video:", error)
+    } finally {
+      setVideoLoading(false)
+    }
+  }
+
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+      case "confirmed":
+        return "bg-blue-500/20 text-blue-300 border-blue-500/30"
+      case "completed":
+        return "bg-green-500/20 text-green-300 border-green-500/30"
+      case "cancelled":
+        return "bg-red-500/20 text-red-300 border-red-500/30"
+      default:
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    }
+  }
+
+  const getPaymentStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+
+    switch (status.toLowerCase()) {
+      case "succeeded":
+        return "bg-green-500/20 text-green-300 border-green-500/30"
+      case "pending":
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+      case "failed":
+        return "bg-red-500/20 text-red-300 border-red-500/30"
+      default:
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    }
+  }
+
+  const formatStatusText = (status: string | undefined) => {
+    if (!status) return "Unknown"
+    return status.charAt(0).toUpperCase() + status.slice(1)
+  }
+
+  const safeFormatDate = (dateString: string | null | undefined, formatStr: string) => {
+    if (!dateString) return "Not available"
+    try {
+      return format(new Date(dateString), formatStr)
+    } catch {
+      return "Invalid date"
+    }
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        {/* Animated Stars Background */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="stars"></div>
           <div className="stars2"></div>
@@ -131,39 +186,26 @@ export default function OrderDetailsPage() {
     )
   }
 
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        {/* Animated Stars Background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="stars"></div>
-          <div className="stars2"></div>
-          <div className="stars3"></div>
-        </div>
-        <div className="relative z-10 text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Please Sign In</h1>
-          <p className="text-purple-200">You need to be signed in to view order details.</p>
-        </div>
-      </div>
-    )
-  }
-
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        {/* Animated Stars Background */}
+      <div className="min-h-screen bg-black relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="stars"></div>
           <div className="stars2"></div>
           <div className="stars3"></div>
         </div>
-        <div className="relative z-10 text-center">
-          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-4">Order Not Found</h1>
-          <p className="text-purple-200 mb-6">{error || "The requested order could not be found."}</p>
-          <Link href="/orders">
-            <Button className="bg-purple-600 hover:bg-purple-700">Back to Orders</Button>
-          </Link>
+        <div className="relative z-10">
+          <Navbar />
+          <div className="container mx-auto px-4 pt-24 pb-12">
+            <div className="text-center">
+              <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <h1 className="text-4xl font-bold text-white mb-4">Order Not Found</h1>
+              <p className="text-purple-200 mb-6">{error || "Order not found"}</p>
+              <Link href="/orders">
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-500">Back to Orders</Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -177,266 +219,316 @@ export default function OrderDetailsPage() {
         <div className="stars2"></div>
         <div className="stars3"></div>
       </div>
+
       <div className="relative z-10">
         <Navbar />
 
-        <div className="container mx-auto px-4 py-8 pt-24">
+        <div className="container mx-auto px-4 pt-24 pb-12">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="mb-8">
             <Link href="/orders">
-              <Button variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+              <Button variant="outline" className="mb-4 bg-white/10 border-white/20 text-white hover:bg-white/20">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Orders
               </Button>
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Order {order.orderNumber}</h1>
-              <p className="text-purple-200">Placed on {format(new Date(order.createdAt), "MMMM d, yyyy")}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-white mb-2">Order Details</h1>
+                <p className="text-purple-200">Order #{order.orderNumber || "Unknown"}</p>
+              </div>
+              <div className="text-right">
+                <Badge className={`text-lg px-4 py-2 ${getStatusColor(order.status)}`}>
+                  {formatStatusText(order.status)}
+                </Badge>
+              </div>
             </div>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Order Status */}
-              <Card className="bg-slate-900 border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-3">
-                    <Package className="w-5 h-5" />
-                    Order Status
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 mb-4">
-                    <Badge className={statusColors[order.status as keyof typeof statusColors]} size="lg">
-                      {order.status.replace("_", " ")}
-                    </Badge>
-                    <Badge
-                      className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}
-                      size="lg"
-                    >
-                      Payment {order.paymentStatus}
-                    </Badge>
-                  </div>
-
-                  {order.status === "completed" && order.videoUrl && (
-                    <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                        <div>
-                          <h4 className="text-green-300 font-semibold">Your video is ready!</h4>
-                          <p className="text-green-200 text-sm">Click below to watch your personalized message</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3 mt-4">
-                        <Button className="bg-green-600 hover:bg-green-700">
-                          <Play className="w-4 h-4 mr-2" />
-                          Watch Video
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="border-green-500/30 text-green-300 hover:bg-green-500/20 bg-transparent"
+              {/* Video Section */}
+              {order.status === "completed" && order.videoUrl && (
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Play className="w-5 h-5" />
+                      Your Video Message
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="relative bg-black rounded-lg overflow-hidden">
+                      <video controls className="w-full h-auto max-h-96" poster="/placeholder.svg?height=400&width=600">
+                        <source src={order.videoUrl} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={handleVideoDownload}
+                        disabled={videoLoading}
+                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      >
+                        {videoLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Downloading...
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-4 h-4 mr-2" />
+                            Download Video
+                          </>
+                        )}
+                      </Button>
+                      {!order.hasReviewed && order.celebrity?.id && (
+                        <ReviewModal
+                          celebrityId={order.celebrity.id}
+                          celebrityName={order.celebrity.name || "Celebrity"}
+                          bookingId={order.booking?.id}
+                          onReviewSubmitted={() => {
+                            setOrder({ ...order, hasReviewed: true })
+                          }}
                         >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </Button>
-                      </div>
+                          <Button
+                            variant="outline"
+                            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          >
+                            <Star className="w-4 h-4 mr-2" />
+                            Leave Review
+                          </Button>
+                        </ReviewModal>
+                      )}
                     </div>
-                  )}
+                    {order.deliveredAt && (
+                      <p className="text-purple-200 text-sm">
+                        Delivered on {safeFormatDate(order.deliveredAt, "MMMM d, yyyy 'at' h:mm a")}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2 text-purple-200">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        Scheduled for {format(new Date(order.scheduledDate), "MMMM d, yyyy")} at {order.scheduledTime}
-                      </span>
+              {/* Order Status */}
+              {order.status !== "completed" && (
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Clock className="w-5 h-5" />
+                      Order Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {order.status === "pending" && (
+                        <div className="flex items-center gap-3 p-4 bg-yellow-500/20 rounded-lg">
+                          <Clock className="w-6 h-6 text-yellow-400" />
+                          <div>
+                            <p className="text-white font-semibold">Waiting for Celebrity Response</p>
+                            <p className="text-yellow-200 text-sm">
+                              {order.celebrity?.name || "The celebrity"} will review your request and respond soon.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {order.status === "confirmed" && (
+                        <div className="flex items-center gap-3 p-4 bg-blue-500/20 rounded-lg">
+                          <CheckCircle className="w-6 h-6 text-blue-400" />
+                          <div>
+                            <p className="text-white font-semibold">Request Accepted!</p>
+                            <p className="text-blue-200 text-sm">
+                              {order.celebrity?.name || "The celebrity"} is working on your video message.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {order.status === "cancelled" && (
+                        <div className="flex items-center gap-3 p-4 bg-red-500/20 rounded-lg">
+                          <AlertCircle className="w-6 h-6 text-red-400" />
+                          <div>
+                            <p className="text-white font-semibold">Request Declined</p>
+                            <p className="text-red-200 text-sm">
+                              Unfortunately, {order.celebrity?.name || "the celebrity"} was unable to fulfill this
+                              request.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 text-purple-200">
-                      <Clock className="w-4 h-4" />
-                      <span>Expected delivery within 7 days</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
-              {/* Celebrity & Message Details */}
-              <Card className="bg-slate-900 border-white/20">
+              {/* Message Details */}
+              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-3">
-                    <Star className="w-5 h-5" />
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5" />
                     Message Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                      {order.celebrityImage ? (
-                        <img
-                          src={order.celebrityImage || "/placeholder.svg"}
-                          alt={order.celebrityName}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-8 h-8 text-white" />
-                      )}
+                <CardContent className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-purple-200 text-sm font-medium">Recipient</Label>
+                      <p className="text-white">{order.recipientName || "Not specified"}</p>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-white">{order.celebrityName}</h3>
-                      <p className="text-purple-200">{order.celebrityCategory}</p>
+                      <Label className="text-purple-200 text-sm font-medium">Occasion</Label>
+                      <p className="text-white">{order.occasion || "Not specified"}</p>
                     </div>
-                  </div>
-
-                  <div className="space-y-4">
                     <div>
-                      <h4 className="text-white font-semibold mb-2">Recipient</h4>
-                      <p className="text-purple-200">{order.recipientName}</p>
+                      <Label className="text-purple-200 text-sm font-medium">Message Type</Label>
+                      <p className="text-white capitalize">{order.messageType || "video"}</p>
                     </div>
-
-                    <div>
-                      <h4 className="text-white font-semibold mb-2">Occasion</h4>
-                      <p className="text-purple-200 capitalize">{order.occasion}</p>
-                    </div>
-
-                    <div>
-                      <h4 className="text-white font-semibold mb-2">Message Request</h4>
-                      <div className="bg-white/10 rounded-lg p-4">
-                        <p className="text-purple-200 italic">"{order.message}"</p>
-                      </div>
-                    </div>
-
-                    {order.specialInstructions && (
+                    {order.scheduledDate && (
                       <div>
-                        <h4 className="text-white font-semibold mb-2">Special Instructions</h4>
-                        <div className="bg-white/10 rounded-lg p-4">
-                          <p className="text-purple-200 italic">"{order.specialInstructions}"</p>
-                        </div>
+                        <Label className="text-purple-200 text-sm font-medium">Scheduled For</Label>
+                        <p className="text-white">
+                          {safeFormatDate(order.scheduledDate, "MMMM d, yyyy")}
+                          {order.scheduledTime && ` at ${order.scheduledTime}`}
+                        </p>
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Order Items */}
-              <Card className="bg-slate-900 border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-3">
-                    <MessageSquare className="w-5 h-5" />
-                    Order Items
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {order.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between py-3 border-b border-white/10 last:border-b-0"
-                      >
-                        <div>
-                          <h4 className="text-white font-medium">{item.name}</h4>
-                          {item.description && <p className="text-purple-200 text-sm">{item.description}</p>}
-                          <p className="text-purple-300 text-xs">Qty: {item.quantity}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-white font-semibold">${item.totalPrice}</p>
-                          {item.quantity > 1 && <p className="text-purple-300 text-xs">${item.unitPrice} each</p>}
-                        </div>
-                      </div>
-                    ))}
+                  <Separator className="bg-white/20" />
+
+                  <div>
+                    <Label className="text-purple-200 text-sm font-medium">Personal Message</Label>
+                    <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
+                      {order.personalMessage || "No message provided"}
+                    </p>
                   </div>
 
-                  <Separator className="my-4 bg-white/20" />
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-white">Total</span>
-                    <span className="text-xl font-bold text-white">${order.totalAmount}</span>
-                  </div>
+                  {order.specialInstructions && (
+                    <div>
+                      <Label className="text-purple-200 text-sm font-medium">Special Instructions</Label>
+                      <p className="text-white bg-white/5 p-3 rounded-lg mt-2">{order.specialInstructions}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Payment Information */}
-              <Card className="bg-slate-900 border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-3">
-                    <CreditCard className="w-5 h-5" />
-                    Payment Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-purple-200">Amount</span>
-                      <span className="text-white font-semibold">${order.totalAmount}</span>
+              {/* Celebrity Info */}
+              {order.celebrity && (
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      Celebrity
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4 mb-4">
+                      <Avatar className="w-16 h-16">
+                        <AvatarImage src={order.celebrity.image || "/placeholder.svg"} />
+                        <AvatarFallback>{(order.celebrity.name || "C").charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold text-white">
+                            {order.celebrity.name || "Unknown Celebrity"}
+                          </h3>
+                          {order.celebrity.verified && <CheckCircle className="w-5 h-5 text-blue-400" />}
+                        </div>
+                        <p className="text-purple-200 text-sm">{order.celebrity.category || "Entertainment"}</p>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-purple-200">Currency</span>
-                      <span className="text-white">{order.currency.toUpperCase()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-purple-200">Status</span>
-                      <Badge className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}>
-                        {order.paymentStatus}
-                      </Badge>
-                    </div>
+                    <Link href={`/celebrities/${order.celebrity.id}`}>
+                      <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                        View Profile
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
 
-                    {order.transactions.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="text-white font-semibold mb-2">Transaction History</h4>
-                        {order.transactions.map((transaction) => (
-                          <div key={transaction.id} className="bg-white/10 rounded-lg p-3 mb-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-purple-200 text-sm">
-                                {format(new Date(transaction.createdAt), "MMM d, yyyy HH:mm")}
-                              </span>
-                              <Badge
-                                className={paymentStatusColors[transaction.status as keyof typeof paymentStatusColors]}
-                                size="sm"
-                              >
-                                {transaction.status}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center mt-1">
-                              <span className="text-white font-medium">${transaction.amount}</span>
-                              {transaction.paymentMethod && (
-                                <span className="text-purple-300 text-xs">{transaction.paymentMethod}</span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+              {/* Order Summary */}
+              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                <CardHeader>
+                  <CardTitle className="text-white">Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-purple-200">Order Number</span>
+                    <span className="text-white font-mono">{order.orderNumber || "Unknown"}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-purple-200">Order Date</span>
+                    <span className="text-white">{safeFormatDate(order.createdAt, "MMM d, yyyy")}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-purple-200">Total Amount</span>
+                    <span className="text-white font-semibold">
+                      ${(order.totalAmount || 0).toLocaleString()} {(order.currency || "USD").toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-purple-200">Payment Status</span>
+                    <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                      {formatStatusText(order.paymentStatus)}
+                    </Badge>
+                  </div>
+
+                  <Separator className="bg-white/20" />
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-purple-200">Contact Email</span>
+                      <span className="text-white text-sm">{order.email || "Not provided"}</span>
+                    </div>
+                    {order.phone && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-purple-200">Phone</span>
+                        <span className="text-white text-sm">{order.phone}</span>
                       </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Contact Support */}
-              <Card className="bg-slate-900 border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white">Need Help?</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-purple-200 text-sm mb-4">
-                    Have questions about your order? Our support team is here to help.
-                  </p>
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+              {/* Actions */}
+              {order.status === "completed" && !order.hasReviewed && order.celebrity?.id && (
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  <CardHeader>
+                    <CardTitle className="text-white">Share Your Experience</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-purple-200 text-sm mb-4">
+                      Help others by sharing your experience with {order.celebrity.name || "this celebrity"}.
+                    </p>
+                    <ReviewModal
+                      celebrityId={order.celebrity.id}
+                      celebrityName={order.celebrity.name || "Celebrity"}
+                      bookingId={order.booking?.id}
+                      onReviewSubmitted={() => {
+                        setOrder({ ...order, hasReviewed: true })
+                      }}
                     >
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Contact Support
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    >
-                      View FAQ
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                      <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                        <Star className="w-4 h-4 mr-2" />
+                        Leave a Review
+                      </Button>
+                    </ReviewModal>
+                  </CardContent>
+                </Card>
+              )}
+
+              {order.hasReviewed && (
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 text-green-400">
+                      <Heart className="w-5 h-5" />
+                      <span className="font-medium">Thank you for your review!</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>

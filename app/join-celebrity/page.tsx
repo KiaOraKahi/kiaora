@@ -1,132 +1,39 @@
 "use client"
+
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Progress } from "@/components/ui/progress"
+import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  DollarSign,
-  Clock,
-  Users,
-  Shield,
-  CheckCircle,
-  ArrowRight,
-  Sparkles,
   Upload,
+  Check,
+  ArrowRight,
+  ArrowLeft,
   User,
   Briefcase,
-  Camera,
+  DollarSign,
   FileText,
-  Globe,
+  Crown,
+  Zap,
+  Shield,
+  TrendingUp,
+  Camera,
+  BadgeIcon as IdCard,
   Award,
-  Heart,
-  ChevronLeft,
-  ChevronRight,
+  Loader2,
+  CheckCircle,
 } from "lucide-react"
+import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
-import { toast } from "sonner"
 
-const benefits = [
-  {
-    icon: <DollarSign className="w-8 h-8" />,
-    title: "Earn Extra Income",
-    description: "Set your own rates and earn money from your fanbase",
-    color: "from-green-500 to-emerald-500",
-    details: ["Keep 80% of your earnings", "Weekly payouts", "No hidden fees", "Transparent pricing"],
-  },
-  {
-    icon: <Users className="w-8 h-8" />,
-    title: "Connect with Fans",
-    description: "Build deeper relationships with your audience",
-    color: "from-blue-500 to-cyan-500",
-    details: ["Direct fan interaction", "Personalised messages", "Global reach", "Meaningful connections"],
-  },
-  {
-    icon: <Clock className="w-8 h-8" />,
-    title: "Flexible Schedule",
-    description: "Work on your own time and terms",
-    color: "from-purple-500 to-pink-500",
-    details: ["Set your availability", "Choose request types", "Work from anywhere", "No minimum commitments"],
-  },
-  {
-    icon: <Shield className="w-8 h-8" />,
-    title: "Safe & Secure",
-    description: "Protected platform with verified users",
-    color: "from-orange-500 to-red-500",
-    details: ["Verified user base", "Content moderation", "Secure payments", "Privacy protection"],
-  },
-]
-
-const requirements = [
-  "Verified social media presence with 10K+ followers",
-  "Professional experience in entertainment, sports, or business",
-  "Ability to create high-quality video content",
-  "Commitment to responding to requests within stated timeframes",
-  "Agreement to platform terms and community guidelines",
-]
-
-const steps = [
-  {
-    step: 1,
-    title: "Personal Information",
-    description: "Basic details and contact information",
-    icon: <User className="w-6 h-6" />,
-  },
-  {
-    step: 2,
-    title: "Professional Details",
-    description: "Career background and achievements",
-    icon: <Briefcase className="w-6 h-6" />,
-  },
-  {
-    step: 3,
-    title: "Social Media & Pricing",
-    description: "Online presence and rate setting",
-    icon: <Globe className="w-6 h-6" />,
-  },
-  {
-    step: 4,
-    title: "Documents & Verification",
-    description: "Upload required documents",
-    icon: <FileText className="w-6 h-6" />,
-  },
-]
-
-const categories = [
-  "Actor/Actress",
-  "Musician/Artist",
-  "Athlete",
-  "Social Media Influencer",
-  "Comedian",
-  "Author/Writer",
-  "Business Leader",
-  "Reality TV Star",
-  "Model",
-  "Chef",
-  "Fitness Trainer",
-  "Other",
-]
-
-const languages = [
-  "English",
-  "Spanish",
-  "French",
-  "German",
-  "Italian",
-  "Portuguese",
-  "Chinese",
-  "Japanese",
-  "Korean",
-  "Arabic",
-  "Hindi",
-  "Other",
-]
-
-interface ApplicationData {
+interface FormData {
   // Personal Information
   fullName: string
   email: string
@@ -161,18 +68,67 @@ interface ApplicationData {
   motivation: string
 
   // Documents
-  profilePhoto: File | null
-  idDocument: File | null
-  verificationDocument: File | null
+  hasProfilePhoto: boolean
+  hasIdDocument: boolean
+  hasVerificationDocument: boolean
+  profilePhotoUrl?: string
+  idDocumentUrl?: string
+  verificationDocumentUrl?: string
 }
 
+interface UploadedFile {
+  filename: string
+  url: string
+  type: string
+  size: number
+}
+
+const steps = [
+  { id: 1, title: "Personal Info", icon: User },
+  { id: 2, title: "Professional", icon: Briefcase },
+  { id: 3, title: "Social & Pricing", icon: DollarSign },
+  { id: 4, title: "Documents", icon: FileText },
+]
+
+const categories = [
+  "Actor/Actress",
+  "Musician/Singer",
+  "Athlete",
+  "Influencer",
+  "Comedian",
+  "Author/Writer",
+  "Chef",
+  "Entrepreneur",
+  "TV Personality",
+  "Model",
+  "Other",
+]
+
+const languages = [
+  "English",
+  "Spanish",
+  "French",
+  "German",
+  "Italian",
+  "Portuguese",
+  "Chinese",
+  "Japanese",
+  "Korean",
+  "Arabic",
+  "Hindi",
+  "Other",
+]
+
+const followerRanges = ["1K - 10K", "10K - 50K", "50K - 100K", "100K - 500K", "500K - 1M", "1M - 5M", "5M+"]
+
 export default function JoinCelebrityPage() {
-  const [currentStep, setCurrentStep] = useState(0)
+  const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [uploadingFiles, setUploadingFiles] = useState<{ [key: string]: boolean }>({})
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile>>({})
+  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({})
 
-  const [formData, setFormData] = useState<ApplicationData>({
+  const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
     phone: "",
@@ -196,18 +152,21 @@ export default function JoinCelebrityPage() {
     availability: "",
     specialRequests: "",
     motivation: "",
-    profilePhoto: null,
-    idDocument: null,
-    verificationDocument: null,
+    hasProfilePhoto: false,
+    hasIdDocument: false,
+    hasVerificationDocument: false,
+    profilePhotoUrl: undefined,
+    idDocumentUrl: undefined,
+    verificationDocumentUrl: undefined,
   })
 
-  const handleInputChange = (field: string, value: any) => {
+  const updateFormData = (field: string, value: any) => {
     if (field.includes(".")) {
       const [parent, child] = field.split(".")
       setFormData((prev) => ({
         ...prev,
         [parent]: {
-          ...(prev as any)[parent],
+          ...prev[parent as keyof FormData],
           [child]: value,
         },
       }))
@@ -216,40 +175,40 @@ export default function JoinCelebrityPage() {
     }
   }
 
-  const handleLanguageToggle = (language: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      languages: prev.languages.includes(language)
-        ? prev.languages.filter((l) => l !== language)
-        : [...prev.languages, language],
-    }))
-  }
-
   const handleFileUpload = async (file: File, type: string) => {
-    if (!file) return
-
     setUploadingFiles((prev) => ({ ...prev, [type]: true }))
 
     try {
-      const formDataUpload = new FormData()
-      formDataUpload.append("file", file)
-      formDataUpload.append("type", type)
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", type)
 
       const response = await fetch("/api/upload", {
         method: "POST",
-        body: formDataUpload,
+        body: formData,
       })
 
       const result = await response.json()
 
       if (response.ok) {
-        setFormData((prev) => ({ ...prev, [type]: file }))
-        toast.success(`${type.replace(/([A-Z])/g, " $1").toLowerCase()} uploaded successfully!`)
+        setUploadedFiles((prev) => ({ ...prev, [type]: result }))
+        updateFormData(
+          type === "profile" ? "hasProfilePhoto" : type === "id" ? "hasIdDocument" : "hasVerificationDocument",
+          true,
+        )
+        // Store the actual URL
+        if (type === "profile") {
+          updateFormData("profilePhotoUrl", result.url)
+        } else if (type === "id") {
+          updateFormData("idDocumentUrl", result.url)
+        } else if (type === "verification") {
+          updateFormData("verificationDocumentUrl", result.url)
+        }
+        toast.success(`${type} uploaded successfully!`)
       } else {
-        toast.error(result.error || "Upload failed. Please try again.")
+        toast.error(result.error || "Upload failed")
       }
     } catch (error) {
-      console.error("Upload error:", error)
       toast.error("Upload failed. Please try again.")
     } finally {
       setUploadingFiles((prev) => ({ ...prev, [type]: false }))
@@ -258,16 +217,16 @@ export default function JoinCelebrityPage() {
 
   const validateStep = (step: number): boolean => {
     switch (step) {
-      case 0:
-        return !!(formData.fullName && formData.email && formData.phone && formData.dateOfBirth && formData.nationality)
       case 1:
+        return !!(formData.fullName && formData.email && formData.phone && formData.dateOfBirth && formData.nationality)
+      case 2:
         return !!(
           formData.profession &&
           formData.category &&
           formData.experience.length >= 50 &&
           formData.achievements.length >= 50
         )
-      case 2:
+      case 3:
         return !!(
           formData.followerCount &&
           formData.basePrice >= 10 &&
@@ -276,8 +235,8 @@ export default function JoinCelebrityPage() {
           formData.availability &&
           formData.motivation.length >= 50
         )
-      case 3:
-        return !!(formData.profilePhoto && formData.idDocument && formData.verificationDocument)
+      case 4:
+        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasVerificationDocument
       default:
         return false
     }
@@ -285,18 +244,18 @@ export default function JoinCelebrityPage() {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
+      setCurrentStep((prev) => Math.min(prev + 1, 4))
     } else {
-      toast.error("Please fill in all required fields before continuing.")
+      toast.error("Please complete all required fields before proceeding.")
     }
   }
 
   const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0))
+    setCurrentStep((prev) => Math.max(prev - 1, 1))
   }
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) {
+    if (!validateStep(4)) {
       toast.error("Please complete all required fields.")
       return
     }
@@ -304,17 +263,10 @@ export default function JoinCelebrityPage() {
     setIsSubmitting(true)
 
     try {
-      const applicationData = {
-        ...formData,
-        hasProfilePhoto: !!formData.profilePhoto,
-        hasIdDocument: !!formData.idDocument,
-        hasVerificationDocument: !!formData.verificationDocument,
-      }
-
       const response = await fetch("/api/celebrity/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(applicationData),
+        body: JSON.stringify(formData),
       })
 
       const result = await response.json()
@@ -323,778 +275,879 @@ export default function JoinCelebrityPage() {
         setIsSubmitted(true)
         toast.success("Application submitted successfully!")
       } else {
-        toast.error(result.error || "Something went wrong")
+        toast.error(result.error || "Submission failed")
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Submission failed. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <User className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">Personal Information</h3>
-              <p className="text-purple-200">Let's start with your basic details</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-white mb-2 block">Full Name *</Label>
-                <Input
-                  value={formData.fullName}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                  placeholder="Your full legal name"
-                />
-              </div>
-              <div>
-                <Label className="text-white mb-2 block">Email Address *</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                  placeholder="your@email.com"
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-white mb-2 block">Phone Number *</Label>
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-              <div>
-                <Label className="text-white mb-2 block">Date of Birth *</Label>
-                <Input
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">Nationality *</Label>
-              <Input
-                value={formData.nationality}
-                onChange={(e) => handleInputChange("nationality", e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                placeholder="Your nationality"
-              />
-            </div>
-          </div>
-        )
-
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <Briefcase className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">Professional Details</h3>
-              <p className="text-purple-200">Tell us about your career and achievements</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-white mb-2 block">Profession *</Label>
-                <Input
-                  value={formData.profession}
-                  onChange={(e) => handleInputChange("profession", e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                  placeholder="e.g., Actor, Musician, Athlete"
-                />
-              </div>
-              <div>
-                <Label className="text-white mb-2 block">Category *</Label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => handleInputChange("category", e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
-                >
-                  <option value="" className="bg-slate-800">
-                    Select your category
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category} value={category} className="bg-slate-800">
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">Professional Experience * (minimum 50 characters)</Label>
-              <Textarea
-                rows={4}
-                value={formData.experience}
-                onChange={(e) => handleInputChange("experience", e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
-                placeholder="Describe your professional background, career highlights, and relevant experience..."
-              />
-              <p className="text-sm text-purple-300 mt-1">{formData.experience.length}/50 characters</p>
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">Notable Achievements * (minimum 50 characters)</Label>
-              <Textarea
-                rows={4}
-                value={formData.achievements}
-                onChange={(e) => handleInputChange("achievements", e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
-                placeholder="List your awards, recognitions, major projects, or career milestones..."
-              />
-              <p className="text-sm text-purple-300 mt-1">{formData.achievements.length}/50 characters</p>
-            </div>
-          </div>
-        )
-
-      case 2:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <Globe className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">Social Media & Pricing</h3>
-              <p className="text-purple-200">Your online presence and rates</p>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-white">Social Media Profiles</h4>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-white mb-2 block">Instagram</Label>
-                  <Input
-                    value={formData.socialMedia.instagram}
-                    onChange={(e) => handleInputChange("socialMedia.instagram", e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                    placeholder="@username or profile URL"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white mb-2 block">Twitter/X</Label>
-                  <Input
-                    value={formData.socialMedia.twitter}
-                    onChange={(e) => handleInputChange("socialMedia.twitter", e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                    placeholder="@username or profile URL"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white mb-2 block">TikTok</Label>
-                  <Input
-                    value={formData.socialMedia.tiktok}
-                    onChange={(e) => handleInputChange("socialMedia.tiktok", e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                    placeholder="@username or profile URL"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white mb-2 block">YouTube</Label>
-                  <Input
-                    value={formData.socialMedia.youtube}
-                    onChange={(e) => handleInputChange("socialMedia.youtube", e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                    placeholder="Channel URL"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label className="text-white mb-2 block">Other Platform</Label>
-                <Input
-                  value={formData.socialMedia.other}
-                  onChange={(e) => handleInputChange("socialMedia.other", e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                  placeholder="Any other social media platform"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">Total Follower Count *</Label>
-              <select
-                value={formData.followerCount}
-                onChange={(e) => handleInputChange("followerCount", e.target.value)}
-                className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
-              >
-                <option value="" className="bg-slate-800">
-                  Select follower range
-                </option>
-                <option value="10k-50k" className="bg-slate-800">
-                  10K - 50K
-                </option>
-                <option value="50k-100k" className="bg-slate-800">
-                  50K - 100K
-                </option>
-                <option value="100k-500k" className="bg-slate-800">
-                  100K - 500K
-                </option>
-                <option value="500k-1m" className="bg-slate-800">
-                  500K - 1M
-                </option>
-                <option value="1m+" className="bg-slate-800">
-                  1M+
-                </option>
-              </select>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-white">Pricing (USD)</h4>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <Label className="text-white mb-2 block">Base Price * (minimum $10)</Label>
-                  <Input
-                    type="number"
-                    min="10"
-                    value={formData.basePrice}
-                    onChange={(e) => handleInputChange("basePrice", Number(e.target.value))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                    placeholder="50"
-                  />
-                  <p className="text-sm text-purple-300 mt-1">Standard video message price</p>
-                </div>
-                <div>
-                  <Label className="text-white mb-2 block">Rush Price * (24hr delivery)</Label>
-                  <Input
-                    type="number"
-                    min="10"
-                    value={formData.rushPrice}
-                    onChange={(e) => handleInputChange("rushPrice", Number(e.target.value))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                    placeholder="100"
-                  />
-                  <p className="text-sm text-purple-300 mt-1">Rush delivery premium price</p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">Languages Spoken * (select all that apply)</Label>
-              <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                {languages.map((language) => (
-                  <Button
-                    key={language}
-                    type="button"
-                    variant={formData.languages.includes(language) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleLanguageToggle(language)}
-                    className={
-                      formData.languages.includes(language)
-                        ? "bg-purple-600 hover:bg-purple-700"
-                        : "border-white/20 text-white hover:bg-white/10"
-                    }
-                  >
-                    {language}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">Availability *</Label>
-              <select
-                value={formData.availability}
-                onChange={(e) => handleInputChange("availability", e.target.value)}
-                className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
-              >
-                <option value="" className="bg-slate-800">
-                  Select your availability
-                </option>
-                <option value="1-3 days" className="bg-slate-800">
-                  1-3 days
-                </option>
-                <option value="3-7 days" className="bg-slate-800">
-                  3-7 days
-                </option>
-                <option value="1-2 weeks" className="bg-slate-800">
-                  1-2 weeks
-                </option>
-                <option value="Flexible" className="bg-slate-800">
-                  Flexible
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">Special Requests (optional)</Label>
-              <Textarea
-                rows={3}
-                value={formData.specialRequests}
-                onChange={(e) => handleInputChange("specialRequests", e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
-                placeholder="Any special requirements or limitations for video requests..."
-              />
-            </div>
-
-            <div>
-              <Label className="text-white mb-2 block">
-                Why do you want to join Kia Ora? * (minimum 50 characters)
-              </Label>
-              <Textarea
-                rows={3}
-                value={formData.motivation}
-                onChange={(e) => handleInputChange("motivation", e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500 resize-none"
-                placeholder="Tell us why you're interested in connecting with fans through personalised messages..."
-              />
-              <p className="text-sm text-purple-300 mt-1">{formData.motivation.length}/50 characters</p>
-            </div>
-          </div>
-        )
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <FileText className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">Documents & Verification</h3>
-              <p className="text-purple-200">Upload required documents for verification</p>
-            </div>
-
-            <div className="space-y-6">
-              <div className="p-6 bg-white/5 border border-white/20 rounded-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <Camera className="w-6 h-6 text-purple-400" />
-                  <h4 className="text-lg font-semibold text-white">Profile Photo *</h4>
-                </div>
-                <p className="text-purple-200 mb-4">
-                  High-quality headshot that will be used on your profile (JPG, PNG, or WebP, max 5MB)
-                </p>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleFileUpload(file, "profilePhoto")
-                    }}
-                    className="hidden"
-                    id="profile-photo"
-                  />
-                  <label htmlFor="profile-photo" className="cursor-pointer">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                      disabled={uploadingFiles.profilePhoto}
-                      asChild
-                    >
-                      <span>
-                        {uploadingFiles.profilePhoto ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Choose File
-                          </>
-                        )}
-                      </span>
-                    </Button>
-                  </label>
-                  {formData.profilePhoto && (
-                    <div className="flex items-center gap-2 text-green-400">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm">{formData.profilePhoto.name}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-6 bg-white/5 border border-white/20 rounded-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <FileText className="w-6 h-6 text-purple-400" />
-                  <h4 className="text-lg font-semibold text-white">Government ID *</h4>
-                </div>
-                <p className="text-purple-200 mb-4">
-                  Valid government-issued photo ID (driver's license, passport, etc.) for identity verification
-                </p>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleFileUpload(file, "idDocument")
-                    }}
-                    className="hidden"
-                    id="id-document"
-                  />
-                  <label htmlFor="id-document" className="cursor-pointer">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                      disabled={uploadingFiles.idDocument}
-                      asChild
-                    >
-                      <span>
-                        {uploadingFiles.idDocument ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Choose File
-                          </>
-                        )}
-                      </span>
-                    </Button>
-                  </label>
-                  {formData.idDocument && (
-                    <div className="flex items-center gap-2 text-green-400">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm">{formData.idDocument.name}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-6 bg-white/5 border border-white/20 rounded-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <Award className="w-6 h-6 text-purple-400" />
-                  <h4 className="text-lg font-semibold text-white">Verification Document *</h4>
-                </div>
-                <p className="text-purple-200 mb-4">
-                  Document proving your professional status (press kit, agency contract, verified social media
-                  screenshot, etc.)
-                </p>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleFileUpload(file, "verificationDocument")
-                    }}
-                    className="hidden"
-                    id="verification-document"
-                  />
-                  <label htmlFor="verification-document" className="cursor-pointer">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                      disabled={uploadingFiles.verificationDocument}
-                      asChild
-                    >
-                      <span>
-                        {uploadingFiles.verificationDocument ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Choose File
-                          </>
-                        )}
-                      </span>
-                    </Button>
-                  </label>
-                  {formData.verificationDocument && (
-                    <div className="flex items-center gap-2 text-green-400">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm">{formData.verificationDocument.name}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-              <p className="text-sm text-purple-200">
-                <Shield className="w-4 h-4 inline mr-2" />
-                All documents are securely stored and used only for verification purposes. Your privacy is our priority.
-              </p>
-            </div>
-          </div>
-        )
-
-      default:
-        return null
-    }
-  }
+  const progress = (currentStep / 4) * 100
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="starfield">
-          {Array.from({ length: 50 }).map((_, i) => (
-            <div
+      <div className="min-h-screen bg-black relative overflow-hidden">
+        <Navbar />
+
+        {/* Starfield Background */}
+        <div className="absolute inset-0">
+          {[...Array(100)].map((_, i) => (
+            <motion.div
               key={i}
-              className={`star ${i % 10 === 0 ? "diamond" : i % 7 === 0 ? "sapphire" : ""}`}
+              className="absolute w-1 h-1 bg-white rounded-full opacity-60"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 3 + 1}px`,
-                height: `${Math.random() * 3 + 1}px`,
-                animationDelay: `${Math.random() * 4}s`,
+              }}
+              animate={{
+                opacity: [0.3, 1, 0.3],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 2 + Math.random() * 2,
+                repeat: Number.POSITIVE_INFINITY,
+                delay: Math.random() * 2,
               }}
             />
           ))}
         </div>
-        <Navbar />
-        <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-2xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                <CardContent className="p-12">
-                  <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-6" />
-                  <h1 className="text-3xl font-bold text-white mb-4">Application Submitted!</h1>
-                  <p className="text-purple-200 mb-6">
-                    Thank you for your interest in joining Kia Ora as talent. We've received your application and will
-                    review it within 5-7 business days.
-                  </p>
-                  <p className="text-purple-200 mb-8">
-                    You'll receive an email notification once we've completed our review process.
-                  </p>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen p-4 pt-24">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Card className="bg-black/40 backdrop-blur-xl border-purple-500/30 shadow-2xl shadow-purple-500/20">
+              <CardContent className="p-12">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6"
+                >
+                  <CheckCircle className="w-10 h-10 text-white" />
+                </motion.div>
+
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-3xl font-bold text-white mb-4"
+                >
+                  Application Submitted Successfully! 🎉
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-gray-300 text-lg mb-8"
+                >
+                  Thank you for applying to become talent on Kia Ora Kahi! Our team will review your application within
+                  5-7 business days and get back to you via email.
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="space-y-4"
+                >
+                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                    <h3 className="text-white font-semibold mb-2">What happens next?</h3>
+                    <ul className="text-gray-300 text-sm space-y-1">
+                      <li>• Our team reviews your application and documents</li>
+                      <li>• We may contact you for additional information</li>
+                      <li>• Upon approval, we'll help you set up your profile</li>
+                      <li>• You'll receive onboarding materials and guidelines</li>
+                    </ul>
+                  </div>
+
                   <Button
                     onClick={() => (window.location.href = "/")}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3"
                   >
-                    Back to Home
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    Return to Home
                   </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
+
         <Footer />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="starfield">
-        {Array.from({ length: 50 }).map((_, i) => (
-          <div
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      <Navbar />
+
+      {/* Starfield Background */}
+      <div className="absolute inset-0">
+        {[...Array(150)].map((_, i) => (
+          <motion.div
             key={i}
-            className={`star ${i % 10 === 0 ? "diamond" : i % 7 === 0 ? "sapphire" : ""}`}
+            className={`absolute rounded-full ${
+              i % 10 === 0 ? "w-2 h-2 bg-purple-400" : i % 15 === 0 ? "w-1.5 h-1.5 bg-pink-400" : "w-1 h-1 bg-white"
+            }`}
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 3 + 1}px`,
-              height: `${Math.random() * 3 + 1}px`,
-              animationDelay: `${Math.random() * 4}s`,
+            }}
+            animate={{
+              opacity: [0.3, 1, 0.3],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 2 + Math.random() * 3,
+              repeat: Number.POSITIVE_INFINITY,
+              delay: Math.random() * 2,
             }}
           />
         ))}
       </div>
-      <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 z-10">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Join Our Platform
-            </Badge>
-            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6">
-              Become Kia Ora Talent
+      <div className="relative z-10 pt-24 pb-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+              Become Talent
             </h1>
-            <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
-              Join thousands of celebrities earning extra income while connecting with fans through personalised video
-              messages.
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              Join thousands of celebrities and creators earning money through personalized video messages
             </p>
           </motion.div>
-        </div>
-      </section>
 
-      {/* Benefits Section - No heading/subheading */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={benefit.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg h-full">
-                  <CardContent className="p-6 text-center">
+          {/* Progress Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8"
+          >
+            <div className="flex items-center justify-between mb-4">
+              {steps.map((step, index) => {
+                const Icon = step.icon
+                const isActive = currentStep === step.id
+                const isCompleted = currentStep > step.id
+
+                return (
+                  <div key={step.id} className="flex items-center">
                     <div
-                      className={`w-16 h-16 rounded-full bg-gradient-to-r ${benefit.color} flex items-center justify-center mx-auto mb-4`}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                        isCompleted
+                          ? "bg-purple-600 border-purple-600 text-white"
+                          : isActive
+                            ? "bg-purple-600/20 border-purple-500 text-purple-400"
+                            : "bg-gray-800 border-gray-600 text-gray-400"
+                      }`}
                     >
-                      <div className="text-white">{benefit.icon}</div>
+                      {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-3">{benefit.title}</h3>
-                    <p className="text-purple-200 mb-4">{benefit.description}</p>
-                    <ul className="space-y-2">
-                      {benefit.details.map((detail, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-purple-300 text-sm">
-                          <CheckCircle className="w-3 h-3 text-green-400" />
-                          <span>{detail}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Requirements */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-              <CardContent className="p-8">
-                <h2 className="text-3xl font-bold text-white mb-6 text-center">Eligibility Requirements</h2>
-                <ul className="space-y-4">
-                  {requirements.map((requirement, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-purple-200">{requirement}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+                    <span
+                      className={`ml-2 text-sm font-medium ${
+                        isActive ? "text-purple-400" : isCompleted ? "text-purple-300" : "text-gray-400"
+                      }`}
+                    >
+                      {step.title}
+                    </span>
+                    {index < steps.length - 1 && (
+                      <div
+                        className={`w-16 h-0.5 mx-4 transition-all duration-300 ${
+                          isCompleted ? "bg-purple-600" : "bg-gray-700"
+                        }`}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <Progress value={progress} className="h-2 bg-gray-800" />
           </motion.div>
-        </div>
-      </section>
 
-      {/* Application Form */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+          {/* Form Steps */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card className="bg-black/40 backdrop-blur-xl border-purple-500/30 shadow-2xl shadow-purple-500/20">
               <CardContent className="p-8">
-                <h2 className="text-3xl font-bold text-white mb-6 text-center">Talent Application</h2>
-
-                {/* Progress Steps */}
-                <div className="mb-8">
-                  <div className="flex justify-between items-center mb-4">
-                    {steps.map((step, index) => (
-                      <div key={step.step} className="flex items-center">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            index <= currentStep
-                              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                              : "bg-white/10 text-purple-300"
-                          }`}
-                        >
-                          {index < currentStep ? <CheckCircle className="w-5 h-5" /> : step.step}
-                        </div>
-                        {index < steps.length - 1 && (
-                          <div
-                            className={`w-full h-1 mx-2 ${
-                              index < currentStep ? "bg-gradient-to-r from-purple-500 to-pink-500" : "bg-white/10"
-                            }`}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold text-white">{steps[currentStep].title}</h3>
-                    <p className="text-purple-200 text-sm">{steps[currentStep].description}</p>
-                  </div>
-                </div>
-
-                {/* Step Content */}
                 <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {renderStepContent()}
-                  </motion.div>
+                  {/* Step 1: Personal Information */}
+                  {currentStep === 1 && (
+                    <motion.div
+                      key="step1"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-white mb-2">Personal Information</h2>
+                        <p className="text-gray-400">Tell us about yourself</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="fullName" className="text-white">
+                            Full Name *
+                          </Label>
+                          <Input
+                            id="fullName"
+                            value={formData.fullName}
+                            onChange={(e) => updateFormData("fullName", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="email" className="text-white">
+                            Email Address *
+                          </Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => updateFormData("email", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                            placeholder="Enter your email"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="phone" className="text-white">
+                            Phone Number *
+                          </Label>
+                          <Input
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => updateFormData("phone", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                            placeholder="Enter your phone number"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="dateOfBirth" className="text-white">
+                            Date of Birth *
+                          </Label>
+                          <Input
+                            id="dateOfBirth"
+                            type="date"
+                            value={formData.dateOfBirth}
+                            onChange={(e) => updateFormData("dateOfBirth", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="nationality" className="text-white">
+                            Nationality *
+                          </Label>
+                          <Input
+                            id="nationality"
+                            value={formData.nationality}
+                            onChange={(e) => updateFormData("nationality", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                            placeholder="Enter your nationality"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 2: Professional Information */}
+                  {currentStep === 2 && (
+                    <motion.div
+                      key="step2"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-white mb-2">Professional Information</h2>
+                        <p className="text-gray-400">Share your professional background</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="profession" className="text-white">
+                            Profession *
+                          </Label>
+                          <Input
+                            id="profession"
+                            value={formData.profession}
+                            onChange={(e) => updateFormData("profession", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                            placeholder="e.g., Actor, Musician, Athlete"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="category" className="text-white">
+                            Category *
+                          </Label>
+                          <Select
+                            value={formData.category}
+                            onValueChange={(value) => updateFormData("category", value)}
+                          >
+                            <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
+                              <SelectValue placeholder="Select your category" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-gray-900 border-gray-700">
+                              {categories.map((category) => (
+                                <SelectItem key={category} value={category} className="text-white hover:bg-gray-800">
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="experience" className="text-white">
+                            Professional Experience * (minimum 50 characters)
+                          </Label>
+                          <Textarea
+                            id="experience"
+                            value={formData.experience}
+                            onChange={(e) => updateFormData("experience", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
+                            placeholder="Describe your professional experience, career highlights, and background..."
+                          />
+                          <div className="text-right text-sm text-gray-400">
+                            {formData.experience.length}/50 characters
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="achievements" className="text-white">
+                            Notable Achievements * (minimum 50 characters)
+                          </Label>
+                          <Textarea
+                            id="achievements"
+                            value={formData.achievements}
+                            onChange={(e) => updateFormData("achievements", e.target.value)}
+                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
+                            placeholder="List your notable achievements, awards, recognitions, or career milestones..."
+                          />
+                          <div className="text-right text-sm text-gray-400">
+                            {formData.achievements.length}/50 characters
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 3: Social Media & Pricing */}
+                  {currentStep === 3 && (
+                    <motion.div
+                      key="step3"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-white mb-2">Social Media & Pricing</h2>
+                        <p className="text-gray-400">Connect your social presence and set your rates</p>
+                      </div>
+
+                      <div className="space-y-8">
+                        {/* Social Media */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-white">Social Media Handles</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="instagram" className="text-white">
+                                Instagram
+                              </Label>
+                              <Input
+                                id="instagram"
+                                value={formData.socialMedia.instagram}
+                                onChange={(e) => updateFormData("socialMedia.instagram", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="@username"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="twitter" className="text-white">
+                                Twitter/X
+                              </Label>
+                              <Input
+                                id="twitter"
+                                value={formData.socialMedia.twitter}
+                                onChange={(e) => updateFormData("socialMedia.twitter", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="@username"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="tiktok" className="text-white">
+                                TikTok
+                              </Label>
+                              <Input
+                                id="tiktok"
+                                value={formData.socialMedia.tiktok}
+                                onChange={(e) => updateFormData("socialMedia.tiktok", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="@username"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="youtube" className="text-white">
+                                YouTube
+                              </Label>
+                              <Input
+                                id="youtube"
+                                value={formData.socialMedia.youtube}
+                                onChange={(e) => updateFormData("socialMedia.youtube", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="Channel name or URL"
+                              />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="other" className="text-white">
+                                Other Social Media
+                              </Label>
+                              <Input
+                                id="other"
+                                value={formData.socialMedia.other}
+                                onChange={(e) => updateFormData("socialMedia.other", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="LinkedIn, Twitch, etc."
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="followerCount" className="text-white">
+                                Total Follower Count *
+                              </Label>
+                              <Select
+                                value={formData.followerCount}
+                                onValueChange={(value) => updateFormData("followerCount", value)}
+                              >
+                                <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
+                                  <SelectValue placeholder="Select follower range" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-900 border-gray-700">
+                                  {followerRanges.map((range) => (
+                                    <SelectItem key={range} value={range} className="text-white hover:bg-gray-800">
+                                      {range}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator className="bg-gray-700" />
+
+                        {/* Pricing */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-white">Pricing</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="basePrice" className="text-white">
+                                Base Price (USD) *
+                              </Label>
+                              <Input
+                                id="basePrice"
+                                type="number"
+                                min="10"
+                                value={formData.basePrice}
+                                onChange={(e) => updateFormData("basePrice", Number.parseInt(e.target.value) || 0)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="50"
+                              />
+                              <p className="text-sm text-gray-400">Standard video message price</p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="rushPrice" className="text-white">
+                                Rush Price (USD) *
+                              </Label>
+                              <Input
+                                id="rushPrice"
+                                type="number"
+                                min="10"
+                                value={formData.rushPrice}
+                                onChange={(e) => updateFormData("rushPrice", Number.parseInt(e.target.value) || 0)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="100"
+                              />
+                              <p className="text-sm text-gray-400">24-hour delivery price</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator className="bg-gray-700" />
+
+                        {/* Additional Information */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-white">Additional Information</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-white">Languages Spoken *</Label>
+                              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                                {languages.map((language) => (
+                                  <label key={language} className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.languages.includes(language)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          updateFormData("languages", [...formData.languages, language])
+                                        } else {
+                                          updateFormData(
+                                            "languages",
+                                            formData.languages.filter((l) => l !== language),
+                                          )
+                                        }
+                                      }}
+                                      className="rounded border-gray-600 text-purple-600 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm text-white">{language}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="availability" className="text-white">
+                                Availability *
+                              </Label>
+                              <Select
+                                value={formData.availability}
+                                onValueChange={(value) => updateFormData("availability", value)}
+                              >
+                                <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
+                                  <SelectValue placeholder="Select availability" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-900 border-gray-700">
+                                  <SelectItem value="1-3 days" className="text-white hover:bg-gray-800">
+                                    1-3 days
+                                  </SelectItem>
+                                  <SelectItem value="3-7 days" className="text-white hover:bg-gray-800">
+                                    3-7 days
+                                  </SelectItem>
+                                  <SelectItem value="1-2 weeks" className="text-white hover:bg-gray-800">
+                                    1-2 weeks
+                                  </SelectItem>
+                                  <SelectItem value="Flexible" className="text-white hover:bg-gray-800">
+                                    Flexible
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="specialRequests" className="text-white">
+                                Special Requests or Notes
+                              </Label>
+                              <Textarea
+                                id="specialRequests"
+                                value={formData.specialRequests}
+                                onChange={(e) => updateFormData("specialRequests", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                                placeholder="Any special requirements, limitations, or notes..."
+                              />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="motivation" className="text-white">
+                                Why do you want to join Kia Ora Kahi? * (minimum 50 characters)
+                              </Label>
+                              <Textarea
+                                id="motivation"
+                                value={formData.motivation}
+                                onChange={(e) => updateFormData("motivation", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[100px]"
+                                placeholder="Share your motivation for joining our platform..."
+                              />
+                              <div className="text-right text-sm text-gray-400">
+                                {formData.motivation.length}/50 characters
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 4: Documents */}
+                  {currentStep === 4 && (
+                    <motion.div
+                      key="step4"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-white mb-2">Document Verification</h2>
+                        <p className="text-gray-400">Upload required documents for verification</p>
+                      </div>
+
+                      <div className="space-y-6">
+                        {/* Profile Photo */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <Camera className="w-5 h-5 text-purple-400" />
+                            <h3 className="text-lg font-semibold text-white">Profile Photo *</h3>
+                            {formData.hasProfilePhoto && <CheckCircle className="w-5 h-5 text-green-400" />}
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            Upload a clear, professional headshot that will be used on your profile
+                          </p>
+                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                            <input
+                              type="file"
+                              id="profile-photo"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleFileUpload(file, "profile")
+                              }}
+                              className="hidden"
+                            />
+                            <label htmlFor="profile-photo" className="cursor-pointer">
+                              {uploadingFiles.profile ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+                                  <span className="text-white">Uploading...</span>
+                                </div>
+                              ) : formData.hasProfilePhoto ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <CheckCircle className="w-5 h-5 text-green-400" />
+                                  <span className="text-green-400">Profile photo uploaded</span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                  <Upload className="w-8 h-8 text-gray-400" />
+                                  <span className="text-white">Click to upload profile photo</span>
+                                  <span className="text-gray-400 text-sm">PNG, JPG, WEBP up to 5MB</span>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Government ID */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <IdCard className="w-5 h-5 text-purple-400" />
+                            <h3 className="text-lg font-semibold text-white">Government ID *</h3>
+                            {formData.hasIdDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            Upload a clear photo of your government-issued ID (passport, driver's license, etc.)
+                          </p>
+                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                            <input
+                              type="file"
+                              id="id-document"
+                              accept="image/*,application/pdf"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleFileUpload(file, "id")
+                              }}
+                              className="hidden"
+                            />
+                            <label htmlFor="id-document" className="cursor-pointer">
+                              {uploadingFiles.id ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+                                  <span className="text-white">Uploading...</span>
+                                </div>
+                              ) : formData.hasIdDocument ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <CheckCircle className="w-5 h-5 text-green-400" />
+                                  <span className="text-green-400">ID document uploaded</span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                  <Upload className="w-8 h-8 text-gray-400" />
+                                  <span className="text-white">Click to upload government ID</span>
+                                  <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Verification Document */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <Award className="w-5 h-5 text-purple-400" />
+                            <h3 className="text-lg font-semibold text-white">Professional Verification *</h3>
+                            {formData.hasVerificationDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            Upload a document that verifies your professional status (press kit, agency contract, award
+                            certificate, etc.)
+                          </p>
+                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                            <input
+                              type="file"
+                              id="verification-document"
+                              accept="image/*,application/pdf"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleFileUpload(file, "verification")
+                              }}
+                              className="hidden"
+                            />
+                            <label htmlFor="verification-document" className="cursor-pointer">
+                              {uploadingFiles.verification ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+                                  <span className="text-white">Uploading...</span>
+                                </div>
+                              ) : formData.hasVerificationDocument ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <CheckCircle className="w-5 h-5 text-green-400" />
+                                  <span className="text-green-400">Verification document uploaded</span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                  <Upload className="w-8 h-8 text-gray-400" />
+                                  <span className="text-white">Click to upload verification document</span>
+                                  <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Privacy Notice */}
+                        <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <Shield className="w-5 h-5 text-purple-400 mt-0.5" />
+                            <div>
+                              <h4 className="text-white font-semibold mb-1">Privacy & Security</h4>
+                              <p className="text-gray-300 text-sm">
+                                All uploaded documents are encrypted and stored securely. They will only be used for
+                                verification purposes and will not be shared with third parties.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </AnimatePresence>
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between mt-8">
+                <div className="flex justify-between pt-8 border-t border-gray-700">
                   <Button
-                    type="button"
-                    variant="outline"
                     onClick={prevStep}
-                    disabled={currentStep === 0}
-                    className="border-white/20 text-white hover:bg-white/10 disabled:opacity-50 bg-transparent"
+                    disabled={currentStep === 1}
+                    variant="outline"
+                    className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                   >
-                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4 mr-2" />
                     Previous
                   </Button>
 
-                  {currentStep === steps.length - 1 ? (
+                  {currentStep < 4 ? (
+                    <Button
+                      onClick={nextStep}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    >
+                      Next
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
                     <Button
                       onClick={handleSubmit}
-                      disabled={isSubmitting || !validateStep(currentStep)}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
+                      disabled={isSubmitting || !validateStep(4)}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Submitting...
                         </>
                       ) : (
                         <>
-                          <Heart className="w-4 h-4 mr-2" />
                           Submit Application
+                          <Check className="w-4 h-4 ml-2" />
                         </>
                       )}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={nextStep}
-                      disabled={!validateStep(currentStep)}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
-                    >
-                      Next
-                      <ChevronRight className="w-4 h-4 ml-2" />
                     </Button>
                   )}
                 </div>
               </CardContent>
             </Card>
           </motion.div>
-        </div>
-      </section>
 
-      <Footer />
+          {/* Benefits Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-16"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  icon: Crown,
+                  title: "Premium Platform",
+                  description: "Join an exclusive platform for verified celebrities and creators",
+                },
+                {
+                  icon: Zap,
+                  title: "Easy Setup",
+                  description: "Quick onboarding process with dedicated support team",
+                },
+                {
+                  icon: Shield,
+                  title: "Secure & Safe",
+                  description: "Advanced security measures to protect your privacy and earnings",
+                },
+                {
+                  icon: TrendingUp,
+                  title: "Grow Your Brand",
+                  description: "Expand your reach and connect with fans in a meaningful way",
+                },
+              ].map((benefit, index) => {
+                const Icon = benefit.icon
+                return (
+                  <motion.div
+                    key={benefit.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + index * 0.1 }}
+                  >
+                    <Card className="bg-black/40 backdrop-blur-xl border-purple-500/30 shadow-lg shadow-purple-500/10 h-full">
+                      <CardContent className="p-6 text-center">
+                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white mb-2">{benefit.title}</h3>
+                        <p className="text-gray-400 text-sm">{benefit.description}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </motion.div>
+        </div>
+
+        <Footer />
+      </div>
     </div>
   )
 }

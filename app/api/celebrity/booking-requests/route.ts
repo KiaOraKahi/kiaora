@@ -1,89 +1,142 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
+    console.log("🔍 Celebrity Booking Requests API - Session:", {
+      userId: session?.user?.id,
+      userEmail: session?.user?.email,
+      userRole: session?.user?.role,
+      userName: session?.user?.name,
+    })
 
-    if (!session || session.user.role !== "CELEBRITY") {
+    if (!session?.user?.id) {
+      console.log("❌ Celebrity Booking Requests API - No session or user ID")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get("status") || "all"
-    const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    // Get celebrity profile
+    console.log("🔍 Looking for celebrity profile with userId:", session.user.id)
+    const celebrity = await prisma.celebrity.findUnique({
+      where: { userId: session.user.id },
+    })
 
-    // Mock data - replace with actual database queries
-    const mockRequests = [
-      {
-        id: "1",
-        orderNumber: "KO-2024-001",
-        customerName: "Sarah Johnson",
-        recipientName: "Mike Johnson",
-        occasion: "Birthday",
-        instructions: "Please mention his love for basketball and that he's turning 25!",
-        amount: 150,
-        requestedDate: "2024-01-15",
-        status: "pending",
-        createdAt: "2024-01-10T10:00:00Z",
-        deadline: "2024-01-12T23:59:59Z",
-      },
-      {
-        id: "2",
-        orderNumber: "KO-2024-002",
-        customerName: "Emily Davis",
-        recipientName: "Tom Davis",
-        occasion: "Anniversary",
-        instructions: "Celebrating 10 years together, they love traveling and cooking.",
-        amount: 200,
-        requestedDate: "2024-01-20",
-        status: "pending",
-        createdAt: "2024-01-11T14:30:00Z",
-        deadline: "2024-01-13T23:59:59Z",
-      },
-      {
-        id: "3",
-        orderNumber: "KO-2024-003",
-        customerName: "John Smith",
-        recipientName: "Lisa Smith",
-        occasion: "Graduation",
-        instructions: "She just graduated from medical school, very proud moment!",
-        amount: 175,
-        requestedDate: "2024-01-25",
-        status: "accepted",
-        createdAt: "2024-01-12T09:15:00Z",
-        deadline: "2024-01-14T23:59:59Z",
-      },
-    ]
+    console.log("🔍 Celebrity profile found:", {
+      celebrityId: celebrity?.id,
+      // celebrityName: celebrity?.name,
+      // celebritySlug: celebrity?.slug,
+      celebrityUserId: celebrity?.userId,
+    })
 
-    // Filter by status if specified
-    let filteredRequests = mockRequests
-    if (status !== "all") {
-      filteredRequests = mockRequests.filter((req) => req.status === status)
+    if (!celebrity) {
+      console.log("❌ Celebrity profile not found for userId:", session.user.id)
+      return NextResponse.json({ error: "Celebrity profile not found" }, { status: 404 })
     }
 
-    // Pagination
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedRequests = filteredRequests.slice(startIndex, endIndex)
+    // Get query parameters
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get("status") || "PENDING"
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const offset = Number.parseInt(searchParams.get("offset") || "0")
+
+    console.log("🔍 Query parameters:", { status, limit, offset })
+    console.log("🔍 Fetching booking requests for celebrity ID:", celebrity.id)
+
+    // Fetch booking requests with related data
+    const bookingRequests = await prisma.booking.findMany({
+      where: {
+        celebrityId: celebrity.id,
+        ...(status !== "ALL" && { status: status as any }),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            totalAmount: true,
+            paymentStatus: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+      skip: offset,
+    })
+
+    console.log("📋 Raw booking requests fetched:", {
+      count: bookingRequests.length,
+      bookings: bookingRequests.map((booking) => ({
+        id: booking.id,
+        status: booking.status,
+        customerName: booking.user?.name,
+        orderNumber: booking.order?.orderNumber,
+        amount: booking.order?.totalAmount,
+        createdAt: booking.createdAt,
+      })),
+    })
+
+    // Get total count for pagination
+    const totalCount = await prisma.booking.count({
+      where: {
+        celebrityId: celebrity.id,
+        ...(status !== "ALL" && { status: status as any }),
+      },
+    })
+
+    console.log("📊 Total booking requests count:", totalCount)
+
+    // Format the response data
+    const formattedRequests = bookingRequests.map((booking) => ({
+      id: booking.id,
+      orderNumber: booking.order?.orderNumber || `REQ-${booking.id.slice(-8)}`,
+      customerName: booking.user?.name || "Unknown Customer",
+      customerEmail: booking.user?.email || "",
+      customerImage: booking.user?.image || null,
+      recipientName: booking.recipientName || "Unknown Recipient",
+      occasion: booking.occasion || "General Request",
+      instructions: booking.instructions || "",
+      amount: booking.order?.totalAmount || 0,
+      requestedDate: booking.requestedDate?.toISOString() || new Date().toISOString(),
+      status: booking.status.toLowerCase(),
+      createdAt: booking.createdAt.toISOString(),
+      deadline: booking.deadline?.toISOString() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now as default
+      paymentStatus: booking.order?.paymentStatus || "PENDING",
+    }))
+
+    console.log("✅ Formatted booking requests:", {
+      count: formattedRequests.length,
+      requests: formattedRequests,
+    })
 
     const response = {
-      requests: paginatedRequests,
+      requests: formattedRequests,
       pagination: {
-        page,
+        total: totalCount,
         limit,
-        total: filteredRequests.length,
-        totalPages: Math.ceil(filteredRequests.length / limit),
-        hasNext: endIndex < filteredRequests.length,
-        hasPrev: page > 1,
+        offset,
+        hasMore: offset + limit < totalCount,
       },
     }
+
+    console.log("📤 Final API response:", response)
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error("Error fetching booking requests:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("❌ Error fetching celebrity booking requests:", error)
+    return NextResponse.json({ error: "Failed to fetch booking requests" }, { status: 500 })
   }
 }
