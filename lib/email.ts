@@ -11,6 +11,35 @@ const transporter = nodemailer.createTransport({
   },
 })
 
+// Generic sendEmail function - moved to top so other functions can use it
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  text,
+}: {
+  to: string
+  subject: string
+  html?: string
+  text?: string
+}) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+      text,
+    })
+    console.log("✅ Email sent successfully:", info.messageId)
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    console.error("❌ Failed to send email:", error)
+    // Don't throw error, just return failure status
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}
+
 export async function sendVerificationEmail(email: string, token: string) {
   const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${token}`
 
@@ -48,9 +77,10 @@ export async function sendVerificationEmail(email: string, token: string) {
     })
 
     console.log("✅ Verification email sent successfully!")
+    return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error("❌ Failed to send verification email:", error)
-    throw new Error("Failed to send verification email")
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -91,9 +121,10 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     })
 
     console.log("✅ Password reset email sent successfully!")
+    return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error("❌ Failed to send password reset email:", error)
-    throw new Error("Failed to send password reset email")
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -167,9 +198,10 @@ export async function sendApplicationStatusEmail(
     })
 
     console.log("✅ Application status email sent successfully!")
+    return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error("❌ Failed to send application status email:", error)
-    throw new Error("Failed to send application status email")
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -250,9 +282,10 @@ export async function sendNewBookingNotificationToCelebrity(
     })
 
     console.log("✅ New booking notification email sent to celebrity!")
+    return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error("❌ Failed to send new booking notification email:", error)
-    throw new Error("Failed to send new booking notification email")
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -319,9 +352,10 @@ export async function sendBookingConfirmationToCustomer(
     })
 
     console.log("✅ Booking confirmation email sent to customer!")
+    return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error("❌ Failed to send booking confirmation email:", error)
-    throw new Error("Failed to send booking confirmation email")
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -391,9 +425,10 @@ export async function sendBookingRejectionToCustomer(
     })
 
     console.log("✅ Booking rejection email sent to customer!")
+    return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error("❌ Failed to send booking rejection email:", error)
-    throw new Error("Failed to send booking rejection email")
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -458,8 +493,9 @@ export async function sendVideoDeliveryNotification(
     })
 
     console.log("✅ Video delivery notification email sent successfully!")
+    return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error("❌ Failed to send video delivery notification email:", error)
-    throw new Error("Failed to send video delivery notification email")
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }

@@ -1,34 +1,27 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { use, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { toast } from "sonner"
 import {
+  ArrowLeft,
   CheckCircle,
   XCircle,
-  ArrowLeft,
-  Mail,
-  Phone,
-  Calendar,
-  Globe,
+  User,
+  Briefcase,
   DollarSign,
-  Users,
-  Star,
-  Instagram,
-  Twitter,
-  Youtube,
-  Loader2,
+  Share2,
+  FileText,
+  ExternalLink,
 } from "lucide-react"
-import { format } from "date-fns"
-import { toast } from "sonner"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
 
 interface Application {
   id: string
@@ -45,25 +38,40 @@ interface Application {
   twitterHandle?: string
   tiktokHandle?: string
   youtubeHandle?: string
+  otherSocialMedia?: string
   followerCount: string
   basePrice: number
   rushPrice: number
   languages: string[]
   availability: string
+  specialRequests?: string
   motivation: string
+  hasProfilePhoto: boolean
+  hasIdDocument: boolean
+  hasVerificationDocument: boolean
   profilePhotoUrl?: string
   idDocumentUrl?: string
   verificationDocumentUrl?: string
   status: string
   createdAt: string
+  reviewNotes?: string
+  reviewedAt?: string
+  reviewedBy?: string
 }
 
-export default function ApplicationDetail({ params }: { params: { id: string } }) {
+interface ApplicationDetailPageProps {
+  params: Promise<{ id: string }>
+}
+
+export default function ApplicationDetailPage({ params }: ApplicationDetailPageProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { id: applicationId } = use(params) // Use React.use() to unwrap the Promise
+
   const [application, setApplication] = useState<Application | null>(null)
   const [loading, setLoading] = useState(true)
-  const [processing, setProcessing] = useState(false)
+  const [updating, setUpdating] = useState(false)
+  const [reviewNotes, setReviewNotes] = useState("")
 
   useEffect(() => {
     if (status === "loading") return
@@ -74,535 +82,563 @@ export default function ApplicationDetail({ params }: { params: { id: string } }
     }
 
     fetchApplication()
-  }, [session, status, router, params.id])
+  }, [session, status, router, applicationId])
 
   const fetchApplication = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/applications/${params.id}`)
-      const data = await response.json()
-
+      const response = await fetch(`/api/admin/applications/${applicationId}`)
       if (response.ok) {
+        const data = await response.json()
         setApplication(data.application)
+        setReviewNotes(data.application.reviewNotes || "")
       } else {
-        toast.error("Failed to fetch application")
-        router.push("/admin/applications")
+        toast.error("Failed to load application details")
       }
     } catch (error) {
       console.error("Error fetching application:", error)
-      toast.error("Failed to fetch application")
-      router.push("/admin/applications")
+      toast.error("Failed to load application details")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleApprove = async () => {
+  const handleStatusUpdate = async (newStatus: "APPROVED" | "REJECTED") => {
     if (!application) return
 
     try {
-      setProcessing(true)
-      const response = await fetch(`/api/admin/applications/${application.id}/approve`, {
-        method: "POST",
-      })
+      setUpdating(true)
+      const endpoint =
+        newStatus === "APPROVED"
+          ? `/api/admin/applications/${applicationId}/approve`
+          : `/api/admin/applications/${applicationId}`
 
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success("Application approved successfully")
-        setApplication({ ...application, status: "APPROVED" })
-      } else {
-        toast.error(data.error || "Failed to approve application")
-      }
-    } catch (error) {
-      console.error("Error approving application:", error)
-      toast.error("Failed to approve application")
-    } finally {
-      setProcessing(false)
-    }
-  }
-
-  const handleReject = async () => {
-    if (!application) return
-
-    try {
-      setProcessing(true)
-      const response = await fetch(`/api/admin/applications/${application.id}`, {
-        method: "PATCH",
+      const response = await fetch(endpoint, {
+        method: newStatus === "APPROVED" ? "POST" : "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action: "reject" }),
+        body: JSON.stringify({
+          status: newStatus,
+          reviewNotes,
+        }),
       })
 
-      const data = await response.json()
-
       if (response.ok) {
-        toast.success("Application rejected")
-        setApplication({ ...application, status: "REJECTED" })
+        const data = await response.json()
+        if (newStatus === "APPROVED") {
+          toast.success("Application approved successfully! Celebrity profile created.")
+        } else {
+          setApplication(data.application)
+          toast.success(`Application ${newStatus.toLowerCase()} successfully`)
+        }
+        // Refresh the application data
+        fetchApplication()
       } else {
-        toast.error(data.error || "Failed to reject application")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update application")
       }
     } catch (error) {
-      console.error("Error rejecting application:", error)
-      toast.error("Failed to reject application")
+      console.error("Error updating application:", error)
+      toast.error("Failed to update application status")
     } finally {
-      setProcessing(false)
+      setUpdating(false)
     }
   }
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-black relative overflow-hidden">
-        <Navbar />
-
-        {/* Starfield Background */}
-        <div className="absolute inset-0">
-          {[...Array(100)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full opacity-60"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-            />
-          ))}
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="mt-4 text-lg">Loading application details...</p>
         </div>
-
-        <div className="relative z-10 flex items-center justify-center min-h-screen pt-24">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-        </div>
-
-        <Footer />
       </div>
     )
   }
 
   if (!session || session.user.role !== "ADMIN") {
     return (
-      <div className="min-h-screen bg-black relative overflow-hidden">
-        <Navbar />
-
-        {/* Starfield Background */}
-        <div className="absolute inset-0">
-          {[...Array(100)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full opacity-60"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-            />
-          ))}
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <p className="text-gray-400">You don't have permission to access this page.</p>
         </div>
-
-        <div className="relative z-10 flex items-center justify-center min-h-screen pt-24">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
-            <p className="text-purple-200">This page is only accessible to administrators.</p>
-          </div>
-        </div>
-
-        <Footer />
       </div>
     )
   }
 
   if (!application) {
     return (
-      <div className="min-h-screen bg-black relative overflow-hidden">
-        <Navbar />
-
-        {/* Starfield Background */}
-        <div className="absolute inset-0">
-          {[...Array(100)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full opacity-60"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-            />
-          ))}
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Application Not Found</h2>
+          <p className="text-gray-400">The requested application could not be found.</p>
+          <Link href="/admin/applications">
+            <Button className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500">Back to Applications</Button>
+          </Link>
         </div>
-
-        <div className="relative z-10 flex items-center justify-center min-h-screen pt-24">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-4">Application Not Found</h1>
-            <p className="text-purple-200">The requested application could not be found.</p>
-            <Button
-              onClick={() => router.push("/admin/applications")}
-              className="mt-4 bg-purple-600 hover:bg-purple-700"
-            >
-              Back to Applications
-            </Button>
-          </div>
-        </div>
-
-        <Footer />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      <Navbar />
-
-      {/* Starfield Background */}
-      <div className="absolute inset-0">
-        {[...Array(100)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full opacity-60"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-          />
-        ))}
+    <div className="min-h-screen bg-black text-white">
+      {/* Animated Stars Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="stars"></div>
+        <div className="stars2"></div>
+        <div className="stars3"></div>
       </div>
 
-      <div className="relative z-10 pt-24 pb-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/admin/applications")}
-              className="text-white hover:bg-white/10 mb-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Applications
-            </Button>
-
-            <div className="flex items-center justify-between">
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Link href="/admin/applications">
+              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Applications
+              </Button>
+            </Link>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={application.profilePhotoUrl || "/placeholder.svg"} />
+                <AvatarFallback className="bg-purple-500 text-white text-xl">
+                  {application.fullName.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">Application Details</h1>
-                <p className="text-purple-200">Review celebrity application</p>
-              </div>
-
-              <Badge
-                className={
-                  application.status === "APPROVED"
-                    ? "bg-green-500/20 text-green-300 text-lg px-4 py-2"
-                    : application.status === "REJECTED"
-                      ? "bg-red-500/20 text-red-300 text-lg px-4 py-2"
-                      : "bg-yellow-500/20 text-yellow-300 text-lg px-4 py-2"
-                }
-              >
-                {application.status}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Profile Header */}
-          <Card className="bg-white/10 border-white/20 backdrop-blur-lg mb-8">
-            <CardContent className="p-8">
-              <div className="flex items-start gap-6">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={application.profilePhotoUrl || "/placeholder.svg"} />
-                  <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-2xl">
-                    {application.fullName.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1">
-                  <h2 className="text-3xl font-bold text-white mb-2">{application.fullName}</h2>
-                  <p className="text-xl text-purple-200 mb-4">{application.profession}</p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="flex items-center gap-2 text-purple-300">
-                      <Mail className="w-4 h-4" />
-                      <span>{application.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-purple-300">
-                      <Phone className="w-4 h-4" />
-                      <span>{application.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-purple-300">
-                      <Calendar className="w-4 h-4" />
-                      <span>Applied {format(new Date(application.createdAt), "MMM d, yyyy")}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-6">
-                    <Badge className="bg-purple-500/20 text-purple-300">{application.category}</Badge>
-                    <Badge className="bg-blue-500/20 text-blue-300">{application.nationality}</Badge>
-                    {application.languages.map((lang) => (
-                      <Badge key={lang} className="bg-green-500/20 text-green-300">
-                        {lang}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {application.status === "PENDING" && (
-                    <div className="flex gap-4">
-                      <Button onClick={handleApprove} disabled={processing} className="bg-green-600 hover:bg-green-700">
-                        {processing ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                        )}
-                        Approve Application
-                      </Button>
-                      <Button
-                        onClick={handleReject}
-                        disabled={processing}
-                        variant="outline"
-                        className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white bg-transparent"
-                      >
-                        {processing ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <XCircle className="w-4 h-4 mr-2" />
-                        )}
-                        Reject Application
-                      </Button>
-                    </div>
-                  )}
+                <h1 className="text-3xl font-bold">{application.fullName}</h1>
+                <p className="text-gray-400">{application.email}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge
+                    className={
+                      application.status === "PENDING"
+                        ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+                        : application.status === "APPROVED"
+                          ? "bg-green-500/20 text-green-300 border-green-500/30"
+                          : "bg-red-500/20 text-red-300 border-red-500/30"
+                    }
+                  >
+                    {application.status}
+                  </Badge>
+                  <Badge variant="outline" className="border-purple-500/30 text-purple-300">
+                    {application.category}
+                  </Badge>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+          {application.status === "PENDING" && (
+            <div className="flex gap-2">
+              <Button
+                onClick={() => handleStatusUpdate("APPROVED")}
+                disabled={updating}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {updating ? "Processing..." : "Approve"}
+              </Button>
+              <Button
+                onClick={() => handleStatusUpdate("REJECTED")}
+                disabled={updating}
+                variant="outline"
+                className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                {updating ? "Processing..." : "Reject"}
+              </Button>
+            </div>
+          )}
+        </div>
 
-          {/* Detailed Information */}
-          <Tabs defaultValue="personal" className="space-y-6">
-            <TabsList className="bg-white/10 border border-white/20">
-              <TabsTrigger value="personal" className="data-[state=active]:bg-purple-500">
-                Personal Info
-              </TabsTrigger>
-              <TabsTrigger value="professional" className="data-[state=active]:bg-purple-500">
-                Professional
-              </TabsTrigger>
-              <TabsTrigger value="social" className="data-[state=active]:bg-purple-500">
-                Social & Pricing
-              </TabsTrigger>
-              <TabsTrigger value="documents" className="data-[state=active]:bg-purple-500">
-                Documents
-              </TabsTrigger>
-            </TabsList>
+        {/* Application Details */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-white/10 border-white/20">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-purple-500">
+              <User className="w-4 h-4 mr-2" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="experience" className="data-[state=active]:bg-purple-500">
+              <Briefcase className="w-4 h-4 mr-2" />
+              Experience
+            </TabsTrigger>
+            <TabsTrigger value="pricing" className="data-[state=active]:bg-purple-500">
+              <DollarSign className="w-4 h-4 mr-2" />
+              Pricing
+            </TabsTrigger>
+            <TabsTrigger value="social" className="data-[state=active]:bg-purple-500">
+              <Share2 className="w-4 h-4 mr-2" />
+              Social Media
+            </TabsTrigger>
+            <TabsTrigger value="review" className="data-[state=active]:bg-purple-500">
+              <FileText className="w-4 h-4 mr-2" />
+              Review
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="personal" className="space-y-6">
-              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                <CardHeader>
-                  <CardTitle className="text-white">Personal Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Full Name</label>
-                      <p className="text-white text-lg">{application.fullName}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Email Address</label>
-                      <p className="text-white text-lg">{application.email}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Phone Number</label>
-                      <p className="text-white text-lg">{application.phone}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Date of Birth</label>
-                      <p className="text-white text-lg">{application.dateOfBirth}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Nationality</label>
-                      <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-purple-400" />
-                        <p className="text-white text-lg">{application.nationality}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Languages</label>
-                      <div className="flex gap-2 mt-1">
-                        {application.languages.map((lang) => (
-                          <Badge key={lang} className="bg-green-500/20 text-green-300">
-                            {lang}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="professional" className="space-y-6">
-              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                <CardHeader>
-                  <CardTitle className="text-white">Professional Background</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Profession</label>
-                      <p className="text-white text-lg">{application.profession}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Category</label>
-                      <Badge className="bg-purple-500/20 text-purple-300 text-base px-3 py-1">
-                        {application.category}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <Separator className="bg-white/20" />
-
-                  <div>
-                    <label className="text-sm text-purple-300 font-medium">Experience</label>
-                    <p className="text-white mt-2 leading-relaxed">{application.experience}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-purple-300 font-medium">Achievements</label>
-                    <p className="text-white mt-2 leading-relaxed">{application.achievements}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-purple-300 font-medium">Motivation</label>
-                    <p className="text-white mt-2 leading-relaxed">{application.motivation}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-purple-300 font-medium">Availability</label>
-                    <p className="text-white mt-2">{application.availability}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="social" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Users className="w-5 h-5" />
-                      Social Media
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <label className="text-sm text-purple-300 font-medium">Follower Count</label>
-                      <p className="text-white text-lg">{application.followerCount}</p>
-                    </div>
-
-                    <Separator className="bg-white/20" />
-
-                    <div className="space-y-3">
-                      {application.instagramHandle && (
-                        <div className="flex items-center gap-3">
-                          <Instagram className="w-5 h-5 text-pink-400" />
-                          <span className="text-white">@{application.instagramHandle}</span>
-                        </div>
-                      )}
-                      {application.twitterHandle && (
-                        <div className="flex items-center gap-3">
-                          <Twitter className="w-5 h-5 text-blue-400" />
-                          <span className="text-white">@{application.twitterHandle}</span>
-                        </div>
-                      )}
-                      {application.youtubeHandle && (
-                        <div className="flex items-center gap-3">
-                          <Youtube className="w-5 h-5 text-red-400" />
-                          <span className="text-white">{application.youtubeHandle}</span>
-                        </div>
-                      )}
-                      {application.tiktokHandle && (
-                        <div className="flex items-center gap-3">
-                          <Star className="w-5 h-5 text-purple-400" />
-                          <span className="text-white">@{application.tiktokHandle}</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <DollarSign className="w-5 h-5" />
-                      Pricing
-                    </CardTitle>
+                    <CardTitle className="text-white">Personal Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-                        <label className="text-sm text-green-300 font-medium">Base Price</label>
-                        <p className="text-white text-2xl font-bold">${application.basePrice}</p>
+                      <div>
+                        <label className="text-sm text-gray-400">Full Name</label>
+                        <p className="text-white font-medium">{application.fullName}</p>
                       </div>
-                      <div className="text-center p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                        <label className="text-sm text-yellow-300 font-medium">Rush Price</label>
-                        <p className="text-white text-2xl font-bold">${application.rushPrice}</p>
+                      <div>
+                        <label className="text-sm text-gray-400">Email</label>
+                        <p className="text-white font-medium">{application.email}</p>
                       </div>
+                      <div>
+                        <label className="text-sm text-gray-400">Phone</label>
+                        <p className="text-white font-medium">{application.phone}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-400">Date of Birth</label>
+                        <p className="text-white font-medium">
+                          {new Date(application.dateOfBirth).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-400">Nationality</label>
+                        <p className="text-white font-medium">{application.nationality}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-400">Category</label>
+                        <p className="text-white font-medium">{application.category}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-400">Application Date</label>
+                        <p className="text-white font-medium">{new Date(application.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    {application.languages && application.languages.length > 0 && (
+                      <div>
+                        <label className="text-sm text-gray-400">Languages</label>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {application.languages.map((language) => (
+                            <Badge key={language} variant="outline" className="border-purple-500/30 text-purple-300">
+                              {language}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+              <div>
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  <CardHeader>
+                    <CardTitle className="text-white">Application Timeline</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div>
+                          <p className="text-white text-sm">Application Submitted</p>
+                          <p className="text-gray-400 text-xs">{new Date(application.createdAt).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      {application.reviewedAt && (
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              application.status === "APPROVED" ? "bg-green-500" : "bg-red-500"
+                            }`}
+                          ></div>
+                          <div>
+                            <p className="text-white text-sm">Application {application.status}</p>
+                            <p className="text-gray-400 text-xs">{new Date(application.reviewedAt).toLocaleString()}</p>
+                            {application.reviewedBy && (
+                              <p className="text-gray-400 text-xs">by {application.reviewedBy}</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
+            </div>
+          </TabsContent>
 
-            <TabsContent value="documents" className="space-y-6">
-              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                <CardHeader>
-                  <CardTitle className="text-white">Uploaded Documents</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
+          {/* Experience Tab */}
+          <TabsContent value="experience" className="space-y-6">
+            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-white">Professional Experience</CardTitle>
+                <CardDescription className="text-gray-400">Background and experience information</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-400">Profession</label>
+                    <p className="text-white font-medium">{application.profession}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Experience</label>
+                    <p className="text-white leading-relaxed whitespace-pre-wrap">{application.experience}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Notable Achievements</label>
+                    <p className="text-white leading-relaxed whitespace-pre-wrap">{application.achievements}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Motivation</label>
+                    <p className="text-white leading-relaxed whitespace-pre-wrap">{application.motivation}</p>
+                  </div>
+                  {application.specialRequests && (
+                    <div>
+                      <label className="text-sm text-gray-400">Special Requests</label>
+                      <p className="text-white leading-relaxed whitespace-pre-wrap">{application.specialRequests}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-white">Documents</CardTitle>
+                <CardDescription className="text-gray-400">Uploaded documents and media</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                    <FileText className="w-8 h-8 text-purple-400" />
+                    <div className="flex-1">
+                      <p className="text-white font-medium">Profile Photo</p>
+                      <p className="text-gray-400 text-sm">
+                        {application.hasProfilePhoto ? "Uploaded" : "Not uploaded"}
+                      </p>
+                    </div>
                     {application.profilePhotoUrl && (
-                      <div>
-                        <label className="text-sm text-purple-300 font-medium">Profile Photo</label>
-                        <div className="mt-2 border border-white/20 rounded-lg overflow-hidden">
-                          <img
-                            src={application.profilePhotoUrl || "/placeholder.svg"}
-                            alt="Profile"
-                            className="w-full h-48 object-cover"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {application.idDocumentUrl && (
-                      <div>
-                        <label className="text-sm text-purple-300 font-medium">ID Document</label>
-                        <div className="mt-2 border border-white/20 rounded-lg overflow-hidden">
-                          <img
-                            src={application.idDocumentUrl || "/placeholder.svg"}
-                            alt="ID Document"
-                            className="w-full h-48 object-cover"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {application.verificationDocumentUrl && (
-                      <div>
-                        <label className="text-sm text-purple-300 font-medium">Verification Document</label>
-                        <div className="mt-2 border border-white/20 rounded-lg overflow-hidden">
-                          <img
-                            src={application.verificationDocumentUrl || "/placeholder.svg"}
-                            alt="Verification"
-                            className="w-full h-48 object-cover"
-                          />
-                        </div>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-purple-500/30 text-purple-300 bg-transparent"
+                        onClick={() => window.open(application.profilePhotoUrl, "_blank")}
+                      >
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        View
+                      </Button>
                     )}
                   </div>
-
-                  {!application.profilePhotoUrl &&
-                    !application.idDocumentUrl &&
-                    !application.verificationDocumentUrl && (
-                      <div className="text-center py-8">
-                        <p className="text-purple-300">No documents uploaded</p>
-                      </div>
+                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                    <FileText className="w-8 h-8 text-purple-400" />
+                    <div className="flex-1">
+                      <p className="text-white font-medium">Government ID</p>
+                      <p className="text-gray-400 text-sm">{application.hasIdDocument ? "Uploaded" : "Not uploaded"}</p>
+                    </div>
+                    {application.idDocumentUrl && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-purple-500/30 text-purple-300 bg-transparent"
+                        onClick={() => window.open(application.idDocumentUrl, "_blank")}
+                      >
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        View
+                      </Button>
                     )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                    <FileText className="w-8 h-8 text-purple-400" />
+                    <div className="flex-1">
+                      <p className="text-white font-medium">Verification Doc</p>
+                      <p className="text-gray-400 text-sm">
+                        {application.hasVerificationDocument ? "Uploaded" : "Not uploaded"}
+                      </p>
+                    </div>
+                    {application.verificationDocumentUrl && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-purple-500/30 text-purple-300 bg-transparent"
+                        onClick={() => window.open(application.verificationDocumentUrl, "_blank")}
+                      >
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        View
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      <Footer />
+          {/* Pricing Tab */}
+          <TabsContent value="pricing" className="space-y-6">
+            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-white">Pricing Structure</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Proposed pricing for different service types
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center p-6 bg-white/5 rounded-lg">
+                    <h3 className="text-white font-semibold mb-2">Base Price</h3>
+                    <p className="text-3xl font-bold text-purple-300 mb-2">${application.basePrice}</p>
+                    <p className="text-gray-400 text-sm">Standard delivery time</p>
+                  </div>
+                  <div className="text-center p-6 bg-white/5 rounded-lg">
+                    <h3 className="text-white font-semibold mb-2">Rush Price</h3>
+                    <p className="text-3xl font-bold text-purple-300 mb-2">${application.rushPrice}</p>
+                    <p className="text-gray-400 text-sm">24-hour delivery</p>
+                  </div>
+                  <div className="text-center p-6 bg-white/5 rounded-lg">
+                    <h3 className="text-white font-semibold mb-2">Availability</h3>
+                    <p className="text-xl font-bold text-green-400 mb-2">{application.availability}</p>
+                    <p className="text-gray-400 text-sm">Response time</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Social Media Tab */}
+          <TabsContent value="social" className="space-y-6">
+            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-white">Social Media Presence</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Connected social media accounts and online presence
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {application.instagramHandle && (
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <Share2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">Instagram</p>
+                        <p className="text-gray-400 text-sm">{application.instagramHandle}</p>
+                      </div>
+                    </div>
+                  )}
+                  {application.twitterHandle && (
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                      <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <Share2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">Twitter</p>
+                        <p className="text-gray-400 text-sm">{application.twitterHandle}</p>
+                      </div>
+                    </div>
+                  )}
+                  {application.tiktokHandle && (
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                      <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+                        <Share2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">TikTok</p>
+                        <p className="text-gray-400 text-sm">{application.tiktokHandle}</p>
+                      </div>
+                    </div>
+                  )}
+                  {application.youtubeHandle && (
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                      <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                        <Share2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">YouTube</p>
+                        <p className="text-gray-400 text-sm">{application.youtubeHandle}</p>
+                      </div>
+                    </div>
+                  )}
+                  {application.otherSocialMedia && (
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                      <div className="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center">
+                        <Share2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">Other</p>
+                        <p className="text-gray-400 text-sm">{application.otherSocialMedia}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-6 p-4 bg-white/5 rounded-lg">
+                  <label className="text-sm text-gray-400">Follower Count</label>
+                  <p className="text-white font-medium text-lg">{application.followerCount}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Review Tab */}
+          <TabsContent value="review" className="space-y-6">
+            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle className="text-white">Review & Decision</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Add review notes and make a decision on this application
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Review Notes</label>
+                  <Textarea
+                    value={reviewNotes}
+                    onChange={(e) => setReviewNotes(e.target.value)}
+                    placeholder="Add your review notes here..."
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px]"
+                  />
+                </div>
+                {application.status === "PENDING" && (
+                  <div className="flex gap-4 pt-4">
+                    <Button
+                      onClick={() => handleStatusUpdate("APPROVED")}
+                      disabled={updating}
+                      className="bg-green-600 hover:bg-green-700 flex-1"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      {updating ? "Processing..." : "Approve Application"}
+                    </Button>
+                    <Button
+                      onClick={() => handleStatusUpdate("REJECTED")}
+                      disabled={updating}
+                      variant="outline"
+                      className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white flex-1"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      {updating ? "Processing..." : "Reject Application"}
+                    </Button>
+                  </div>
+                )}
+                {application.reviewNotes && application.status !== "PENDING" && (
+                  <div className="mt-4 p-4 bg-white/5 rounded-lg">
+                    <label className="text-sm text-gray-400">Previous Review Notes</label>
+                    <p className="text-white mt-1">{application.reviewNotes}</p>
+                    {application.reviewedAt && (
+                      <p className="text-gray-400 text-xs mt-2">
+                        Reviewed on {new Date(application.reviewedAt).toLocaleString()}
+                        {application.reviewedBy && ` by ${application.reviewedBy}`}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }

@@ -33,6 +33,14 @@ import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 
+interface SocialMedia {
+  instagram: string
+  twitter: string
+  tiktok: string
+  youtube: string
+  other: string
+}
+
 interface FormData {
   // Personal Information
   fullName: string
@@ -40,33 +48,22 @@ interface FormData {
   phone: string
   dateOfBirth: string
   nationality: string
-
   // Professional Information
   profession: string
   category: string
   experience: string
   achievements: string
-
   // Social Media
-  socialMedia: {
-    instagram: string
-    twitter: string
-    tiktok: string
-    youtube: string
-    other: string
-  }
+  socialMedia: SocialMedia
   followerCount: string
-
   // Pricing
   basePrice: number
   rushPrice: number
-
   // Additional Info
   languages: string[]
   availability: string
   specialRequests: string
   motivation: string
-
   // Documents
   hasProfilePhoto: boolean
   hasIdDocument: boolean
@@ -127,7 +124,6 @@ export default function JoinCelebrityPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile>>({})
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({})
-
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
@@ -166,7 +162,7 @@ export default function JoinCelebrityPage() {
       setFormData((prev) => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof FormData],
+          ...(prev[parent as keyof FormData] as Record<string, any>),
           [child]: value,
         },
       }))
@@ -177,7 +173,6 @@ export default function JoinCelebrityPage() {
 
   const handleFileUpload = async (file: File, type: string) => {
     setUploadingFiles((prev) => ({ ...prev, [type]: true }))
-
     try {
       const formData = new FormData()
       formData.append("file", file)
@@ -261,7 +256,6 @@ export default function JoinCelebrityPage() {
     }
 
     setIsSubmitting(true)
-
     try {
       const response = await fetch("/api/celebrity/apply", {
         method: "POST",
@@ -290,7 +284,6 @@ export default function JoinCelebrityPage() {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden">
         <Navbar />
-
         {/* Starfield Background */}
         <div className="absolute inset-0">
           {[...Array(100)].map((_, i) => (
@@ -377,7 +370,6 @@ export default function JoinCelebrityPage() {
             </Card>
           </motion.div>
         </div>
-
         <Footer />
       </div>
     )
@@ -386,7 +378,6 @@ export default function JoinCelebrityPage() {
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       <Navbar />
-
       {/* Starfield Background */}
       <div className="absolute inset-0">
         {[...Array(150)].map((_, i) => (
@@ -436,7 +427,6 @@ export default function JoinCelebrityPage() {
                 const Icon = step.icon
                 const isActive = currentStep === step.id
                 const isCompleted = currentStep > step.id
-
                 return (
                   <div key={step.id} className="flex items-center">
                     <div
@@ -1145,7 +1135,6 @@ export default function JoinCelebrityPage() {
             </div>
           </motion.div>
         </div>
-
         <Footer />
       </div>
     </div>

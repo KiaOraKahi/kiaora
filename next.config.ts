@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    domains: ["lxzosqesvwftyg1v.public.blob.vercel-storage.com"],
+  },
 };
 
 export default nextConfig;

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { sendEmail } from "@/lib/email"
+import { sendApplicationStatusEmail } from "@/lib/email"
 import bcrypt from "bcryptjs"
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -29,6 +29,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: "Application already processed" }, { status: 400 })
     }
 
+    console.log("🔍 Processing application approval for:", application.fullName)
+    console.log("📸 Profile photo URL:", application.profilePhotoUrl)
+
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
       // Check if user already exists
@@ -47,9 +50,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             role: "CELEBRITY",
             isVerified: true,
             password: hashedPassword,
-            image: application.profilePhotoUrl, // 🎯 Key: Set user image to uploaded photo
+            image: application.profilePhotoUrl, // 🎯 Save profile photo to user
           },
         })
+        console.log("✅ Created new user with image:", user.image)
       } else {
         // Update existing user to celebrity role and set profile image
         user = await tx.user.update({
@@ -57,12 +61,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           data: {
             role: "CELEBRITY",
             isVerified: true,
-            image: application.profilePhotoUrl, // 🎯 Key: Update user image
+            image: application.profilePhotoUrl, // 🎯 Update user image
           },
         })
+        console.log("✅ Updated existing user with image:", user.image)
       }
 
-      // Create celebrity profile
+      // Create celebrity profile with ALL required fields
       const celebrity = await tx.celebrity.create({
         data: {
           userId: user.id,
@@ -83,8 +88,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           tags: application.languages || [],
           achievements: [application.achievements],
           nextAvailable: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+          coverImage: application.profilePhotoUrl || null, // ✅ Cover image
+          // Social media handles
+          // instagramHandle: application.instagramHandle,
+          // twitterHandle: application.twitterHandle,
+          // tiktokHandle: application.tiktokHandle,
+          // youtubeHandle: application.youtubeHandle,
+          // followerCount: application.followerCount || 0,
+          // languages: application.languages || ["English"],
+          // availability: application.availability || "24 hours",
         },
       })
+      console.log("✅ Created celebrity profile with image:", celebrity.coverImage)
 
       // Update application status
       await tx.celebrityApplication.update({
@@ -100,72 +115,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return { user, celebrity }
     })
 
-    // Send approval email
+    // Send approval email using the existing function
     try {
-      await sendEmail({
-        to: application.email,
-        subject: "🎉 Welcome to Kia Ora - Your Application Has Been Approved!",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Kia Ora!</h1>
-              <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Your celebrity application has been approved</p>
-            </div>
-            
-            <div style="padding: 40px 20px; background: #f8f9fa;">
-              <h2 style="color: #333; margin-bottom: 20px;">Congratulations, ${application.fullName}!</h2>
-              
-              <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-                We're excited to welcome you to the Kia Ora celebrity network! Your application has been reviewed and approved.
-              </p>
-              
-              <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="color: #333; margin-top: 0;">Your Profile Details:</h3>
-                <ul style="color: #666; line-height: 1.8;">
-                  <li><strong>Category:</strong> ${application.category}</li>
-                  <li><strong>Base Price:</strong> $${application.basePrice}</li>
-                  <li><strong>Rush Price:</strong> $${application.rushPrice}</li>
-                  <li><strong>Languages:</strong> ${application.languages?.join(", ") || "English"}</li>
-                </ul>
-              </div>
-              
-              <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="color: #1976d2; margin-top: 0;">Next Steps:</h3>
-                <ol style="color: #666; line-height: 1.8;">
-                  <li>Log in to your celebrity dashboard to complete your profile</li>
-                  <li>Upload sample videos to showcase your work</li>
-                  <li>Set your availability and booking preferences</li>
-                  <li>Start receiving and fulfilling booking requests</li>
-                </ol>
-              </div>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.NEXTAUTH_URL}/celebrity-dashboard" 
-                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                          color: white; 
-                          padding: 15px 30px; 
-                          text-decoration: none; 
-                          border-radius: 25px; 
-                          font-weight: bold;
-                          display: inline-block;">
-                  Access Your Dashboard
-                </a>
-              </div>
-              
-              <p style="color: #666; line-height: 1.6; margin-top: 30px;">
-                If you have any questions or need assistance, please don't hesitate to contact our support team.
-              </p>
-              
-              <p style="color: #666; line-height: 1.6;">
-                Welcome to the family!<br>
-                <strong>The Kia Ora Team</strong>
-              </p>
-            </div>
-          </div>
-        `,
-      })
+      await sendApplicationStatusEmail(
+        application.email,
+        application.fullName,
+        "APPROVED",
+        `Congratulations! Your application has been approved. You can now access your celebrity dashboard and start receiving booking requests. Welcome to the Kia Ora family!`,
+      )
+      console.log("✅ Approval email sent successfully")
     } catch (emailError) {
-      console.error("Failed to send approval email:", emailError)
+      console.error("❌ Failed to send approval email:", emailError)
       // Don't fail the entire operation if email fails
     }
 
@@ -182,10 +142,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         id: result.celebrity.id,
         category: result.celebrity.category,
         pricePersonal: result.celebrity.pricePersonal,
+        image: result.celebrity.coverImage,
       },
     })
   } catch (error) {
-    console.error("Error approving application:", error)
-    return NextResponse.json({ error: "Failed to approve application" }, { status: 500 })
+    console.error("❌ Error approving application:", error)
+    return NextResponse.json(
+      {
+        error: "Failed to approve application",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }
