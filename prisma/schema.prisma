@@ -56,6 +56,7 @@ model User {
   bookings Booking[]
   reviews  Review[]
   orders   Order[]
+  tips     Tip[]
 }
 
 model Celebrity {
@@ -89,6 +90,22 @@ model Celebrity {
   achievements     String[] @default([])
   nextAvailable    String?  @default("2024-01-15")
   
+  // Stripe Connect Integration
+  stripeConnectAccountId    String?  @unique
+  stripeAccountStatus       StripeAccountStatus @default(NOT_STARTED)
+  stripeOnboardingComplete  Boolean  @default(false)
+  stripeChargesEnabled      Boolean  @default(false)
+  stripePayoutsEnabled      Boolean  @default(false)
+  preferredCurrency         String   @default("usd")
+  bankCountry              String?
+  payoutSchedule           PayoutSchedule @default(WEEKLY)
+  
+  // Earnings tracking
+  totalEarnings            Float    @default(0)
+  totalTips               Float    @default(0)
+  pendingEarnings         Float    @default(0)
+  lastPayoutAt            DateTime?
+  
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -97,6 +114,9 @@ model Celebrity {
   reviews      Review[]
   orders       Order[]
   sampleVideos SampleVideo[]
+  transfers    Transfer[]
+  tipsReceived Tip[]
+  payouts      Payout[]
 }
 
 model SampleVideo {
@@ -179,6 +199,18 @@ model Order {
   paymentStatus   PaymentStatus @default(PENDING)
   paidAt          DateTime?
   
+  // Platform fee tracking (20% of totalAmount)
+  platformFee     Float?
+  celebrityAmount Float?      // 80% of totalAmount
+  
+  // Transfer tracking
+  transferId      String?     // Stripe transfer ID
+  transferStatus  TransferStatus @default(PENDING)
+  transferredAt   DateTime?
+  
+  // Payout tracking - NEW FIELD
+  payoutStatus    TransferStatus @default(PENDING)
+  
   // Booking Details
   recipientName       String
   occasion           String
@@ -205,6 +237,9 @@ model Order {
   celebrity Celebrity  @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
   items     OrderItem[]
   booking   Booking?
+  tips      Tip[]
+  transfers Transfer[]
+  payouts   Payout[]
 }
 
 model OrderItem {
@@ -270,6 +305,83 @@ model Review {
   booking   Booking?   @relation(fields: [bookingId], references: [id], onDelete: SetNull)
 }
 
+// New Tip Model
+model Tip {
+  id              String    @id @default(cuid())
+  orderId         String
+  userId          String    // Fan giving the tip
+  celebrityId     String    // Celebrity receiving the tip
+  amount          Float
+  currency        String    @default("usd")
+  message         String?   @db.Text
+  
+  // Payment tracking
+  paymentIntentId String?   @unique
+  paymentStatus   PaymentStatus @default(PENDING)
+  paidAt          DateTime?
+  
+  // Transfer tracking (100% goes to celebrity)
+  transferId      String?   // Stripe transfer ID
+  transferStatus  TransferStatus @default(PENDING)
+  transferredAt   DateTime?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  transfers Transfer[]
+}
+
+// Transfer tracking model
+model Transfer {
+  id                String        @id @default(cuid())
+  stripeTransferId  String        @unique
+  celebrityId       String
+  orderId           String?       // For booking transfers
+  tipId             String?       // For tip transfers
+  
+  amount            Float
+  currency          String        @default("usd")
+  type              TransferType  // BOOKING_PAYMENT, TIP
+  status            TransferStatus @default(PENDING)
+  
+  // Metadata
+  description       String?
+  failureReason     String?
+  
+  // Timestamps
+  initiatedAt       DateTime      @default(now())
+  completedAt       DateTime?
+  failedAt          DateTime?
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  order     Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  tip       Tip?      @relation(fields: [tipId], references: [id], onDelete: SetNull)
+}
+
+// NEW Payout Model
+model Payout {
+  id                String        @id @default(cuid())
+  celebrityId       String
+  orderId           String
+  amount            Float
+  platformFee       Float
+  currency          String        @default("usd")
+  stripeTransferId  String?       @unique
+  status            TransferStatus @default(PENDING)
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
 model VerificationToken {
   id         String    @id @default(cuid())
   email      String
@@ -323,4 +435,32 @@ enum ApplicationStatus {
   APPROVED
   REJECTED
   REQUIRES_CHANGES
+}
+
+// New Enums for Stripe Connect
+enum StripeAccountStatus {
+  NOT_STARTED
+  PENDING
+  RESTRICTED
+  ENABLED
+  REJECTED
+}
+
+enum PayoutSchedule {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum TransferStatus {
+  PENDING
+  IN_TRANSIT
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum TransferType {
+  BOOKING_PAYMENT
+  TIP
 }

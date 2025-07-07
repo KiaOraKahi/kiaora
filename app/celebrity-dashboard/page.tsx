@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { motion } from "framer-motion"
@@ -16,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { VideoUploadModal } from "@/components/video-upload-modal"
+import StripeConnectOnboarding from "@/components/stripe-connect-onboarding"
 import { toast } from "sonner"
 import {
   DollarSign,
@@ -44,6 +44,7 @@ import {
   MessageCircle,
   Copy,
   Heart,
+  CreditCard,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
@@ -176,7 +177,6 @@ export default function CelebrityDashboard() {
       console.log("📊 Celebrity Dashboard - Fetching stats...")
       setLoading(true)
       setError(null)
-
       const response = await fetch("/api/celebrity/stats")
       console.log("📊 Celebrity Dashboard - Stats response status:", response.status)
 
@@ -201,12 +201,10 @@ export default function CelebrityDashboard() {
         averageResponseTime: data.averageResponseTime || 24,
         completionRate: data.completionRate || 95,
       })
-
       console.log("✅ Celebrity Dashboard - Stats loaded successfully")
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching stats:", error)
       setError(error instanceof Error ? error.message : "Failed to load dashboard")
-
       // Set default stats if API fails
       setStats({
         totalEarnings: 0,
@@ -228,7 +226,6 @@ export default function CelebrityDashboard() {
     try {
       console.log("📋 Celebrity Dashboard - Fetching booking requests...")
       setRequestsLoading(true)
-
       const response = await fetch("/api/celebrity/booking-requests?status=PENDING&limit=20")
       console.log("📋 Celebrity Dashboard - Booking requests response status:", response.status)
 
@@ -274,7 +271,6 @@ export default function CelebrityDashboard() {
     try {
       console.log("📋 Celebrity Dashboard - Fetching all orders...")
       setOrdersLoading(true)
-
       const response = await fetch("/api/celebrity/booking-requests?status=ALL&limit=100")
       console.log("📋 Celebrity Dashboard - All orders response status:", response.status)
 
@@ -321,7 +317,6 @@ export default function CelebrityDashboard() {
       console.log("👤 Celebrity Dashboard - Fetching profile...")
       setProfileLoading(true)
       setProfileError(null)
-
       const response = await fetch("/api/celebrity/profile")
       console.log("👤 Celebrity Dashboard - Profile response status:", response.status)
 
@@ -333,7 +328,6 @@ export default function CelebrityDashboard() {
 
       const data = await response.json()
       console.log("👤 Celebrity Dashboard - Profile data received:", data)
-
       setProfile(data)
       console.log("✅ Celebrity Dashboard - Profile loaded successfully")
     } catch (error) {
@@ -348,7 +342,6 @@ export default function CelebrityDashboard() {
     try {
       console.log("⭐ Celebrity Dashboard - Fetching reviews...")
       setReviewsLoading(true)
-
       const response = await fetch("/api/celebrity/reviews")
       console.log("⭐ Celebrity Dashboard - Reviews response status:", response.status)
 
@@ -360,7 +353,6 @@ export default function CelebrityDashboard() {
 
       const data = await response.json()
       console.log("⭐ Celebrity Dashboard - Reviews data received:", data)
-
       setReviews(data.reviews || [])
       setReviewStats(data.stats || null)
       console.log("✅ Celebrity Dashboard - Reviews loaded successfully")
@@ -376,7 +368,6 @@ export default function CelebrityDashboard() {
   const handleBookingAction = async (requestId: string, action: "accept" | "decline") => {
     try {
       console.log(`🔄 Celebrity Dashboard - ${action}ing booking:`, requestId)
-
       const response = await fetch(`/api/celebrity/booking-requests/${requestId}`, {
         method: "PATCH",
         headers: {
@@ -384,7 +375,6 @@ export default function CelebrityDashboard() {
         },
         body: JSON.stringify({ action }),
       })
-
       console.log(`📋 Celebrity Dashboard - Booking ${action} response status:`, response.status)
 
       if (!response.ok) {
@@ -434,7 +424,6 @@ export default function CelebrityDashboard() {
         },
         body: JSON.stringify(profile),
       })
-
       console.log("💾 Celebrity Dashboard - Profile save response status:", response.status)
 
       if (!response.ok) {
@@ -445,7 +434,6 @@ export default function CelebrityDashboard() {
 
       const updatedProfile = await response.json()
       console.log("💾 Celebrity Dashboard - Profile saved successfully:", updatedProfile)
-
       setProfile(updatedProfile)
       setProfileSuccess(true)
 
@@ -467,7 +455,6 @@ export default function CelebrityDashboard() {
   // Social sharing functions
   const shareToSocial = (platform: string) => {
     if (!profile) return
-
     const profileUrl = `${window.location.origin}/celebrities/${profile.id}`
     const shareText = `Check out ${profile.name} on Kia Ora! Get personalized video messages from your favorite celebrity.`
 
@@ -500,14 +487,13 @@ export default function CelebrityDashboard() {
     if (shareUrl) {
       window.open(shareUrl, "_blank", "width=600,height=400")
       toast.success("Shared Successfully!", {
-          description: `Profile shared on ${platform.charAt(0).toUpperCase() + platform.slice(1)}!`,
+        description: `Profile shared on ${platform.charAt(0).toUpperCase() + platform.slice(1)}!`,
       })
     }
   }
 
   const copyProfileLink = async () => {
     if (!profile) return
-
     const profileUrl = `${window.location.origin}/celebrities/${profile.id}`
     try {
       await navigator.clipboard.writeText(profileUrl)
@@ -533,7 +519,6 @@ export default function CelebrityDashboard() {
 
   const getStatusBadgeColor = (status: string) => {
     if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
-
     switch (status.toLowerCase()) {
       case "pending":
         return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
@@ -703,6 +688,13 @@ export default function CelebrityDashboard() {
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="payments"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Payments
               </TabsTrigger>
               <TabsTrigger
                 value="requests"
@@ -1002,6 +994,11 @@ export default function CelebrityDashboard() {
               </div>
             </TabsContent>
 
+            {/* Payments Tab - NEW */}
+            <TabsContent value="payments" className="space-y-6">
+              <StripeConnectOnboarding />
+            </TabsContent>
+
             {/* Booking Requests Tab */}
             <TabsContent value="requests" className="space-y-6">
               <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
@@ -1069,14 +1066,12 @@ export default function CelebrityDashboard() {
                               </Badge>
                             </div>
                           </div>
-
                           <div className="mb-4">
                             <p className="text-purple-200 text-sm font-medium mb-2">Special Instructions:</p>
                             <p className="text-white bg-white/5 p-3 rounded-lg">
                               {request.instructions || "No special instructions provided"}
                             </p>
                           </div>
-
                           {request.status === "pending" && (
                             <div className="flex gap-3">
                               <Button
@@ -1189,14 +1184,12 @@ export default function CelebrityDashboard() {
                             <Badge className="bg-green-500/20 text-green-300 mt-2">Paid</Badge>
                           </div>
                         </div>
-
                         <div className="mb-4">
                           <p className="text-purple-200 text-sm font-medium mb-2">Message Instructions:</p>
                           <p className="text-white bg-white/5 p-3 rounded-lg">
                             {order.instructions || "No special instructions provided"}
                           </p>
                         </div>
-
                         {/* Action buttons based on status */}
                         <div className="flex gap-3">
                           {order.status === "confirmed" && !order.videoUrl && (
@@ -1212,14 +1205,12 @@ export default function CelebrityDashboard() {
                               </Button>
                             </VideoUploadModal>
                           )}
-
                           {order.status === "completed" && order.videoUrl && (
                             <div className="flex-1 flex items-center gap-2 p-3 bg-green-500/20 rounded-lg">
                               <CheckCircle className="w-5 h-5 text-green-400" />
                               <span className="text-green-300 font-medium">Video Delivered</span>
                             </div>
                           )}
-
                           <Button
                             variant="outline"
                             className="bg-white/10 border-white/20 text-white hover:bg-white/20"
@@ -1339,7 +1330,6 @@ export default function CelebrityDashboard() {
                                 </Badge>
                               )}
                             </div>
-
                             <div className="flex items-center gap-4 mb-3 text-sm text-purple-200">
                               <span>
                                 <strong>Occasion:</strong> {review.occasion}
@@ -1351,13 +1341,11 @@ export default function CelebrityDashboard() {
                               )}
                               <span>{format(new Date(review.createdAt), "MMM d, yyyy")}</span>
                             </div>
-
                             {review.comment && (
                               <div className="bg-white/5 p-4 rounded-lg">
                                 <p className="text-white leading-relaxed">{review.comment}</p>
                               </div>
                             )}
-
                             <div className="flex items-center gap-4 mt-3">
                               <Button
                                 size="sm"
@@ -1436,7 +1424,6 @@ export default function CelebrityDashboard() {
                           <span className="text-green-300">Profile updated successfully!</span>
                         </div>
                       )}
-
                       {profileError && (
                         <div className="flex items-center gap-2 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
                           <AlertCircle className="w-5 h-5 text-red-400" />
@@ -1504,7 +1491,6 @@ export default function CelebrityDashboard() {
                             </SelectContent>
                           </Select>
                         </div>
-
                         <div className="space-y-2">
                           <Label htmlFor="responseTime" className="text-purple-200">
                             Response Time
@@ -1527,7 +1513,6 @@ export default function CelebrityDashboard() {
                           </Select>
                         </div>
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="bio" className="text-purple-200">
                           Short Bio
@@ -1542,7 +1527,6 @@ export default function CelebrityDashboard() {
                         />
                         <p className="text-xs text-purple-400">{profile.bio.length}/150 characters</p>
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="longBio" className="text-purple-200">
                           Long Bio
@@ -1588,7 +1572,6 @@ export default function CelebrityDashboard() {
                           </div>
                           <p className="text-xs text-purple-400">Birthday wishes, congratulations, etc.</p>
                         </div>
-
                         <div className="space-y-2">
                           <Label htmlFor="priceBusiness" className="text-purple-200">
                             Business Messages
@@ -1607,7 +1590,6 @@ export default function CelebrityDashboard() {
                           </div>
                           <p className="text-xs text-purple-400">Corporate events, promotions, etc.</p>
                         </div>
-
                         <div className="space-y-2">
                           <Label htmlFor="priceCharity" className="text-purple-200">
                             Charity Messages
@@ -1653,7 +1635,6 @@ export default function CelebrityDashboard() {
                           />
                           <p className="text-xs text-purple-400">When you can next fulfill requests</p>
                         </div>
-
                         <div className="space-y-2">
                           <Label className="text-purple-200">Accepting New Bookings</Label>
                           <div className="flex items-center space-x-2">

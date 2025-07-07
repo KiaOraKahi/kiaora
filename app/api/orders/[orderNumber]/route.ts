@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 export async function GET(request: NextRequest, { params }: { params: Promise<{ orderNumber: string }> }) {
   try {
     const session = await getServerSession(authOptions)
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -37,6 +38,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           },
         },
         items: true,
+        tips: {
+          where: {
+            userId: session.user.id, // Only get tips from this user
+          },
+          select: {
+            id: true,
+            amount: true,
+            message: true,
+            paymentStatus: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     })
 
@@ -66,6 +82,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         id: true,
       },
     })
+
+    // Calculate total tips amount
+    const totalTipsAmount = order.tips.reduce((sum, tip) => {
+      return tip.paymentStatus === "SUCCEEDED" ? sum + tip.amount : sum
+    }, 0)
 
     // Format the response to match frontend interface
     const formattedOrder = {
@@ -131,6 +152,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         unitPrice: item.unitPrice || 0,
         totalPrice: item.totalPrice || 0,
       })),
+
+      // Tips data - NEW
+      tips: order.tips.map((tip) => ({
+        id: tip.id,
+        amount: tip.amount,
+        message: tip.message,
+        status: tip.paymentStatus?.toLowerCase() || "pending",
+        createdAt: tip.createdAt.toISOString(),
+      })),
+      totalTips: totalTipsAmount,
 
       // Transaction info (simplified)
       transactions: [

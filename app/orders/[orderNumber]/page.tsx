@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ReviewModal } from "@/components/review-modal"
+import { TipModal } from "@/components/tip-modal"
 import {
   Download,
   Play,
@@ -21,6 +22,7 @@ import {
   Loader2,
   ArrowLeft,
   Heart,
+  Gift,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
@@ -67,11 +69,21 @@ interface OrderDetails {
   hasReviewed: boolean
 }
 
+interface TipData {
+  id: string
+  amount: number
+  message: string | null
+  createdAt: string
+  status: string
+}
+
 export default function OrderDetailsPage() {
   const params = useParams()
   const { data: session } = useSession()
   const orderNumber = params?.orderNumber as string
   const [order, setOrder] = useState<OrderDetails | null>(null)
+  const [tips, setTips] = useState<TipData[]>([])
+  const [totalTips, setTotalTips] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [videoLoading, setVideoLoading] = useState(false)
@@ -79,6 +91,7 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     if (orderNumber) {
       fetchOrderDetails()
+      fetchTips()
     }
   }, [orderNumber])
 
@@ -101,6 +114,24 @@ export default function OrderDetailsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchTips = async () => {
+    try {
+      const response = await fetch(`/api/tips?orderNumber=${orderNumber}`)
+      if (response.ok) {
+        const data = await response.json()
+        setTips(data.tips || [])
+        setTotalTips(data.totalAmount || 0)
+      }
+    } catch (error) {
+      console.error("Error fetching tips:", error)
+    }
+  }
+
+  const handleTipSuccess = () => {
+    // Refresh tips data after successful tip
+    fetchTips()
   }
 
   const handleVideoDownload = async () => {
@@ -310,6 +341,65 @@ export default function OrderDetailsPage() {
                 </Card>
               )}
 
+              {/* Tip Section - Show after video is delivered */}
+              {order.status === "completed" && order.celebrity?.id && (
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Heart className="w-5 h-5 text-pink-500" />
+                      Show Your Appreciation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-purple-200 text-sm">
+                      Love your video? Show {order.celebrity.name} some extra appreciation with a tip!
+                    </p>
+
+                    {/* Tip History */}
+                    {tips.length > 0 && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-purple-200 text-sm">Your Tips:</span>
+                          <span className="text-white font-semibold">${totalTips.toLocaleString()}</span>
+                        </div>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {tips.map((tip) => (
+                            <div key={tip.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                              <div className="flex items-center gap-2">
+                                <Gift className="w-4 h-4 text-pink-400" />
+                                <span className="text-white text-sm">${tip.amount}</span>
+                                {tip.message && (
+                                  <span className="text-purple-200 text-xs truncate max-w-32">"{tip.message}"</span>
+                                )}
+                              </div>
+                              <span className="text-purple-300 text-xs">{safeFormatDate(tip.createdAt, "MMM d")}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <Separator className="bg-white/20" />
+                      </div>
+                    )}
+
+                    {/* Tip Button */}
+                    <TipModal
+                      orderNumber={order.orderNumber}
+                      celebrityName={order.celebrity.name || "Celebrity"}
+                      celebrityImage={order.celebrity.image || undefined}
+                      onTipSuccess={handleTipSuccess}
+                    >
+                      <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white">
+                        <Heart className="w-4 h-4 mr-2" />
+                        Send a Tip
+                      </Button>
+                    </TipModal>
+
+                    <p className="text-purple-300 text-xs text-center">
+                      💝 100% of your tip goes directly to {order.celebrity.name}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Order Status */}
               {order.status !== "completed" && (
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
@@ -468,6 +558,12 @@ export default function OrderDetailsPage() {
                       ${(order.totalAmount || 0).toLocaleString()} {(order.currency || "USD").toUpperCase()}
                     </span>
                   </div>
+                  {totalTips > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-purple-200">Tips Given</span>
+                      <span className="text-pink-400 font-semibold">+${totalTips.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-purple-200">Payment Status</span>
                     <Badge className={getPaymentStatusColor(order.paymentStatus)}>

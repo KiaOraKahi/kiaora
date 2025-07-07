@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { stripe } from "@/lib/stripe"
+import { stripe, calculatePaymentSplit } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
@@ -11,9 +11,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { celebrityId, amount, bookingData, orderItems } = await request.json()
+    const { celebrityId, amount, bookingData, orderItems, paymentType = "booking" } = await request.json()
 
-    console.log("🔄 Creating payment intent for celebrity:", celebrityId)
+    console.log(`🔄 Creating ${paymentType} payment intent for celebrity:`, celebrityId)
     console.log("💰 Amount:", amount)
 
     // Find celebrity in database
@@ -29,106 +29,31 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Celebrity found in database:", celebrity.user.name)
 
-    // Generate unique order number
-    const orderNumber = `KO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+    // Check if celebrity has Stripe Connect account for transfers
+    if (!celebrity.stripeConnectAccountId) {
+      console.log("⚠️ Celebrity doesn't have Stripe Connect account")
+      // We'll still allow the payment but won't be able to transfer until they set up Connect
+    }
 
-    // Create order first
-    console.log("📝 Creating order...")
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        userId: session.user.id,
-        celebrityId: String(celebrityId), // This should match the celebrity.id
-        totalAmount: amount,
-        currency: "usd",
-        status: "PENDING",
-        paymentStatus: "PENDING",
-        recipientName: bookingData.recipientName,
-        occasion: bookingData.occasion,
-        personalMessage: bookingData.personalMessage,
-        specialInstructions: bookingData.specialInstructions || null,
-        messageType: bookingData.messageType || "personal",
-        email: bookingData.email,
-        phone: bookingData.phone || null,
-        scheduledDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate) : null,
-        scheduledTime: bookingData.scheduledTime || null,
-      },
-    })
-
-    console.log("✅ Order created:", order.orderNumber)
-
-    // Create order items
-    console.log("📦 Creating order items...")
-    for (const item of orderItems) {
-      await prisma.orderItem.create({
-        data: {
-          orderId: order.id,
-          type: item.type,
-          name: item.name,
-          description: item.description || null,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice,
-          metadata: item.metadata || null,
-        },
+    // Handle different payment types
+    if (paymentType === "tip") {
+      return await handleTipPayment({
+        session,
+        celebrity,
+        amount,
+        orderId: bookingData.orderId,
+        orderNumber: bookingData.orderNumber,
+        message: bookingData.message,
       })
     }
 
-    console.log("✅ Order items created")
-
-    // Create booking linked to order
-    console.log("🎬 Creating booking...")
-    const booking = await prisma.booking.create({
-      data: {
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        userId: session.user.id,
-        celebrityId: String(celebrityId), // This should match the celebrity.id
-        message: bookingData.personalMessage,
-        recipientName: bookingData.recipientName,
-        occasion: bookingData.occasion,
-        instructions: bookingData.specialInstructions || null,
-        specialInstructions: bookingData.specialInstructions || null,
-        status: "PENDING",
-        price: amount,
-        totalAmount: amount,
-        scheduledDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate) : null,
-        deadline: bookingData.deadline
-          ? new Date(bookingData.deadline)
-          : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      },
-    })
-
-    console.log("✅ Booking created:", booking.id)
-
-    // Create Stripe payment intent
-    console.log("💳 Creating Stripe PaymentIntent...")
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
-      currency: "usd",
-      metadata: {
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        bookingId: booking.id,
-        celebrityId: String(celebrityId),
-        userId: session.user.id,
-      },
-    })
-
-    console.log("✅ Stripe PaymentIntent created:", paymentIntent.id)
-
-    // Update order with payment intent ID
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { paymentIntentId: paymentIntent.id },
-    })
-
-    console.log("✅ Payment intent created successfully")
-
-    return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
-      orderNumber: order.orderNumber,
-      orderId: order.id,
+    // Handle booking payment (default)
+    return await handleBookingPayment({
+      session,
+      celebrity,
+      amount,
+      bookingData,
+      orderItems,
     })
   } catch (error) {
     console.error("❌ Payment intent creation error:", error)
@@ -137,4 +62,250 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
+}
+
+// Handle booking payment with 80/20 split
+async function handleBookingPayment({
+  session,
+  celebrity,
+  amount,
+  bookingData,
+  orderItems,
+}: {
+  session: any
+  celebrity: any
+  amount: number
+  bookingData: any
+  orderItems: any[]
+}) {
+  // Calculate platform fee (20%) and celebrity amount (80%)
+  const { platformFee, celebrityAmount } = calculatePaymentSplit(amount * 100) // Convert to cents
+
+  console.log(`💰 Payment breakdown:`)
+  console.log(`   Total: $${amount}`)
+  console.log(`   Platform Fee (20%): $${platformFee / 100}`)
+  console.log(`   Celebrity Amount (80%): $${celebrityAmount / 100}`)
+
+  // Generate unique order number
+  const orderNumber = `KO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+
+  // Create order first
+  console.log("📝 Creating order...")
+  const order = await prisma.order.create({
+    data: {
+      orderNumber,
+      userId: session.user.id,
+      celebrityId: String(celebrity.id),
+      totalAmount: amount,
+      currency: "usd",
+      status: "PENDING",
+      paymentStatus: "PENDING",
+
+      // Platform fee tracking
+      platformFee: platformFee / 100, // Store in dollars
+      celebrityAmount: celebrityAmount / 100, // Store in dollars
+      transferStatus: "PENDING",
+
+      // Booking details
+      recipientName: bookingData.recipientName,
+      occasion: bookingData.occasion,
+      personalMessage: bookingData.personalMessage,
+      specialInstructions: bookingData.specialInstructions || null,
+      messageType: bookingData.messageType || "personal",
+      email: bookingData.email,
+      phone: bookingData.phone || null,
+      scheduledDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate) : null,
+      scheduledTime: bookingData.scheduledTime || null,
+    },
+  })
+
+  console.log("✅ Order created:", order.orderNumber)
+
+  // Create order items
+  console.log("📦 Creating order items...")
+  for (const item of orderItems) {
+    await prisma.orderItem.create({
+      data: {
+        orderId: order.id,
+        type: item.type,
+        name: item.name,
+        description: item.description || null,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+        metadata: item.metadata || null,
+      },
+    })
+  }
+
+  console.log("✅ Order items created")
+
+  // Create booking linked to order
+  console.log("🎬 Creating booking...")
+  const booking = await prisma.booking.create({
+    data: {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      userId: session.user.id,
+      celebrityId: String(celebrity.id),
+      message: bookingData.personalMessage,
+      recipientName: bookingData.recipientName,
+      occasion: bookingData.occasion,
+      instructions: bookingData.specialInstructions || null,
+      specialInstructions: bookingData.specialInstructions || null,
+      status: "PENDING",
+      price: amount,
+      totalAmount: amount,
+      scheduledDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate) : null,
+      deadline: bookingData.deadline ? new Date(bookingData.deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    },
+  })
+
+  console.log("✅ Booking created:", booking.id)
+
+  // Create Stripe payment intent
+  console.log("💳 Creating Stripe PaymentIntent...")
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(amount * 100), // Convert to cents
+    currency: "usd",
+    description: `Booking: ${celebrity.user.name} for ${bookingData.recipientName}`,
+    metadata: {
+      type: "booking",
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      bookingId: booking.id,
+      celebrityId: String(celebrity.id),
+      celebrityName: celebrity.user.name || "Unknown",
+      userId: session.user.id,
+      userName: session.user.name || "Unknown",
+
+      // Payment split info
+      totalAmount: (amount * 100).toString(),
+      platformFee: platformFee.toString(),
+      celebrityAmount: celebrityAmount.toString(),
+
+      // Connect account info
+      celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",
+      canTransfer: celebrity.stripeConnectAccountId ? "true" : "false",
+    },
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  })
+
+  console.log("✅ Stripe PaymentIntent created:", paymentIntent.id)
+
+  // Update order with payment intent ID
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { paymentIntentId: paymentIntent.id },
+  })
+
+  console.log("✅ Booking payment intent created successfully")
+
+  return NextResponse.json({
+    clientSecret: paymentIntent.client_secret,
+    orderNumber: order.orderNumber,
+    orderId: order.id,
+    paymentType: "booking",
+    platformFee: platformFee / 100,
+    celebrityAmount: celebrityAmount / 100,
+  })
+}
+
+// Handle tip payment (100% to celebrity)
+async function handleTipPayment({
+  session,
+  celebrity,
+  amount,
+  orderId,
+  orderNumber,
+  message,
+}: {
+  session: any
+  celebrity: any
+  amount: number
+  orderId: string
+  orderNumber: string
+  message?: string
+}) {
+  console.log("💝 Creating tip payment...")
+
+  // Verify the order exists and belongs to this celebrity
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      celebrityId: celebrity.id,
+    },
+  })
+
+  if (!order) {
+    console.log("❌ Order not found or doesn't belong to celebrity")
+    return NextResponse.json({ error: "Order not found" }, { status: 404 })
+  }
+
+  // Create tip record
+  const tip = await prisma.tip.create({
+    data: {
+      orderId: orderId,
+      userId: session.user.id,
+      celebrityId: celebrity.id,
+      amount: amount,
+      currency: "usd",
+      message: message || null,
+      paymentStatus: "PENDING",
+      transferStatus: "PENDING",
+    },
+  })
+
+  console.log("✅ Tip record created:", tip.id)
+
+  // Create Stripe payment intent for tip
+  console.log("💳 Creating tip PaymentIntent...")
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(amount * 100), // Convert to cents
+    currency: "usd",
+    description: `Tip for ${celebrity.user.name} - Order ${orderNumber}`,
+    metadata: {
+      type: "tip",
+      tipId: tip.id,
+      orderId: orderId,
+      orderNumber: orderNumber,
+      celebrityId: celebrity.id,
+      celebrityName: celebrity.user.name || "Unknown",
+      userId: session.user.id,
+      userName: session.user.name || "Unknown",
+
+      // Tip info (100% to celebrity)
+      tipAmount: (amount * 100).toString(),
+      celebrityAmount: (amount * 100).toString(), // 100% of tip
+
+      // Connect account info
+      celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",
+      canTransfer: celebrity.stripeConnectAccountId ? "true" : "false",
+    },
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  })
+
+  console.log("✅ Tip PaymentIntent created:", paymentIntent.id)
+
+  // Update tip with payment intent ID
+  await prisma.tip.update({
+    where: { id: tip.id },
+    data: { paymentIntentId: paymentIntent.id },
+  })
+
+  console.log("✅ Tip payment intent created successfully")
+
+  return NextResponse.json({
+    clientSecret: paymentIntent.client_secret,
+    tipId: tip.id,
+    orderId: orderId,
+    orderNumber: orderNumber,
+    paymentType: "tip",
+    tipAmount: amount,
+    celebrityAmount: amount, // 100% goes to celebrity
+  })
 }
