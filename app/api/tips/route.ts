@@ -71,13 +71,13 @@ export async function POST(request: NextRequest) {
     const tip = await prisma.tip.create({
       data: {
         orderId: order.id,
-        orderNumber: order.orderNumber,
+        // orderNumber: order.orderNumber,
         userId: session.user.id,
         celebrityId: celebrity.id,
         amount: amount,
         currency: "usd",
         message: message || null,
-        status: "PENDING",
+        // status: "PENDING",
         paymentStatus: "PENDING",
       },
     })
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
         amount: true,
         currency: true,
         message: true,
-        status: true,
+        // status: true,
         paymentStatus: true,
         createdAt: true,
         paidAt: true,

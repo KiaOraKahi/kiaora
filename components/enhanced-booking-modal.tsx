@@ -258,12 +258,15 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
   }
 
   const handlePaymentSuccess = (paymentIntent: any) => {
+    console.log("✅ Payment successful:", paymentIntent)
     setOrderConfirmed(true)
     setCurrentStep(6) // Move to confirmation step
   }
 
   const handlePaymentError = (error: string) => {
+    console.error("❌ Payment error:", error)
     setPaymentError(`Payment failed: ${error}`)
+    // Don't go back to step 4, stay on payment step so user can retry
   }
 
   const resetModal = () => {
@@ -384,14 +387,23 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                 <span className="font-semibold">Payment Error</span>
               </div>
               <p className="text-red-200 text-sm mt-1">{paymentError}</p>
+              {currentStep === 5 && (
+                <Button
+                  onClick={() => setPaymentError("")}
+                  className="mt-3 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-200"
+                  size="sm"
+                >
+                  Try Again
+                </Button>
+              )}
             </div>
           )}
 
           {/* Progress Bar */}
-          {!orderConfirmed && currentStep < 5 && (
+          {!orderConfirmed && currentStep <= 5 && (
             <div className="px-6 py-4">
               <div className="flex items-center gap-2">
-                {[1, 2, 3, 4].map((step) => (
+                {[1, 2, 3, 4, 5].map((step) => (
                   <div key={step} className="flex items-center flex-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
@@ -400,7 +412,7 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                     >
                       {currentStep > step ? <CheckCircle className="w-5 h-5" /> : step}
                     </div>
-                    {step < 4 && (
+                    {step < 5 && (
                       <div className={`flex-1 h-1 mx-2 ${currentStep > step ? "bg-purple-500" : "bg-white/20"}`} />
                     )}
                   </div>
@@ -411,6 +423,7 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                 <span className={currentStep >= 2 ? "text-white" : "text-purple-300"}>Schedule</span>
                 <span className={currentStep >= 3 ? "text-white" : "text-purple-300"}>Add-ons</span>
                 <span className={currentStep >= 4 ? "text-white" : "text-purple-300"}>Review</span>
+                <span className={currentStep >= 5 ? "text-white" : "text-purple-300"}>Payment</span>
               </div>
             </div>
           )}
@@ -846,7 +859,7 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                   </div>
                 </div>
 
-                <StripeProvider clientSecret={clientSecret}>
+                <StripeProvider clientSecret={clientSecret} theme="night">
                   <PaymentForm
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}

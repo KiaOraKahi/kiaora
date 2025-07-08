@@ -16,6 +16,11 @@ export async function POST(request: NextRequest) {
     console.log(`🔄 Creating ${paymentType} payment intent for celebrity:`, celebrityId)
     console.log("💰 Amount:", amount)
 
+    // Validate required fields
+    if (!celebrityId || !amount || amount <= 0) {
+      return NextResponse.json({ error: "Invalid request data" }, { status: 400 })
+    }
+
     // Find celebrity in database
     const celebrity = await prisma.celebrity.findUnique({
       where: { id: String(celebrityId) },
@@ -78,8 +83,15 @@ async function handleBookingPayment({
   bookingData: any
   orderItems: any[]
 }) {
+  // Validate booking data
+  if (!bookingData.recipientName || !bookingData.occasion || !bookingData.personalMessage || !bookingData.email) {
+    throw new Error("Missing required booking information")
+  }
+
   // Calculate platform fee (20%) and celebrity amount (80%)
-  const { platformFee, celebrityAmount } = calculatePaymentSplit(amount * 100) // Convert to cents
+  // Convert amount to cents for Stripe calculations
+  const amountInCents = Math.round(amount * 100)
+  const { platformFee, celebrityAmount } = calculatePaymentSplit(amountInCents, 20)
 
   console.log(`💰 Payment breakdown:`)
   console.log(`   Total: $${amount}`)
@@ -130,10 +142,10 @@ async function handleBookingPayment({
         type: item.type,
         name: item.name,
         description: item.description || null,
-        quantity: item.quantity,
+        quantity: item.quantity || 1,
         unitPrice: item.unitPrice,
         totalPrice: item.totalPrice,
-        metadata: item.metadata || null,
+        metadata: item.metadata ? JSON.stringify(item.metadata) : null,
       },
     })
   }
@@ -166,7 +178,7 @@ async function handleBookingPayment({
   // Create Stripe payment intent
   console.log("💳 Creating Stripe PaymentIntent...")
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.round(amount * 100), // Convert to cents
+    amount: amountInCents, // Already in cents
     currency: "usd",
     description: `Booking: ${celebrity.user.name} for ${bookingData.recipientName}`,
     metadata: {
@@ -180,7 +192,7 @@ async function handleBookingPayment({
       userName: session.user.name || "Unknown",
 
       // Payment split info
-      totalAmount: (amount * 100).toString(),
+      totalAmount: amountInCents.toString(),
       platformFee: platformFee.toString(),
       celebrityAmount: celebrityAmount.toString(),
 
@@ -231,6 +243,11 @@ async function handleTipPayment({
 }) {
   console.log("💝 Creating tip payment...")
 
+  // Validate tip amount
+  if (amount < 1 || amount > 1000) {
+    throw new Error("Tip amount must be between $1 and $1000")
+  }
+
   // Verify the order exists and belongs to this celebrity
   const order = await prisma.order.findFirst({
     where: {
@@ -242,6 +259,11 @@ async function handleTipPayment({
   if (!order) {
     console.log("❌ Order not found or doesn't belong to celebrity")
     return NextResponse.json({ error: "Order not found" }, { status: 404 })
+  }
+
+  // Check if order is completed (can only tip completed orders)
+  if (order.status !== "COMPLETED") {
+    return NextResponse.json({ error: "Can only tip completed orders" }, { status: 400 })
   }
 
   // Create tip record
@@ -262,8 +284,9 @@ async function handleTipPayment({
 
   // Create Stripe payment intent for tip
   console.log("💳 Creating tip PaymentIntent...")
+  const amountInCents = Math.round(amount * 100)
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.round(amount * 100), // Convert to cents
+    amount: amountInCents,
     currency: "usd",
     description: `Tip for ${celebrity.user.name} - Order ${orderNumber}`,
     metadata: {
@@ -277,8 +300,8 @@ async function handleTipPayment({
       userName: session.user.name || "Unknown",
 
       // Tip info (100% to celebrity)
-      tipAmount: (amount * 100).toString(),
-      celebrityAmount: (amount * 100).toString(), // 100% of tip
+      tipAmount: amountInCents.toString(),
+      celebrityAmount: amountInCents.toString(), // 100% of tip
 
       // Connect account info
       celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",

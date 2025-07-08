@@ -3,75 +3,133 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js"
+import { useRouter } from "next/navigation"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, DollarSign, Loader2, CheckCircle, Star, Gift } from "lucide-react"
+import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js"
+import { loadStripe } from "@stripe/stripe-js"
+import { Loader2, Heart, AlertCircle, CheckCircle } from "lucide-react"
 import { toast } from "sonner"
 
+// Initialize Stripe outside of component to avoid recreating it on each render
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "")
+
+// Tip amounts in dollars
+const TIP_AMOUNTS = [5, 10, 20, 50, 100]
+
 interface TipModalProps {
+  children: React.ReactNode
   orderNumber: string
   celebrityName: string
   celebrityImage?: string
   onTipSuccess?: () => void
-  children: React.ReactNode
 }
 
-const PRESET_AMOUNTS = [5, 10, 25, 50, 100]
+// Wrapper component that provides Stripe Elements context
+export function TipModal({ children, orderNumber, celebrityName, celebrityImage, onTipSuccess }: TipModalProps) {
+  const [open, setOpen] = useState(false)
 
-export function TipModal({ orderNumber, celebrityName, celebrityImage, onTipSuccess, children }: TipModalProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
-  const [customAmount, setCustomAmount] = useState("")
-  const [message, setMessage] = useState("")
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [paymentStep, setPaymentStep] = useState<"amount" | "payment" | "success">("amount")
-  const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [tipId, setTipId] = useState<string | null>(null)
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <Elements stripe={stripePromise}>
+        <TipModalContent
+          orderNumber={orderNumber}
+          celebrityName={celebrityName}
+          celebrityImage={celebrityImage}
+          onTipSuccess={() => {
+            setOpen(false)
+            onTipSuccess?.()
+          }}
+        />
+      </Elements>
+    </Dialog>
+  )
+}
 
+// Inner content component that uses Stripe hooks
+function TipModalContent({
+  orderNumber,
+  celebrityName,
+  celebrityImage,
+  onTipSuccess,
+}: Omit<TipModalProps, "children">) {
   const stripe = useStripe()
   const elements = useElements()
+  const router = useRouter()
 
-  const getTipAmount = () => {
-    if (selectedAmount) return selectedAmount
-    const custom = Number.parseFloat(customAmount)
-    return isNaN(custom) ? 0 : custom
-  }
-
-  const isValidAmount = () => {
-    const amount = getTipAmount()
-    return amount >= 1 && amount <= 1000
-  }
+  const [customAmount, setCustomAmount] = useState("")
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
+  const [message, setMessage] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [paymentSuccess, setPaymentSuccess] = useState(false)
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount)
     setCustomAmount("")
   }
 
-  const handleCustomAmountChange = (value: string) => {
+  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9.]/g, "")
     setCustomAmount(value)
     setSelectedAmount(null)
   }
 
-  const handleCreateTipPayment = async () => {
-    if (!isValidAmount()) {
-      toast.success("Please enter a tip amount between $1 and $1000")
+  const getSelectedAmount = (): number => {
+    if (selectedAmount) return selectedAmount
+    if (customAmount) {
+      const parsed = Number.parseFloat(customAmount)
+      return isNaN(parsed) ? 0 : parsed
+    }
+    return 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!stripe || !elements) {
+      setError("Stripe has not loaded yet. Please try again.")
       return
     }
 
-    setIsProcessing(true)
+    const amount = getSelectedAmount()
+
+    if (!amount || amount < 1) {
+      setError("Please select or enter a valid tip amount (minimum $1)")
+      return
+    }
+
+    if (amount > 1000) {
+      setError("Maximum tip amount is $1,000")
+      return
+    }
 
     try {
+      setLoading(true)
+      setError(null)
+
+      // 1. Create payment intent on the server
       const response = await fetch("/api/tips", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           orderNumber,
-          amount: getTipAmount(),
+          amount,
           message: message.trim() || null,
         }),
       })
@@ -79,270 +137,183 @@ export function TipModal({ orderNumber, celebrityName, celebrityImage, onTipSucc
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create tip payment")
+        throw new Error(data.error || data.details || "Failed to create tip payment")
       }
 
-      setClientSecret(data.clientSecret)
-      setTipId(data.tipId)
-      setPaymentStep("payment")
+      if (!data.clientSecret) {
+        throw new Error("No client secret returned from the server")
+      }
 
-      toast.success(`Ready to process $${getTipAmount()} tip for ${celebrityName}`)
-    } catch (error) {
-      console.error("Error creating tip payment:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to create tip payment")
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const handlePaymentSubmit = async () => {
-    if (!stripe || !elements || !clientSecret) {
-      toast.error("Payment system not ready. Please try again.")
-      return
-    }
-
-    setIsProcessing(true)
-
-    try {
+      // 2. Confirm the payment with Stripe.js
       const cardElement = elements.getElement(CardElement)
+
       if (!cardElement) {
         throw new Error("Card element not found")
       }
 
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: cardElement,
         },
       })
 
-      if (error) {
-        throw new Error(error.message || "Payment failed")
+      if (stripeError) {
+        throw new Error(stripeError.message || "Payment failed")
       }
 
       if (paymentIntent?.status === "succeeded") {
-        setPaymentStep("success")
-        toast.success(`Your $${getTipAmount()} tip has been sent to ${celebrityName}`)
-        onTipSuccess?.()
+        setPaymentSuccess(true)
+        toast.success(`Thank you for your $${amount} tip to ${celebrityName}`)
+
+        // Refresh the page data
+        router.refresh()
+
+        // Call the success callback
+        if (onTipSuccess) {
+          setTimeout(() => {
+            onTipSuccess()
+          }, 2000)
+        }
+      } else {
+        throw new Error("Payment was not successful")
       }
-    } catch (error) {
-      console.error("Payment error:", error)
-      toast.error(error instanceof Error ? error.message : "Payment processing failed")
+    } catch (err) {
+      console.error("Tip payment error:", err)
+      setError(err instanceof Error ? err.message : "An unknown error occurred")
     } finally {
-      setIsProcessing(false)
+      setLoading(false)
     }
   }
 
-  const resetModal = () => {
-    setPaymentStep("amount")
-    setSelectedAmount(null)
-    setCustomAmount("")
-    setMessage("")
-    setClientSecret(null)
-    setTipId(null)
-    setIsProcessing(false)
-  }
-
-  const handleClose = () => {
-    setIsOpen(false)
-    setTimeout(resetModal, 300) // Reset after modal closes
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-lg border-white/20">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Heart className="w-6 h-6 text-pink-500" />
-            Tip {celebrityName}
-          </DialogTitle>
-        </DialogHeader>
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Heart className="h-5 w-5 text-pink-500" />
+          Send a Tip to {celebrityName}
+        </DialogTitle>
+        <DialogDescription>Show your appreciation with a tip. 100% goes directly to {celebrityName}.</DialogDescription>
+      </DialogHeader>
 
-        <div className="space-y-6">
+      {paymentSuccess ? (
+        <div className="flex flex-col items-center justify-center py-6 space-y-4">
+          <div className="rounded-full bg-green-100 p-3">
+            <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-center">Thank You!</h3>
+          <p className="text-center text-muted-foreground">
+            Your tip has been sent to {celebrityName}. They'll really appreciate your support!
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Celebrity Info */}
-          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg">
-            <Avatar className="w-12 h-12">
-              <AvatarImage src={celebrityImage || "/placeholder.svg"} />
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={celebrityImage || "/placeholder.svg"} alt={celebrityName} />
               <AvatarFallback>{celebrityName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">{celebrityName}</h3>
-              <p className="text-sm text-gray-600">Show your appreciation</p>
+              <p className="font-medium">{celebrityName}</p>
+              <p className="text-sm text-muted-foreground">Order #{orderNumber}</p>
             </div>
           </div>
 
-          {/* Amount Selection Step */}
-          {paymentStep === "amount" && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-3 block">Choose tip amount</Label>
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {PRESET_AMOUNTS.map((amount) => (
-                    <Button
-                      key={amount}
-                      variant={selectedAmount === amount ? "default" : "outline"}
-                      className={`h-12 ${
-                        selectedAmount === amount
-                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                          : "border-gray-200 hover:border-purple-300"
-                      }`}
-                      onClick={() => handleAmountSelect(amount)}
-                    >
-                      ${amount}
-                    </Button>
-                  ))}
-                </div>
-
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="number"
-                    placeholder="Custom amount"
-                    value={customAmount}
-                    onChange={(e) => handleCustomAmountChange(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    min="1"
-                    max="1000"
-                  />
-                </div>
-
-                {getTipAmount() > 0 && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    Tip amount: <span className="font-semibold">${getTipAmount()}</span>
-                    <span className="text-xs text-gray-500 ml-2">(100% goes to {celebrityName})</span>
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-2 block">Add a message (optional)</Label>
-                <Textarea
-                  placeholder={`Thank you ${celebrityName}! Your video was amazing...`}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="resize-none border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  rows={3}
-                  maxLength={500}
-                />
-                <p className="text-xs text-gray-500 mt-1">{message.length}/500 characters</p>
-              </div>
-
-              <Button
-                onClick={handleCreateTipPayment}
-                disabled={!isValidAmount() || isProcessing}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Gift className="w-4 h-4 mr-2" />
-                    Continue to Payment
-                  </>
-                )}
-              </Button>
+          {/* Tip Amount Selection */}
+          <div className="space-y-2">
+            <Label>Select Tip Amount</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {TIP_AMOUNTS.map((amount) => (
+                <Button
+                  key={amount}
+                  type="button"
+                  variant={selectedAmount === amount ? "default" : "outline"}
+                  onClick={() => handleAmountSelect(amount)}
+                  className={selectedAmount === amount ? "bg-pink-500 hover:bg-pink-600" : ""}
+                >
+                  ${amount}
+                </Button>
+              ))}
             </div>
-          )}
+          </div>
 
-          {/* Payment Step */}
-          {paymentStep === "payment" && (
-            <div className="space-y-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-600">Tip Amount:</span>
-                  <span className="font-semibold">${getTipAmount()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Goes to Celebrity:</span>
-                  <span className="font-semibold text-green-600">${getTipAmount()}</span>
-                </div>
-                <Separator className="my-2" />
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Total:</span>
-                  <span className="font-bold text-lg">${getTipAmount()}</span>
-                </div>
-              </div>
+          {/* Custom Amount */}
+          <div className="space-y-2">
+            <Label htmlFor="custom-amount">Custom Amount</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <Input
+                id="custom-amount"
+                placeholder="Enter amount"
+                className="pl-7"
+                value={customAmount}
+                onChange={handleCustomAmountChange}
+              />
+            </div>
+          </div>
 
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-2 block">Payment Details</Label>
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <CardElement
-                    options={{
-                      style: {
-                        base: {
-                          fontSize: "16px",
-                          color: "#374151",
-                          "::placeholder": {
-                            color: "#9CA3AF",
-                          },
-                        },
+          {/* Message */}
+          <div className="space-y-2">
+            <Label htmlFor="message">Message (Optional)</Label>
+            <Textarea
+              id="message"
+              placeholder="Add a personal message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={200}
+            />
+            <p className="text-xs text-muted-foreground text-right">{message.length}/200</p>
+          </div>
+
+          {/* Payment */}
+          <div className="space-y-2">
+            <Label>Card Details</Label>
+            <div className="border rounded-md p-3">
+              <CardElement
+                options={{
+                  style: {
+                    base: {
+                      fontSize: "16px",
+                      color: "#424770",
+                      "::placeholder": {
+                        color: "#aab7c4",
                       },
-                    }}
-                  />
-                </div>
-              </div>
+                    },
+                    invalid: {
+                      color: "#9e2146",
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setPaymentStep("amount")}
-                  className="flex-1"
-                  disabled={isProcessing}
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handlePaymentSubmit}
-                  disabled={isProcessing || !stripe || !elements}
-                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Heart className="w-4 h-4 mr-2" />
-                      Send Tip
-                    </>
-                  )}
-                </Button>
-              </div>
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-md flex items-start space-x-2">
+              <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Success Step */}
-          {paymentStep === "success" && (
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Tip Sent Successfully!</h3>
-                <p className="text-gray-600">
-                  Your ${getTipAmount()} tip has been sent to {celebrityName}. They'll receive it directly in their
-                  account.
-                </p>
-              </div>
-              {message && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">
-                    <strong>Your message:</strong> "{message}"
-                  </p>
-                </div>
+          <DialogFooter>
+            <Button
+              type="submit"
+              disabled={loading || !stripe || !elements || getSelectedAmount() <= 0}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>Send ${getSelectedAmount() > 0 ? getSelectedAmount().toFixed(2) : "0.00"} Tip</>
               )}
-              <Button onClick={handleClose} className="w-full">
-                <Star className="w-4 h-4 mr-2" />
-                Close
-              </Button>
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+            </Button>
+          </DialogFooter>
+        </form>
+      )}
+    </DialogContent>
   )
 }

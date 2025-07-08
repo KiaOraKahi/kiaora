@@ -74,7 +74,7 @@ interface TipData {
   amount: number
   message: string | null
   createdAt: string
-  status: string
+  paymentStatus: string
 }
 
 export default function OrderDetailsPage() {
@@ -122,7 +122,7 @@ export default function OrderDetailsPage() {
       if (response.ok) {
         const data = await response.json()
         setTips(data.tips || [])
-        setTotalTips(data.totalAmount || 0)
+        setTotalTips(data.totalTips || 0)
       }
     } catch (error) {
       console.error("Error fetching tips:", error)

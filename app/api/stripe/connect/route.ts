@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const { action } = await request.json()
 
-    // Find celebrity profile
+    // Find celebrity profile with user data
     const celebrity = await prisma.celebrity.findUnique({
       where: { userId: session.user.id },
       include: { user: true },
@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
       case "create": {
         // Create new Stripe Connect account
         try {
-          const accountId = await createConnectAccount({
+          const { accountId, onboardingUrl } = await createConnectAccount({
             email: celebrity.user.email,
+            name: celebrity.user.name || "Celebrity User",
             country: "NZ", // Default to New Zealand, can be made dynamic
           })
 
@@ -43,12 +44,6 @@ export async function POST(request: NextRequest) {
               stripeAccountStatus: "PENDING",
               stripePayoutsEnabled: false,
             },
-          })
-
-          // Create onboarding link
-          const onboardingUrl = await createOnboardingLink(accountId, {
-            returnUrl: `${baseUrl}/celebrity-dashboard?stripe_setup=complete`,
-            refreshUrl: `${baseUrl}/celebrity-dashboard?stripe_setup=refresh`,
           })
 
           return NextResponse.json({ onboardingUrl })
@@ -65,10 +60,7 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-          const onboardingUrl = await createOnboardingLink(celebrity.stripeConnectAccountId, {
-            returnUrl: `${baseUrl}/celebrity-dashboard?stripe_setup=complete`,
-            refreshUrl: `${baseUrl}/celebrity-dashboard?stripe_setup=refresh`,
-          })
+          const onboardingUrl = await createOnboardingLink(celebrity.stripeConnectAccountId)
 
           return NextResponse.json({ onboardingUrl })
         } catch (error) {

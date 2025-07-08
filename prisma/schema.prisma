@@ -92,7 +92,7 @@ model Celebrity {
   
   // Stripe Connect Integration
   stripeConnectAccountId    String?  @unique
-  stripeAccountStatus       StripeAccountStatus @default(NOT_STARTED)
+  stripeAccountStatus       StripeAccountStatus @default(PENDING)
   stripeOnboardingComplete  Boolean  @default(false)
   stripeChargesEnabled      Boolean  @default(false)
   stripePayoutsEnabled      Boolean  @default(false)
@@ -437,12 +437,11 @@ enum ApplicationStatus {
   REQUIRES_CHANGES
 }
 
-// New Enums for Stripe Connect
+// Updated Stripe Connect Enums to match what we're using in code
 enum StripeAccountStatus {
-  NOT_STARTED
   PENDING
   RESTRICTED
-  ENABLED
+  ACTIVE
   REJECTED
 }
 

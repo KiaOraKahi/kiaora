@@ -30,6 +30,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { id } = await params
 
     // Check if user is admin
+    console.log("🔍 Session in PATCH route:", session)
+
     if (!session?.user?.id || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
