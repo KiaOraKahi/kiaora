@@ -150,14 +150,6 @@ export default function CelebrityDashboard() {
   const isCelebrity = session?.user?.role === "CELEBRITY"
 
   useEffect(() => {
-    console.log("🔍 Celebrity Dashboard - Session status:", status)
-    console.log("🔍 Celebrity Dashboard - Session data:", {
-      userId: session?.user?.id,
-      userEmail: session?.user?.email,
-      userRole: session?.user?.role,
-      userName: session?.user?.name,
-    })
-
     if (status === "loading") return
 
     if (!session || !isCelebrity) {
@@ -174,11 +166,9 @@ export default function CelebrityDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      console.log("📊 Celebrity Dashboard - Fetching stats...")
       setLoading(true)
       setError(null)
       const response = await fetch("/api/celebrity/stats")
-      console.log("📊 Celebrity Dashboard - Stats response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -187,7 +177,6 @@ export default function CelebrityDashboard() {
       }
 
       const data = await response.json()
-      console.log("📊 Celebrity Dashboard - Stats data received:", data)
 
       // Ensure all numeric fields have default values
       setStats({
@@ -201,7 +190,6 @@ export default function CelebrityDashboard() {
         averageResponseTime: data.averageResponseTime || 24,
         completionRate: data.completionRate || 95,
       })
-      console.log("✅ Celebrity Dashboard - Stats loaded successfully")
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching stats:", error)
       setError(error instanceof Error ? error.message : "Failed to load dashboard")
@@ -224,10 +212,8 @@ export default function CelebrityDashboard() {
 
   const fetchBookingRequests = async () => {
     try {
-      console.log("📋 Celebrity Dashboard - Fetching booking requests...")
       setRequestsLoading(true)
       const response = await fetch("/api/celebrity/booking-requests?status=PENDING&limit=20")
-      console.log("📋 Celebrity Dashboard - Booking requests response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -236,7 +222,6 @@ export default function CelebrityDashboard() {
       }
 
       const data = await response.json()
-      console.log("📋 Celebrity Dashboard - Booking requests data received:", data)
 
       // Transform the data to match our interface
       const transformedRequests = (data.requests || []).map((request: any) => ({
@@ -258,7 +243,6 @@ export default function CelebrityDashboard() {
       }))
 
       setBookingRequests(transformedRequests)
-      console.log("✅ Celebrity Dashboard - Booking requests loaded:", transformedRequests.length)
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching booking requests:", error)
       setBookingRequests([])
@@ -269,10 +253,8 @@ export default function CelebrityDashboard() {
 
   const fetchAllOrders = async () => {
     try {
-      console.log("📋 Celebrity Dashboard - Fetching all orders...")
       setOrdersLoading(true)
       const response = await fetch("/api/celebrity/booking-requests?status=ALL&limit=100")
-      console.log("📋 Celebrity Dashboard - All orders response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -281,7 +263,6 @@ export default function CelebrityDashboard() {
       }
 
       const data = await response.json()
-      console.log("📋 Celebrity Dashboard - All orders data received:", data)
 
       // Transform the data to match our interface
       const transformedOrders = (data.requests || []).map((request: any) => ({
@@ -303,7 +284,6 @@ export default function CelebrityDashboard() {
       }))
 
       setAllOrders(transformedOrders)
-      console.log("✅ Celebrity Dashboard - All orders loaded:", transformedOrders.length)
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching all orders:", error)
       setAllOrders([])
@@ -318,7 +298,6 @@ export default function CelebrityDashboard() {
       setProfileLoading(true)
       setProfileError(null)
       const response = await fetch("/api/celebrity/profile")
-      console.log("👤 Celebrity Dashboard - Profile response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -327,7 +306,6 @@ export default function CelebrityDashboard() {
       }
 
       const data = await response.json()
-      console.log("👤 Celebrity Dashboard - Profile data received:", data)
       setProfile(data)
       console.log("✅ Celebrity Dashboard - Profile loaded successfully")
     } catch (error) {
@@ -343,7 +321,6 @@ export default function CelebrityDashboard() {
       console.log("⭐ Celebrity Dashboard - Fetching reviews...")
       setReviewsLoading(true)
       const response = await fetch("/api/celebrity/reviews")
-      console.log("⭐ Celebrity Dashboard - Reviews response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -352,7 +329,6 @@ export default function CelebrityDashboard() {
       }
 
       const data = await response.json()
-      console.log("⭐ Celebrity Dashboard - Reviews data received:", data)
       setReviews(data.reviews || [])
       setReviewStats(data.stats || null)
       console.log("✅ Celebrity Dashboard - Reviews loaded successfully")
@@ -367,7 +343,6 @@ export default function CelebrityDashboard() {
 
   const handleBookingAction = async (requestId: string, action: "accept" | "decline") => {
     try {
-      console.log(`🔄 Celebrity Dashboard - ${action}ing booking:`, requestId)
       const response = await fetch(`/api/celebrity/booking-requests/${requestId}`, {
         method: "PATCH",
         headers: {
@@ -375,7 +350,6 @@ export default function CelebrityDashboard() {
         },
         body: JSON.stringify({ action }),
       })
-      console.log(`📋 Celebrity Dashboard - Booking ${action} response status:`, response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -384,7 +358,6 @@ export default function CelebrityDashboard() {
       }
 
       const result = await response.json()
-      console.log(`✅ Celebrity Dashboard - Booking ${action}ed successfully:`, result)
 
       // Update local state immediately
       setBookingRequests((prev) =>
@@ -424,7 +397,6 @@ export default function CelebrityDashboard() {
         },
         body: JSON.stringify(profile),
       })
-      console.log("💾 Celebrity Dashboard - Profile save response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -433,7 +405,6 @@ export default function CelebrityDashboard() {
       }
 
       const updatedProfile = await response.json()
-      console.log("💾 Celebrity Dashboard - Profile saved successfully:", updatedProfile)
       setProfile(updatedProfile)
       setProfileSuccess(true)
 

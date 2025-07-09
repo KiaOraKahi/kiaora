@@ -101,7 +101,7 @@ async function handleBookingPayment({
   // Generate unique order number
   const orderNumber = `KO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
 
-  // Create order first (but NOT the booking - that happens after payment succeeds)
+  // Create order first
   console.log("📝 Creating order...")
   const order = await prisma.order.create({
     data: {
@@ -110,8 +110,8 @@ async function handleBookingPayment({
       celebrityId: String(celebrity.id),
       totalAmount: amount,
       currency: "usd",
-      status: "PENDING", // Will be updated to CONFIRMED after payment
-      paymentStatus: "PENDING", // Will be updated to SUCCEEDED after payment
+      status: "PENDING",
+      paymentStatus: "PENDING",
       // Platform fee tracking
       platformFee: platformFee / 100, // Store in dollars
       celebrityAmount: celebrityAmount / 100, // Store in dollars
@@ -150,7 +150,7 @@ async function handleBookingPayment({
 
   console.log("✅ Order items created")
 
-  // DO NOT CREATE BOOKING HERE - it will be created in the webhook after payment succeeds
+  // DON'T create booking here - it will be created in webhook after payment succeeds
   console.log("⏳ Booking will be created after payment succeeds via webhook")
 
   // Create Stripe payment intent
@@ -163,7 +163,6 @@ async function handleBookingPayment({
       type: "booking",
       orderId: order.id,
       orderNumber: order.orderNumber,
-      // No bookingId here since booking doesn't exist yet
       celebrityId: String(celebrity.id),
       celebrityName: celebrity.user.name || "Unknown",
       userId: session.user.id,
@@ -191,9 +190,9 @@ async function handleBookingPayment({
 
   console.log("✅ Booking payment intent created successfully")
   console.log("📋 Summary:")
-  console.log(`   - Order created: ${order.orderNumber}`)
-  console.log(`   - Payment Intent: ${paymentIntent.id}`)
-  console.log(`   - Booking will be created after payment succeeds`)
+  console.log("   - Order created:", order.orderNumber)
+  console.log("   - Payment Intent:", paymentIntent.id)
+  console.log("   - Booking will be created after payment succeeds")
 
   return NextResponse.json({
     clientSecret: paymentIntent.client_secret,
@@ -265,6 +264,7 @@ async function handleTipPayment({
   // Create Stripe payment intent for tip
   console.log("💳 Creating tip PaymentIntent...")
   const amountInCents = Math.round(amount * 100)
+
   const paymentIntent = await stripe.paymentIntents.create({
     amount: amountInCents,
     currency: "usd",
