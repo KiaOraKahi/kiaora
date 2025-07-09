@@ -146,17 +146,40 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
       paymentStatus: "SUCCEEDED",
       status: "CONFIRMED",
       paidAt: new Date(),
-      platformFee,
-      celebrityAmount,
+      platformFee: platformFee / 100, // Convert from cents to dollars
+      celebrityAmount: celebrityAmount / 100, // Convert from cents to dollars
     },
   })
 
-  // Update booking status if exists
-  if (order.booking) {
+  // Create booking ONLY after payment succeeds (if it doesn't exist)
+  if (!order.booking) {
+    console.log("🎬 Creating booking after successful payment...")
+    await prisma.booking.create({
+      data: {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        userId: order.userId,
+        celebrityId: order.celebrityId,
+        message: order.personalMessage,
+        recipientName: order.recipientName,
+        occasion: order.occasion,
+        instructions: order.specialInstructions || null,
+        specialInstructions: order.specialInstructions || null,
+        status: "ACCEPTED",
+        price: order.totalAmount,
+        totalAmount: order.totalAmount,
+        scheduledDate: order.scheduledDate,
+        deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      },
+    })
+    console.log("✅ Booking created after payment success")
+  } else {
+    // Update existing booking status
     await prisma.booking.update({
       where: { id: order.booking.id },
       data: { status: "ACCEPTED" },
     })
+    console.log("✅ Existing booking updated to ACCEPTED")
   }
 
   // Initiate transfer to celebrity if they have Connect account
@@ -374,17 +397,16 @@ async function handleConnectAccountUpdate(account: Stripe.Account) {
   }
 
   // Determine account status
-  let accountStatus: "NOT_STARTED" | "PENDING" | "RESTRICTED" | "ENABLED" | "REJECTED" = "PENDING"
+  let accountStatus: "NOT_STARTED" | "PENDING" | "RESTRICTED" | "ACTIVE" | "REJECTED" = "PENDING"
 
   if (account.details_submitted && account.charges_enabled && account.payouts_enabled) {
-    accountStatus = "ENABLED"
+    accountStatus = "ACTIVE"
   } else if (account.requirements?.disabled_reason) {
     accountStatus = "REJECTED"
   } else if (account.requirements?.currently_due && account.requirements.currently_due.length > 0) {
     accountStatus = "RESTRICTED"
   }
 
-  // Update celebrity record
   await prisma.celebrity.update({
     where: { id: celebrity.id },
     data: {

@@ -101,7 +101,7 @@ async function handleBookingPayment({
   // Generate unique order number
   const orderNumber = `KO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
 
-  // Create order first
+  // Create order first (but NOT the booking - that happens after payment succeeds)
   console.log("📝 Creating order...")
   const order = await prisma.order.create({
     data: {
@@ -110,14 +110,12 @@ async function handleBookingPayment({
       celebrityId: String(celebrity.id),
       totalAmount: amount,
       currency: "usd",
-      status: "PENDING",
-      paymentStatus: "PENDING",
-
+      status: "PENDING", // Will be updated to CONFIRMED after payment
+      paymentStatus: "PENDING", // Will be updated to SUCCEEDED after payment
       // Platform fee tracking
       platformFee: platformFee / 100, // Store in dollars
       celebrityAmount: celebrityAmount / 100, // Store in dollars
       transferStatus: "PENDING",
-
       // Booking details
       recipientName: bookingData.recipientName,
       occasion: bookingData.occasion,
@@ -152,28 +150,8 @@ async function handleBookingPayment({
 
   console.log("✅ Order items created")
 
-  // Create booking linked to order
-  console.log("🎬 Creating booking...")
-  const booking = await prisma.booking.create({
-    data: {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      userId: session.user.id,
-      celebrityId: String(celebrity.id),
-      message: bookingData.personalMessage,
-      recipientName: bookingData.recipientName,
-      occasion: bookingData.occasion,
-      instructions: bookingData.specialInstructions || null,
-      specialInstructions: bookingData.specialInstructions || null,
-      status: "PENDING",
-      price: amount,
-      totalAmount: amount,
-      scheduledDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate) : null,
-      deadline: bookingData.deadline ? new Date(bookingData.deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-    },
-  })
-
-  console.log("✅ Booking created:", booking.id)
+  // DO NOT CREATE BOOKING HERE - it will be created in the webhook after payment succeeds
+  console.log("⏳ Booking will be created after payment succeeds via webhook")
 
   // Create Stripe payment intent
   console.log("💳 Creating Stripe PaymentIntent...")
@@ -185,17 +163,15 @@ async function handleBookingPayment({
       type: "booking",
       orderId: order.id,
       orderNumber: order.orderNumber,
-      bookingId: booking.id,
+      // No bookingId here since booking doesn't exist yet
       celebrityId: String(celebrity.id),
       celebrityName: celebrity.user.name || "Unknown",
       userId: session.user.id,
       userName: session.user.name || "Unknown",
-
       // Payment split info
       totalAmount: amountInCents.toString(),
       platformFee: platformFee.toString(),
       celebrityAmount: celebrityAmount.toString(),
-
       // Connect account info
       celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",
       canTransfer: celebrity.stripeConnectAccountId ? "true" : "false",
@@ -214,6 +190,10 @@ async function handleBookingPayment({
   })
 
   console.log("✅ Booking payment intent created successfully")
+  console.log("📋 Summary:")
+  console.log(`   - Order created: ${order.orderNumber}`)
+  console.log(`   - Payment Intent: ${paymentIntent.id}`)
+  console.log(`   - Booking will be created after payment succeeds`)
 
   return NextResponse.json({
     clientSecret: paymentIntent.client_secret,
@@ -298,11 +278,9 @@ async function handleTipPayment({
       celebrityName: celebrity.user.name || "Unknown",
       userId: session.user.id,
       userName: session.user.name || "Unknown",
-
       // Tip info (100% to celebrity)
       tipAmount: amountInCents.toString(),
       celebrityAmount: amountInCents.toString(), // 100% of tip
-
       // Connect account info
       celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",
       canTransfer: celebrity.stripeConnectAccountId ? "true" : "false",
