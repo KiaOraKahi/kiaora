@@ -26,8 +26,6 @@ export async function GET(request: NextRequest) {
 
     console.log("🔍 Celebrity profile found:", {
       celebrityId: celebrity?.id,
-      // celebrityName: celebrity?.name,
-      // celebritySlug: celebrity?.slug,
       celebrityUserId: celebrity?.userId,
     })
 
@@ -45,7 +43,7 @@ export async function GET(request: NextRequest) {
     console.log("🔍 Query parameters:", { status, limit, offset })
     console.log("🔍 Fetching booking requests for celebrity ID:", celebrity.id)
 
-    // Fetch booking requests with related data
+    // Fetch booking requests with related data including tips through order
     const bookingRequests = await prisma.booking.findMany({
       where: {
         celebrityId: celebrity.id,
@@ -65,8 +63,21 @@ export async function GET(request: NextRequest) {
             id: true,
             orderNumber: true,
             totalAmount: true,
+            celebrityAmount: true,
             paymentStatus: true,
             createdAt: true,
+            // Include tips for this order
+            tips: {
+              where: {
+                paymentStatus: "SUCCEEDED", // Only include successful tip payments
+              },
+              select: {
+                id: true,
+                amount: true,
+                message: true,
+                createdAt: true,
+              },
+            },
           },
         },
       },
@@ -85,6 +96,9 @@ export async function GET(request: NextRequest) {
         customerName: booking.user?.name,
         orderNumber: booking.order?.orderNumber,
         amount: booking.order?.totalAmount,
+        celebrityAmount: booking.order?.celebrityAmount,
+        tips: booking.order?.tips?.length || 0,
+        tipAmounts: booking.order?.tips?.map((tip) => tip.amount) || [],
         createdAt: booking.createdAt,
       })),
     })
@@ -99,27 +113,58 @@ export async function GET(request: NextRequest) {
 
     console.log("📊 Total booking requests count:", totalCount)
 
-    // Format the response data
-    const formattedRequests = bookingRequests.map((booking) => ({
-      id: booking.id,
-      orderNumber: booking.order?.orderNumber || `REQ-${booking.id.slice(-8)}`,
-      customerName: booking.user?.name || "Unknown Customer",
-      customerEmail: booking.user?.email || "",
-      customerImage: booking.user?.image || null,
-      recipientName: booking.recipientName || "Unknown Recipient",
-      occasion: booking.occasion || "General Request",
-      instructions: booking.instructions || "",
-      amount: booking.order?.totalAmount || 0,
-      requestedDate: booking.requestedDate?.toISOString() || new Date().toISOString(),
-      status: booking.status.toLowerCase(),
-      createdAt: booking.createdAt.toISOString(),
-      deadline: booking.deadline?.toISOString() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now as default
-      paymentStatus: booking.order?.paymentStatus || "PENDING",
-    }))
+    // Format the response data including tip information
+    const formattedRequests = bookingRequests.map((booking) => {
+      // Calculate total tips for this booking
+      // Tips are stored as dollars in the database, so no conversion needed
+      const totalTips = booking.order?.tips?.reduce((sum: number, tip: any) => sum + tip.amount, 0) || 0
+
+      console.log(`💰 Booking ${booking.id} tip calculation:`, {
+        tipCount: booking.order?.tips?.length || 0,
+        individualTips: booking.order?.tips?.map((tip) => tip.amount) || [],
+        totalTips,
+        note: "Tips stored as dollars in database, no conversion applied",
+      })
+
+      return {
+        id: booking.id,
+        orderNumber: booking.order?.orderNumber || `REQ-${booking.id.slice(-8)}`,
+        customerName: booking.user?.name || "Unknown Customer",
+        customerEmail: booking.user?.email || "",
+        customerImage: booking.user?.image || null,
+        recipientName: booking.recipientName || "Unknown Recipient",
+        occasion: booking.occasion || "General Request",
+        instructions: booking.instructions || "",
+        amount: booking.order?.totalAmount || 0,
+        celebrityAmount: booking.order?.celebrityAmount || 0, // Amount celebrity receives (80%)
+        tipAmount: totalTips, // Total tips received (already in dollars)
+        totalEarnings: (booking.order?.celebrityAmount || 0) + totalTips, // Celebrity amount + tips
+        requestedDate: booking.createdAt.toISOString(), // Use booking creation date
+        status: booking.status.toLowerCase(),
+        createdAt: booking.createdAt.toISOString(),
+        deadline: booking.deadline?.toISOString() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        paymentStatus: booking.order?.paymentStatus || "PENDING",
+        tips:
+          booking.order?.tips?.map((tip: any) => ({
+            id: tip.id,
+            amount: tip.amount, // Already in dollars, no conversion needed
+            message: tip.message,
+            createdAt: tip.createdAt.toISOString(),
+          })) || [],
+      }
+    })
 
     console.log("✅ Formatted booking requests:", {
       count: formattedRequests.length,
-      requests: formattedRequests,
+      requests: formattedRequests.map((r) => ({
+        id: r.id,
+        orderNumber: r.orderNumber,
+        amount: r.amount,
+        celebrityAmount: r.celebrityAmount,
+        tipAmount: r.tipAmount,
+        totalEarnings: r.totalEarnings,
+        tipDetails: r.tips,
+      })),
     })
 
     const response = {

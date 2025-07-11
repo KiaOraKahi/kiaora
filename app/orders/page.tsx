@@ -13,6 +13,8 @@ import { format } from "date-fns"
 import Link from "next/link"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import MobileNavbar from "@/components/frontend/mobile-navbar"
+import { Sub } from "@radix-ui/react-dropdown-menu"
 
 interface Order {
   id: string
@@ -43,6 +45,60 @@ interface OrdersResponse {
   }
 }
 
+// Subtle starfield component
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
+
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1
+      const type = Math.random()
+
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
+}
+
 const statusColors = {
   pending: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
   confirmed: "bg-blue-500/20 text-blue-300 border-blue-500/30",
@@ -67,6 +123,17 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [pagination, setPagination] = useState<OrdersResponse["pagination"] | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+      
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   const fetchOrders = async (page = 1, status = "all", search = "") => {
     try {
@@ -114,12 +181,8 @@ export default function OrdersPage() {
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        {/* Animated Stars Background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="stars"></div>
-          <div className="stars2"></div>
-          <div className="stars3"></div>
-        </div>
+        {isMobile ? <MobileNavbar /> : <Navbar />}
+        <SubtleLuxuryStarfield />
         <div className="relative z-10">
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
         </div>
@@ -130,12 +193,8 @@ export default function OrdersPage() {
   if (!session) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        {/* Animated Stars Background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="stars"></div>
-          <div className="stars2"></div>
-          <div className="stars3"></div>
-        </div>
+        {isMobile ? <MobileNavbar /> : <Navbar />}
+        <SubtleLuxuryStarfield />
         <div className="relative z-10 text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Please Sign In</h1>
           <p className="text-purple-200">You need to be signed in to view your orders.</p>
@@ -146,14 +205,13 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Animated Stars Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="stars"></div>
-        <div className="stars2"></div>
-        <div className="stars3"></div>
-      </div>
+      <SubtleLuxuryStarfield />
+      
+      {/* Main Content */}
       <div className="relative z-10">
-        <Navbar />
+        {isMobile ? <MobileNavbar /> : <Navbar />}
+        
+        {/* Main Content */}
 
         <div className="container mx-auto px-4 py-8 pt-24">
           {/* Header */}

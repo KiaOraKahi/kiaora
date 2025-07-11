@@ -28,6 +28,7 @@ import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 import EnhancedBookingModal from "@/components/enhanced-booking-modal"
 import VideoPlayer from "@/components/frontend/video-player"
+import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 interface Celebrity {
   id: string
@@ -75,6 +76,60 @@ interface Celebrity {
   }>
 }
 
+// Subtle starfield component
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
+
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1
+      const type = Math.random()
+
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
+}
+
 export default function CelebrityDetailPage() {
   const params = useParams()
   const celebrityId = params.id as string
@@ -86,6 +141,17 @@ export default function CelebrityDetailPage() {
   const [isFavorited, setIsFavorited] = useState(false)
   const [selectedSampleVideo, setSelectedSampleVideo] = useState<any>(null)
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 1024)
+      }
+  
+      checkMobile()
+      window.addEventListener("resize", checkMobile)
+      return () => window.removeEventListener("resize", checkMobile)
+    }, [])
 
   useEffect(() => {
     const fetchCelebrity = async () => {
@@ -164,14 +230,10 @@ export default function CelebrityDetailPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Animated Stars Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="stars"></div>
-        <div className="stars2"></div>
-        <div className="stars3"></div>
-      </div>
+      <SubtleLuxuryStarfield />
+
       <div className="relative z-10">
-        <Navbar />
+        {isMobile ? <MobileNavbar /> : <Navbar />}
 
         {/* Hero Section */}
         <section className="relative pt-20">

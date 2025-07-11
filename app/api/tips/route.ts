@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
       canTransfer,
     })
 
-    // Calculate tip split (100% to celebrity for tips)
-    const { celebrityAmount, platformFee } = calculatePaymentSplit(amount, "tip")
+    // Calculate tip split (100% to celebrity for tips - 0% platform fee)
+    const { celebrityAmount, platformFee } = calculatePaymentSplit(amount, 0)
 
     console.log("💰 Tip breakdown:", {
       totalAmount: amount,
@@ -71,13 +71,11 @@ export async function POST(request: NextRequest) {
     const tip = await prisma.tip.create({
       data: {
         orderId: order.id,
-        // orderNumber: order.orderNumber,
         userId: session.user.id,
         celebrityId: celebrity.id,
         amount: amount,
         currency: "usd",
         message: message || null,
-        // status: "PENDING",
         paymentStatus: "PENDING",
       },
     })
@@ -107,12 +105,11 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Stripe PaymentIntent created for tip:", paymentIntent.id)
 
-    // Update tip with payment intent ID
+    // Update tip with payment intent ID (FIXED: removed stripePaymentIntentId)
     await prisma.tip.update({
       where: { id: tip.id },
       data: {
         paymentIntentId: paymentIntent.id,
-        stripePaymentIntentId: paymentIntent.id,
       },
     })
 
@@ -176,7 +173,6 @@ export async function GET(request: NextRequest) {
         amount: true,
         currency: true,
         message: true,
-        // status: true,
         paymentStatus: true,
         createdAt: true,
         paidAt: true,

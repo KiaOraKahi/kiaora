@@ -45,6 +45,7 @@ import {
   Copy,
   Heart,
   CreditCard,
+  Gift,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
@@ -52,9 +53,14 @@ import { useRouter } from "next/navigation"
 
 interface DashboardStats {
   totalEarnings: number
+  orderEarnings: number
+  tipEarnings: number
   monthlyEarnings: number
+  monthlyOrderEarnings: number
+  monthlyTipEarnings: number
   pendingRequests: number
   completedBookings: number
+  totalBookings: number
   averageRating: number
   totalReviews: number
   responseRate: number
@@ -72,12 +78,21 @@ interface BookingRequest {
   occasion: string
   instructions: string
   amount: number
+  celebrityAmount: number
+  tipAmount: number
+  totalEarnings: number
   requestedDate: string
   status: string
   createdAt: string
   deadline: string
   paymentStatus: string
   videoUrl?: string
+  tips: Array<{
+    id: string
+    amount: number
+    message: string | null
+    createdAt: string
+  }>
 }
 
 interface CelebrityProfile {
@@ -151,7 +166,6 @@ export default function CelebrityDashboard() {
 
   useEffect(() => {
     if (status === "loading") return
-
     if (!session || !isCelebrity) {
       console.log("❌ Celebrity Dashboard - Unauthorized access")
       return
@@ -169,21 +183,24 @@ export default function CelebrityDashboard() {
       setLoading(true)
       setError(null)
       const response = await fetch("/api/celebrity/stats")
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error("❌ Celebrity Dashboard - Stats fetch failed:", errorText)
         throw new Error(`Failed to fetch stats: ${response.status} ${errorText}`)
       }
-
       const data = await response.json()
 
       // Ensure all numeric fields have default values
       setStats({
         totalEarnings: data.totalEarnings || 0,
+        orderEarnings: data.orderEarnings || 0,
+        tipEarnings: data.tipEarnings || 0,
         monthlyEarnings: data.monthlyEarnings || 0,
+        monthlyOrderEarnings: data.monthlyOrderEarnings || 0,
+        monthlyTipEarnings: data.monthlyTipEarnings || 0,
         pendingRequests: data.pendingRequests || 0,
         completedBookings: data.completedBookings || 0,
+        totalBookings: data.totalBookings || 0,
         averageRating: data.averageRating || 4.5,
         totalReviews: data.totalReviews || 0,
         responseRate: data.responseRate || 95,
@@ -196,9 +213,14 @@ export default function CelebrityDashboard() {
       // Set default stats if API fails
       setStats({
         totalEarnings: 0,
+        orderEarnings: 0,
+        tipEarnings: 0,
         monthlyEarnings: 0,
+        monthlyOrderEarnings: 0,
+        monthlyTipEarnings: 0,
         pendingRequests: 0,
         completedBookings: 0,
+        totalBookings: 0,
         averageRating: 4.5,
         totalReviews: 0,
         responseRate: 95,
@@ -214,13 +236,11 @@ export default function CelebrityDashboard() {
     try {
       setRequestsLoading(true)
       const response = await fetch("/api/celebrity/booking-requests?status=PENDING&limit=20")
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error("❌ Celebrity Dashboard - Booking requests fetch failed:", errorText)
         throw new Error(`Failed to fetch booking requests: ${response.status} ${errorText}`)
       }
-
       const data = await response.json()
 
       // Transform the data to match our interface
@@ -234,12 +254,16 @@ export default function CelebrityDashboard() {
         occasion: request.occasion,
         instructions: request.instructions,
         amount: request.amount,
+        celebrityAmount: request.celebrityAmount || 0,
+        tipAmount: request.tipAmount || 0,
+        totalEarnings: request.totalEarnings || 0,
         requestedDate: request.requestedDate,
         status: request.status,
         createdAt: request.createdAt,
         deadline: request.deadline,
         paymentStatus: request.paymentStatus,
         videoUrl: request.videoUrl,
+        tips: request.tips || [],
       }))
 
       setBookingRequests(transformedRequests)
@@ -255,13 +279,11 @@ export default function CelebrityDashboard() {
     try {
       setOrdersLoading(true)
       const response = await fetch("/api/celebrity/booking-requests?status=ALL&limit=100")
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error("❌ Celebrity Dashboard - All orders fetch failed:", errorText)
         throw new Error(`Failed to fetch all orders: ${response.status} ${errorText}`)
       }
-
       const data = await response.json()
 
       // Transform the data to match our interface
@@ -275,12 +297,16 @@ export default function CelebrityDashboard() {
         occasion: request.occasion,
         instructions: request.instructions,
         amount: request.amount,
+        celebrityAmount: request.celebrityAmount || 0,
+        tipAmount: request.tipAmount || 0,
+        totalEarnings: request.totalEarnings || 0,
         requestedDate: request.requestedDate,
         status: request.status,
         createdAt: request.createdAt,
         deadline: request.deadline,
         paymentStatus: request.paymentStatus,
         videoUrl: request.videoUrl,
+        tips: request.tips || [],
       }))
 
       setAllOrders(transformedOrders)
@@ -298,13 +324,11 @@ export default function CelebrityDashboard() {
       setProfileLoading(true)
       setProfileError(null)
       const response = await fetch("/api/celebrity/profile")
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error("❌ Celebrity Dashboard - Profile fetch failed:", errorText)
         throw new Error(`Failed to fetch profile: ${response.status} ${errorText}`)
       }
-
       const data = await response.json()
       setProfile(data)
       console.log("✅ Celebrity Dashboard - Profile loaded successfully")
@@ -321,13 +345,11 @@ export default function CelebrityDashboard() {
       console.log("⭐ Celebrity Dashboard - Fetching reviews...")
       setReviewsLoading(true)
       const response = await fetch("/api/celebrity/reviews")
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error("❌ Celebrity Dashboard - Reviews fetch failed:", errorText)
         throw new Error(`Failed to fetch reviews: ${response.status} ${errorText}`)
       }
-
       const data = await response.json()
       setReviews(data.reviews || [])
       setReviewStats(data.stats || null)
@@ -350,13 +372,11 @@ export default function CelebrityDashboard() {
         },
         body: JSON.stringify({ action }),
       })
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error(`❌ Celebrity Dashboard - Failed to ${action} booking:`, errorText)
         throw new Error(`Failed to update booking: ${response.status} ${errorText}`)
       }
-
       const result = await response.json()
 
       // Update local state immediately
@@ -389,7 +409,6 @@ export default function CelebrityDashboard() {
       setProfileSaving(true)
       setProfileError(null)
       setProfileSuccess(false)
-
       const response = await fetch("/api/celebrity/profile", {
         method: "PATCH",
         headers: {
@@ -397,17 +416,14 @@ export default function CelebrityDashboard() {
         },
         body: JSON.stringify(profile),
       })
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error("❌ Celebrity Dashboard - Profile save failed:", errorText)
         throw new Error(`Failed to save profile: ${response.status} ${errorText}`)
       }
-
       const updatedProfile = await response.json()
       setProfile(updatedProfile)
       setProfileSuccess(true)
-
       // Hide success message after 3 seconds
       setTimeout(() => setProfileSuccess(false), 3000)
     } catch (error) {
@@ -430,7 +446,6 @@ export default function CelebrityDashboard() {
     const shareText = `Check out ${profile.name} on Kia Ora! Get personalized video messages from your favorite celebrity.`
 
     let shareUrl = ""
-
     switch (platform) {
       case "facebook":
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}&quote=${encodeURIComponent(shareText)}`
@@ -699,7 +714,7 @@ export default function CelebrityDashboard() {
             <TabsContent value="overview" className="space-y-6">
               {/* Stats Cards */}
               {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
@@ -708,6 +723,16 @@ export default function CelebrityDashboard() {
                           <p className="text-2xl font-bold text-white">
                             ${(stats.totalEarnings || 0).toLocaleString()}
                           </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-green-400">
+                              ${(stats.orderEarnings || 0).toLocaleString()} bookings
+                            </span>
+                            {stats.tipEarnings > 0 && (
+                              <span className="text-xs text-yellow-400">
+                                +${(stats.tipEarnings || 0).toLocaleString()} tips
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
                           <DollarSign className="w-6 h-6 text-green-400" />
@@ -724,9 +749,38 @@ export default function CelebrityDashboard() {
                           <p className="text-2xl font-bold text-white">
                             ${(stats.monthlyEarnings || 0).toLocaleString()}
                           </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-green-400">
+                              ${(stats.monthlyOrderEarnings || 0).toLocaleString()} bookings
+                            </span>
+                            {stats.monthlyTipEarnings > 0 && (
+                              <span className="text-xs text-yellow-400">
+                                +${(stats.monthlyTipEarnings || 0).toLocaleString()} tips
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
                           <TrendingUp className="w-6 h-6 text-blue-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-purple-200 text-sm font-medium">Tips Received</p>
+                          <p className="text-2xl font-bold text-yellow-400">
+                            ${(stats.tipEarnings || 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-purple-400 mt-1">
+                            This month: ${(stats.monthlyTipEarnings || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                          <Gift className="w-6 h-6 text-yellow-400" />
                         </div>
                       </div>
                     </CardContent>
@@ -757,6 +811,9 @@ export default function CelebrityDashboard() {
                         <div>
                           <p className="text-purple-200 text-sm font-medium">Total Orders</p>
                           <p className="text-2xl font-bold text-white">{allOrders.length}</p>
+                          <p className="text-xs text-purple-400 mt-1">
+                            {allOrders.filter((o) => o.tipAmount > 0).length} with tips
+                          </p>
                         </div>
                         <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
                           <Package className="w-6 h-6 text-purple-400" />
@@ -880,9 +937,16 @@ export default function CelebrityDashboard() {
                                 </div>
                               </div>
                               <div className="text-right">
-                                <Badge className="bg-yellow-500/20 text-yellow-300 text-xs">
-                                  ${(request.amount || 0).toLocaleString()}
-                                </Badge>
+                                <div className="flex flex-col gap-1">
+                                  <Badge className="bg-green-500/20 text-green-300 text-xs">
+                                    ${(request.celebrityAmount || 0).toLocaleString()}
+                                  </Badge>
+                                  {request.tipAmount > 0 && (
+                                    <Badge className="bg-yellow-500/20 text-yellow-300 text-xs">
+                                      +${request.tipAmount.toLocaleString()} tip
+                                    </Badge>
+                                  )}
+                                </div>
                                 <p className="text-xs text-purple-400 mt-1">
                                   {format(new Date(request.createdAt), "MMM d")}
                                 </p>
@@ -1026,8 +1090,18 @@ export default function CelebrityDashboard() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-2xl font-bold text-white">${(request.amount || 0).toLocaleString()}</p>
-                              <p className="text-purple-200 text-sm">
+                              <div className="space-y-1">
+                                <p className="text-lg font-bold text-green-400">
+                                  ${(request.celebrityAmount || 0).toLocaleString()}
+                                </p>
+                                {request.tipAmount > 0 && (
+                                  <p className="text-sm font-semibold text-yellow-400">
+                                    +${request.tipAmount.toLocaleString()} tip
+                                  </p>
+                                )}
+                                <p className="text-sm text-white">Total: ${request.totalEarnings.toLocaleString()}</p>
+                              </div>
+                              <p className="text-purple-200 text-sm mt-2">
                                 {format(new Date(request.createdAt), "MMM d, yyyy")}
                               </p>
                               <Badge
@@ -1037,12 +1111,39 @@ export default function CelebrityDashboard() {
                               </Badge>
                             </div>
                           </div>
+
                           <div className="mb-4">
                             <p className="text-purple-200 text-sm font-medium mb-2">Special Instructions:</p>
                             <p className="text-white bg-white/5 p-3 rounded-lg">
                               {request.instructions || "No special instructions provided"}
                             </p>
                           </div>
+
+                          {/* Display tips if any */}
+                          {request.tips && request.tips.length > 0 && (
+                            <div className="mb-4">
+                              <p className="text-purple-200 text-sm font-medium mb-2">Tips Received:</p>
+                              <div className="space-y-2">
+                                {request.tips.map((tip) => (
+                                  <div
+                                    key={tip.id}
+                                    className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-lg"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-yellow-300 font-semibold">
+                                        +${tip.amount.toLocaleString()} tip
+                                      </span>
+                                      <span className="text-purple-400 text-xs">
+                                        {format(new Date(tip.createdAt), "MMM d, yyyy")}
+                                      </span>
+                                    </div>
+                                    {tip.message && <p className="text-white text-sm mt-2">{tip.message}</p>}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           {request.status === "pending" && (
                             <div className="flex gap-3">
                               <Button
@@ -1148,19 +1249,56 @@ export default function CelebrityDashboard() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-white">${(order.amount || 0).toLocaleString()}</p>
-                            <p className="text-purple-200 text-sm">
+                            <div className="space-y-1">
+                              <p className="text-lg font-bold text-green-400">
+                                ${(order.celebrityAmount || 0).toLocaleString()}
+                              </p>
+                              {order.tipAmount > 0 && (
+                                <p className="text-sm font-semibold text-yellow-400">
+                                  +${order.tipAmount.toLocaleString()} tip
+                                </p>
+                              )}
+                              <p className="text-sm text-white">Total: ${order.totalEarnings.toLocaleString()}</p>
+                            </div>
+                            <p className="text-purple-200 text-sm mt-2">
                               {format(new Date(order.createdAt), "MMM d, yyyy")}
                             </p>
                             <Badge className="bg-green-500/20 text-green-300 mt-2">Paid</Badge>
                           </div>
                         </div>
+
                         <div className="mb-4">
                           <p className="text-purple-200 text-sm font-medium mb-2">Message Instructions:</p>
                           <p className="text-white bg-white/5 p-3 rounded-lg">
                             {order.instructions || "No special instructions provided"}
                           </p>
                         </div>
+
+                        {/* Display tips if any */}
+                        {order.tips && order.tips.length > 0 && (
+                          <div className="mb-4">
+                            <p className="text-purple-200 text-sm font-medium mb-2">Tips Received:</p>
+                            <div className="space-y-2">
+                              {order.tips.map((tip) => (
+                                <div
+                                  key={tip.id}
+                                  className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-lg"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-yellow-300 font-semibold">
+                                      +${tip.amount.toLocaleString()} tip
+                                    </span>
+                                    <span className="text-purple-400 text-xs">
+                                      {format(new Date(tip.createdAt), "MMM d, yyyy")}
+                                    </span>
+                                  </div>
+                                  {tip.message && <p className="text-white text-sm mt-2">{tip.message}</p>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Action buttons based on status */}
                         <div className="flex gap-3">
                           {order.status === "confirmed" && !order.videoUrl && (
@@ -1484,6 +1622,7 @@ export default function CelebrityDashboard() {
                           </Select>
                         </div>
                       </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="bio" className="text-purple-200">
                           Short Bio
@@ -1498,6 +1637,7 @@ export default function CelebrityDashboard() {
                         />
                         <p className="text-xs text-purple-400">{profile.bio.length}/150 characters</p>
                       </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="longBio" className="text-purple-200">
                           Long Bio

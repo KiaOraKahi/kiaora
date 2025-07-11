@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, Search, Users, HelpCircle, LogOut, Crown } from "lucide-react"
+import { Menu, X, Star, User, Search, Users, HelpCircle, LogOut, Crown, LayoutDashboard, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { AuthModal } from "@/components/auth/auth-modal"
 import SearchAutocomplete from "@/components/frontend/search-autocomplete"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
 
 export default function MobileNavbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -17,6 +18,8 @@ export default function MobileNavbar() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin")
   const { data: session, status } = useSession()
+  const router = useRouter();
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -200,6 +203,35 @@ export default function MobileNavbar() {
                 {/* Action Buttons */}
                 <div className="space-y-3 mb-8">
                   {session ? (
+                    <>
+                    <Button
+                      variant="outline"
+                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
+                      onClick={() => router.push("/orders")}
+                    >
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      My Orders
+                    </Button>
+                    {session.user?.role === "CELEBRITY" && (
+                      <Button
+                        variant="outline"
+                        className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
+                        onClick={() => router.push("/celebrity-dashboard")}
+                      >
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                      </Button>
+                    )}
+                    {session.user?.role === "ADMIN" && (
+                      <Button
+                        variant="outline"
+                        className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
+                        onClick={() => router.push("/admin")}
+                      >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation"
@@ -208,6 +240,7 @@ export default function MobileNavbar() {
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
                     </Button>
+                    </>
                   ) : (
                     <>
                       <Button

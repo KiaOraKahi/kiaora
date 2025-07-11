@@ -23,6 +23,7 @@ import Image from "next/image"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 import { toast } from "sonner"
+import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 // Updated services to match the footer URL parameters
 const services = [
@@ -291,6 +292,17 @@ export default function ServicesPage() {
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [showSampleModal, setShowSampleModal] = useState(false)
   const [selectedSample, setSelectedSample] = useState<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
+        
+      useEffect(() => {
+        const checkMobile = () => {
+          setIsMobile(window.innerWidth < 1024)
+        }
+    
+        checkMobile()
+        window.addEventListener("resize", checkMobile)
+        return () => window.removeEventListener("resize", checkMobile)
+      }, [])
 
   // Add useEffect to handle URL parameters
   useEffect(() => {
@@ -328,7 +340,7 @@ export default function ServicesPage() {
       {/* Subtle Luxury Starfield Background */}
       <SubtleLuxuryStarfield />
 
-      <Navbar />
+      {isMobile ? <MobileNavbar /> : <Navbar />}
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">

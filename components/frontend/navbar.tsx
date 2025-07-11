@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, LogOut, Settings, Crown } from "lucide-react"
+import { Menu, X, Star, User, LogOut, Settings, Crown, House, LayoutDashboard, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { AuthModal } from "@/components/auth/auth-modal"
@@ -140,11 +140,23 @@ export default function Navbar() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-white/10" />
-                    <DropdownMenuItem className="text-white hover:bg-white/10">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-white hover:bg-white/10" onClick={handleSignOut}>
+                      <DropdownMenuItem className="text-white hover:bg-white/10">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        <Link href="/orders">My Orders</Link>
+                      </DropdownMenuItem>
+                    {session.user?.role === "CELEBRITY" && (
+                      <DropdownMenuItem className="text-white hover:bg-white/10">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <Link href="/celebrity-dashboard">Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    {session.user?.role === "ADMIN" && (
+                      <DropdownMenuItem className="text-white hover:bg-white/10">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <Link href="/admin">Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer" onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Sign out</span>
                     </DropdownMenuItem>

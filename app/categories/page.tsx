@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ import Link from "next/link"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 const categories = [
   {
@@ -237,6 +238,60 @@ const sortOptions = [
   { value: "celebrity-count", label: "Most Celebrities" },
 ]
 
+// Subtle starfield component
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
+
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1
+      const type = Math.random()
+
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
+}
+
 export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -246,6 +301,17 @@ export default function CategoriesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showFilters, setShowFilters] = useState(false)
   const [showCelebrities, setShowCelebrities] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+        
+      useEffect(() => {
+        const checkMobile = () => {
+          setIsMobile(window.innerWidth < 1024)
+        }
+    
+        checkMobile()
+        window.addEventListener("resize", checkMobile)
+        return () => window.removeEventListener("resize", checkMobile)
+      }, [])
 
   // Filter and sort categories
   const filteredCategories = categories
@@ -307,7 +373,11 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <Navbar />
+      {isMobile ? <MobileNavbar /> : <Navbar />}
+      {/* Navbar */}
+
+      <SubtleLuxuryStarfield />
+      {/* Starfield Background */}
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">

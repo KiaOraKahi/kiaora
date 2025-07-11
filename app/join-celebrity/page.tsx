@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -28,10 +28,12 @@ import {
   Award,
   Loader2,
   CheckCircle,
+  Sun,
 } from "lucide-react"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 interface SocialMedia {
   instagram: string
@@ -78,6 +80,60 @@ interface UploadedFile {
   url: string
   type: string
   size: number
+}
+
+// Subtle starfield component
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
+
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1
+      const type = Math.random()
+
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
 }
 
 const steps = [
@@ -155,6 +211,18 @@ export default function JoinCelebrityPage() {
     idDocumentUrl: undefined,
     verificationDocumentUrl: undefined,
   })
+
+  const [isMobile, setIsMobile] = useState(false)
+      
+    useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 1024)
+      }
+  
+      checkMobile()
+      window.addEventListener("resize", checkMobile)
+      return () => window.removeEventListener("resize", checkMobile)
+    }, [])
 
   const updateFormData = (field: string, value: any) => {
     if (field.includes(".")) {
@@ -283,7 +351,7 @@ export default function JoinCelebrityPage() {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden">
-        <Navbar />
+        {isMobile ? <MobileNavbar /> : <Navbar />}
         {/* Starfield Background */}
         <div className="absolute inset-0">
           {[...Array(100)].map((_, i) => (
@@ -377,36 +445,17 @@ export default function JoinCelebrityPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <Navbar />
+      {isMobile ? <MobileNavbar /> : <Navbar />}
       {/* Starfield Background */}
-      <div className="absolute inset-0">
-        {[...Array(150)].map((_, i) => (
-          <motion.div
-            key={i}
-            className={`absolute rounded-full ${
-              i % 10 === 0 ? "w-2 h-2 bg-purple-400" : i % 15 === 0 ? "w-1.5 h-1.5 bg-pink-400" : "w-1 h-1 bg-white"
-            }`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0.3, 1, 0.3],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 2 + Math.random() * 3,
-              repeat: Number.POSITIVE_INFINITY,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-      </div>
+      <SubtleLuxuryStarfield />
 
       <div className="relative z-10 pt-24 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center relative mb-12">
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.5),transparent)]" />
+            </div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
               Become Talent
             </h1>

@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
       userId: session?.user?.id,
       userEmail: session?.user?.email,
       userRole: session?.user?.role,
-      userName: session?.user?.name,
     })
 
     if (!session?.user?.id) {
@@ -19,16 +18,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get celebrity profile
-    console.log("🔍 Looking for celebrity profile with userId:", session.user.id)
     const celebrity = await prisma.celebrity.findUnique({
       where: { userId: session.user.id },
-    })
-
-    console.log("🔍 Celebrity profile found:", {
-      celebrityId: celebrity?.id,
-      // celebrityName: celebrity?.name,
-      // celebritySlug: celebrity?.slug,
-      celebrityUserId: celebrity?.userId,
     })
 
     if (!celebrity) {
@@ -36,106 +27,143 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Celebrity profile not found" }, { status: 404 })
     }
 
-    console.log("🔍 Fetching statistics for celebrity ID:", celebrity.id)
+    console.log("✅ Celebrity found:", celebrity.id)
 
-    // Get statistics
-    const [
-      totalBookings,
-      pendingBookings,
-      completedBookings,
-      totalOrders,
-      completedOrders,
-      totalReviews,
-      averageRating,
-    ] = await Promise.all([
-      // Total bookings for this celebrity
-      prisma.booking.count({
-        where: { celebrityId: celebrity.id },
-      }),
-      // Pending bookings
+    // Get current date for monthly calculations
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    // Get total earnings from orders with SUCCEEDED payment status
+    // We include all payment-successful orders regardless of completion status for earnings
+    const orderEarnings = await prisma.order.aggregate({
+      where: {
+        celebrityId: celebrity.id,
+        paymentStatus: "SUCCEEDED", // Only count paid orders
+      },
+      _sum: {
+        celebrityAmount: true,
+      },
+    })
+
+    // Get monthly earnings from orders
+    const monthlyOrderEarnings = await prisma.order.aggregate({
+      where: {
+        celebrityId: celebrity.id,
+        paymentStatus: "SUCCEEDED",
+        createdAt: {
+          gte: startOfMonth,
+        },
+      },
+      _sum: {
+        celebrityAmount: true,
+      },
+    })
+
+    // Get total tips - only from orders with SUCCEEDED payment status
+    // Tips are stored in the database as dollars (not cents), so no conversion needed
+    const tipEarnings = await prisma.tip.aggregate({
+      where: {
+        celebrityId: celebrity.id,
+        paymentStatus: "SUCCEEDED",
+      },
+      _sum: {
+        amount: true,
+      },
+    })
+
+    // Get monthly tips
+    const monthlyTipEarnings = await prisma.tip.aggregate({
+      where: {
+        celebrityId: celebrity.id,
+        paymentStatus: "SUCCEEDED",
+        createdAt: {
+          gte: startOfMonth,
+        },
+      },
+      _sum: {
+        amount: true,
+      },
+    })
+
+    // Tips are already in dollars in the database, so no conversion needed
+    const totalTipEarnings = tipEarnings._sum.amount || 0
+    const monthlyTips = monthlyTipEarnings._sum.amount || 0
+
+    // Calculate total earnings (order earnings + tips)
+    const totalOrderEarnings = orderEarnings._sum.celebrityAmount || 0
+    const monthlyOrders = monthlyOrderEarnings._sum.celebrityAmount || 0
+
+    // Get booking statistics - these are for workflow tracking, not earnings
+    const [pendingRequests, completedBookings, totalBookings] = await Promise.all([
       prisma.booking.count({
         where: {
           celebrityId: celebrity.id,
           status: "PENDING",
         },
       }),
-      // Completed bookings
       prisma.booking.count({
         where: {
           celebrityId: celebrity.id,
           status: "COMPLETED",
         },
       }),
-      // Total orders (for earnings calculation)
-      prisma.order.findMany({
+      prisma.booking.count({
         where: {
           celebrityId: celebrity.id,
-          paymentStatus: "SUCCEEDED",
-        },
-        select: {
-          totalAmount: true,
-          createdAt: true,
-        },
-      }),
-      // Completed orders this month
-      prisma.order.findMany({
-        where: {
-          celebrityId: celebrity.id,
-          paymentStatus: "SUCCEEDED",
-          createdAt: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-          },
-        },
-        select: {
-          totalAmount: true,
-        },
-      }),
-      // Total reviews
-      prisma.review.count({
-        where: { celebrityId: celebrity.id },
-      }),
-      // Average rating
-      prisma.review.aggregate({
-        where: { celebrityId: celebrity.id },
-        _avg: {
-          rating: true,
         },
       }),
     ])
 
-    console.log("📊 Raw statistics fetched:", {
-      totalBookings,
-      pendingBookings,
-      completedBookings,
-      totalOrdersCount: totalOrders.length,
-      totalOrdersData: totalOrders,
-      completedOrdersCount: completedOrders.length,
-      completedOrdersData: completedOrders,
-      totalReviews,
-      averageRating: averageRating._avg.rating,
+    // Get review statistics
+    const reviewStats = await prisma.review.aggregate({
+      where: {
+        celebrityId: celebrity.id,
+      },
+      _avg: {
+        rating: true,
+      },
+      _count: {
+        id: true,
+      },
     })
 
-    // Calculate earnings
-    const totalEarnings = totalOrders.reduce((sum, order) => sum + order.totalAmount, 0)
-    const monthlyEarnings = completedOrders.reduce((sum, order) => sum + order.totalAmount, 0)
-
-    // Calculate completion rate
+    // Calculate response rate and completion rate
+    const responseRate =
+      totalBookings > 0 ? Math.round(((completedBookings + pendingRequests) / totalBookings) * 100) : 95
     const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 95
 
     const stats = {
-      totalEarnings,
-      monthlyEarnings,
-      pendingRequests: pendingBookings,
+      // Earnings breakdown - based on SUCCEEDED payments only
+      totalEarnings: totalOrderEarnings + totalTipEarnings,
+      orderEarnings: totalOrderEarnings,
+      tipEarnings: totalTipEarnings,
+      monthlyEarnings: monthlyOrders + monthlyTips,
+      monthlyOrderEarnings: monthlyOrders,
+      monthlyTipEarnings: monthlyTips,
+
+      // Booking statistics - for workflow tracking
+      pendingRequests,
       completedBookings,
-      averageRating: averageRating._avg.rating || celebrity.averageRating || 4.5,
-      totalReviews,
-      responseRate: 98, // This could be calculated based on response times
-      averageResponseTime: 24, // This could be calculated from actual response data
+      totalBookings,
+
+      // Performance metrics
+      averageRating: reviewStats._avg.rating || 4.5,
+      totalReviews: reviewStats._count.id || 0,
+      responseRate,
       completionRate,
-      responseTime: celebrity.responseTime || "24 hours",
+      averageResponseTime: 24, // hours - could be calculated from actual data
     }
 
-    console.log("📈 Final calculated stats:", stats)
+    console.log("📊 Celebrity Stats:", {
+      ...stats,
+      calculation: {
+        totalOrderEarnings,
+        totalTipEarnings,
+        monthlyOrders,
+        monthlyTips,
+        note: "Earnings based on SUCCEEDED payments only, regardless of order completion status",
+      },
+    })
 
     return NextResponse.json(stats)
   } catch (error) {

@@ -29,6 +29,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 interface OrderDetails {
   id: string
@@ -77,6 +78,60 @@ interface TipData {
   paymentStatus: string
 }
 
+// Subtle starfield component
+const SubtleLuxuryStarfield = () => {
+  useEffect(() => {
+    const existingStarfield = document.querySelector(".starfield")
+    if (existingStarfield) {
+      existingStarfield.remove()
+    }
+
+    const createStar = () => {
+      const star = document.createElement("div")
+      const size = Math.random() * 2 + 1
+      const type = Math.random()
+
+      if (type > 0.97) {
+        star.className = "star diamond"
+        star.style.width = `${size * 1.5}px`
+        star.style.height = `${size * 1.5}px`
+      } else if (type > 0.93) {
+        star.className = "star sapphire"
+        star.style.width = `${size * 1.2}px`
+        star.style.height = `${size * 1.2}px`
+      } else {
+        star.className = "star"
+        star.style.width = `${size}px`
+        star.style.height = `${size}px`
+      }
+
+      star.style.left = `${Math.random() * 100}%`
+      star.style.top = `${Math.random() * 100}%`
+      star.style.animationDelay = `${Math.random() * 5}s`
+
+      return star
+    }
+
+    const starfield = document.createElement("div")
+    starfield.className = "starfield"
+
+    for (let i = 0; i < 60; i++) {
+      starfield.appendChild(createStar())
+    }
+
+    document.body.appendChild(starfield)
+
+    return () => {
+      const starfieldToRemove = document.querySelector(".starfield")
+      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
+        document.body.removeChild(starfieldToRemove)
+      }
+    }
+  }, [])
+
+  return null
+}
+
 export default function OrderDetailsPage() {
   const params = useParams()
   const { data: session } = useSession()
@@ -87,6 +142,17 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [videoLoading, setVideoLoading] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+      
+    useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 1024)
+      }
+  
+      checkMobile()
+      window.addEventListener("resize", checkMobile)
+      return () => window.removeEventListener("resize", checkMobile)
+    }, [])
 
   useEffect(() => {
     if (orderNumber) {
@@ -205,11 +271,8 @@ export default function OrderDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="stars"></div>
-          <div className="stars2"></div>
-          <div className="stars3"></div>
-        </div>
+        {isMobile ? <MobileNavbar /> : <Navbar />}
+        <SubtleLuxuryStarfield />
         <div className="relative z-10">
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
         </div>
@@ -220,13 +283,12 @@ export default function OrderDetailsPage() {
   if (error || !order) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="stars"></div>
-          <div className="stars2"></div>
-          <div className="stars3"></div>
-        </div>
+        <SubtleLuxuryStarfield />
+        
         <div className="relative z-10">
-          <Navbar />
+          {isMobile ? <MobileNavbar /> : <Navbar />}
+          
+          {/* Error Message */}
           <div className="container mx-auto px-4 pt-24 pb-12">
             <div className="text-center">
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
@@ -244,15 +306,14 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Animated Stars Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="stars"></div>
-        <div className="stars2"></div>
-        <div className="stars3"></div>
-      </div>
+      <SubtleLuxuryStarfield />
+      
+      {/* Main Content */}
 
       <div className="relative z-10">
-        <Navbar />
+        {isMobile ? <MobileNavbar /> : <Navbar />}
+        
+        {/* Main Content */}
 
         <div className="container mx-auto px-4 pt-24 pb-12">
           {/* Header */}

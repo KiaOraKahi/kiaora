@@ -11,6 +11,7 @@ import Image from "next/image"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
+import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
@@ -104,6 +105,18 @@ export default function TalentsPage() {
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState<CelebritiesResponse["pagination"] | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [isMobile, setIsMobile] = useState(false)
+ 
+  // Check if mobile
+    useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 1024)
+      }
+  
+      checkMobile()
+      window.addEventListener("resize", checkMobile)
+      return () => window.removeEventListener("resize", checkMobile)
+    }, [])
 
   const fetchCelebrities = async (page = 1, category = "All", search = "", sort = "Featured") => {
     try {
@@ -168,7 +181,7 @@ export default function TalentsPage() {
       {/* Subtle Luxury Starfield Background */}
       <SubtleLuxuryStarfield />
 
-      <Navbar />
+      {isMobile ? <MobileNavbar /> : <Navbar />}
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
@@ -186,7 +199,7 @@ export default function TalentsPage() {
               Discover Amazing Talent
             </h1>
             <p className="text-xl sm:text-2xl text-yellow-200 max-w-4xl mx-auto leading-relaxed">
-              Connect with your favorite stars, influencers, and personalities for personalized experiences.
+              Connect with your favorite stars, influencers, and personalities for personalized video messages and live interactions.
             </p>
           </motion.div>
         </div>
