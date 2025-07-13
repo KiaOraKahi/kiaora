@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { headers } from "next/headers"
-import { stripe, transferTipPayment, calculatePaymentSplit } from "@/lib/stripe"
+import { stripe, transferTipPayment } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import type Stripe from "stripe"
 
@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
     }
 
     let event: Stripe.Event
-
     try {
       console.log("🔐 Verifying webhook signature...")
       event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
@@ -73,7 +72,6 @@ export async function POST(request: NextRequest) {
         console.error("📋 Error stack:", error instanceof Error ? error.stack : "No stack trace")
         console.error("📋 Payment Intent ID:", paymentIntent.id)
         console.error("📋 Payment Intent metadata:", paymentIntent.metadata)
-
         // Don't return error to Stripe - we want to investigate
         // return NextResponse.json({ error: "Processing failed" }, { status: 500 })
       }
@@ -101,7 +99,6 @@ export async function POST(request: NextRequest) {
     if (event.type === "account.updated") {
       const account = event.data.object as Stripe.Account
       console.log("🔄 Connect account updated:", account.id)
-
       try {
         await handleConnectAccountUpdate(account)
       } catch (error) {
@@ -109,37 +106,39 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle transfer events
-    if (event.type === "transfer.created") {
-      const transfer = event.data.object as Stripe.Transfer
-      console.log("🔄 Transfer created:", transfer.id)
-
-      try {
-        await handleTransferCreated(transfer)
-      } catch (error) {
-        console.error("❌ Error handling transfer created:", error)
+    // Handle transfer events - FIX: Use switch statement to avoid TypeScript issues
+    switch (event.type) {
+      case "transfer.created": {
+        const transfer = event.data.object as Stripe.Transfer
+        console.log("🔄 Transfer created:", transfer.id)
+        try {
+          await handleTransferCreated(transfer)
+        } catch (error) {
+          console.error("❌ Error handling transfer created:", error)
+        }
+        break
       }
-    }
 
-    if (event.type === "transfer.paid") {
-      const transfer = event.data.object as Stripe.Transfer
-      console.log("✅ Transfer completed:", transfer.id)
-
-      try {
-        await handleTransferCompleted(transfer)
-      } catch (error) {
-        console.error("❌ Error handling transfer completion:", error)
+      case "transfer.paid": {
+        const transfer = event.data.object as Stripe.Transfer
+        console.log("✅ Transfer completed:", transfer.id)
+        try {
+          await handleTransferCompleted(transfer)
+        } catch (error) {
+          console.error("❌ Error handling transfer completion:", error)
+        }
+        break
       }
-    }
 
-    if (event.type === "transfer.failed") {
-      const transfer = event.data.object as Stripe.Transfer
-      console.log("❌ Transfer failed:", transfer.id)
-
-      try {
-        await handleTransferFailed(transfer)
-      } catch (error) {
-        console.error("❌ Error handling transfer failure:", error)
+      case "transfer.failed": {
+        const transfer = event.data.object as Stripe.Transfer
+        console.log("❌ Transfer failed:", transfer.id)
+        try {
+          await handleTransferFailed(transfer)
+        } catch (error) {
+          console.error("❌ Error handling transfer failure:", error)
+        }
+        break
       }
     }
 
@@ -164,7 +163,6 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
   try {
     // Find and update the order
     console.log("🔍 Searching for order with payment intent ID:", paymentIntent.id)
-
     const order = await prisma.order.findUnique({
       where: { paymentIntentId: paymentIntent.id },
       include: {
@@ -179,7 +177,6 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
     if (!order) {
       console.log("❌ CRITICAL: Order not found for payment intent:", paymentIntent.id)
       console.log("🔍 Debugging: Searching all recent orders...")
-
       // Debug: Find all orders to see what's in the database
       const allOrders = await prisma.order.findMany({
         select: {
@@ -193,7 +190,6 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
         orderBy: { createdAt: "desc" },
         take: 10,
       })
-
       console.log("📋 Recent orders in database:")
       allOrders.forEach((o, i) => {
         console.log(`   ${i + 1}. Order: ${o.orderNumber}`)
@@ -230,24 +226,16 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
     console.log("   - Has existing booking:", !!order.booking)
     console.log("   - Total Amount:", order.totalAmount)
 
-    // Calculate payment split (80/20)
-    const { platformFee, celebrityAmount } = calculatePaymentSplit(paymentIntent.amount)
-
-    console.log("💰 PAYMENT SPLIT CALCULATION:")
-    console.log("   - Total Amount:", paymentIntent.amount, "cents")
-    console.log("   - Platform Fee (20%):", platformFee, "cents")
-    console.log("   - Celebrity Amount (80%):", celebrityAmount, "cents")
-
     console.log("🔄 UPDATING ORDER STATUS...")
-
-    // Update order with payment and split info
+    // 🔥 NEW FLOW: Only update payment status, DON'T calculate splits yet
+    // Money stays with platform until order is COMPLETED
     const updatedOrder = await prisma.order.update({
       where: { paymentIntentId: paymentIntent.id },
       data: {
         paymentStatus: "SUCCEEDED",
+        status: "PENDING", // Order is pending until celebrity accepts
         paidAt: new Date(),
-        platformFee: platformFee / 100, // Convert from cents to dollars
-        celebrityAmount: celebrityAmount / 100, // Convert from cents to dollars
+        // 🔥 REMOVED: Don't calculate splits yet - only when COMPLETED
       },
     })
 
@@ -255,15 +243,13 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
     console.log("   - Payment Status:", updatedOrder.paymentStatus)
     console.log("   - Order Status:", updatedOrder.status)
     console.log("   - Paid At:", updatedOrder.paidAt)
-    console.log("   - Platform Fee:", updatedOrder.platformFee)
-    console.log("   - Celebrity Amount:", updatedOrder.celebrityAmount)
+    console.log("   - 💰 MONEY HELD BY PLATFORM until delivery")
 
     // Create booking ONLY after payment succeeds (if it doesn't exist)
-    // BUT booking should be PENDING until celebrity accepts it
+    // Booking starts as PENDING until celebrity accepts it
     if (!order.booking) {
       console.log("🎬 CREATING BOOKING AFTER SUCCESSFUL PAYMENT...")
       console.log("   - Booking will be PENDING until celebrity accepts")
-
       const newBooking = await prisma.booking.create({
         data: {
           orderId: order.id,
@@ -275,7 +261,7 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
           occasion: order.occasion,
           instructions: order.specialInstructions || null,
           specialInstructions: order.specialInstructions || null,
-          status: "PENDING", // 🔥 CHANGED: Booking starts as PENDING, not ACCEPTED
+          status: "PENDING", // Booking starts as PENDING, not ACCEPTED
           price: order.totalAmount,
           totalAmount: order.totalAmount,
           scheduledDate: order.scheduledDate,
@@ -293,22 +279,23 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
       console.log("   - Booking will remain in current status until celebrity takes action")
     }
 
-    // DON'T initiate transfer yet - only after celebrity accepts
-    console.log("⏳ TRANSFER DEFERRED:")
-    console.log("   - Transfer will be initiated when celebrity accepts the booking")
-    console.log("   - Celebrity has Connect account:", !!order.celebrity.stripeConnectAccountId)
-    console.log("   - Payouts enabled:", order.celebrity.stripePayoutsEnabled)
+    // 🔥 NEW FLOW: NO TRANSFER YET - money stays with platform
+    console.log("💰 PAYMENT FLOW - NEW APPROACH:")
+    console.log("   - ✅ Customer payment: SUCCEEDED")
+    console.log("   - 🏦 Money held by: PLATFORM")
+    console.log("   - ⏳ Transfer when: ORDER COMPLETED (after video delivery)")
+    console.log("   - 📊 Earnings count: ONLY after COMPLETED")
 
-    // Update transfer status to pending (waiting for celebrity acceptance)
+    // Update transfer status to pending (waiting for completion)
     await prisma.order.update({
       where: { id: order.id },
-      data: { transferStatus: "PENDING" }, // Will change to IN_TRANSIT when celebrity accepts
+      data: { transferStatus: "PENDING" }, // Will change when order is COMPLETED
     })
 
     console.log("✅ BOOKING PAYMENT SUCCESS HANDLER COMPLETED")
-    console.log("   - Order: CONFIRMED (payment succeeded)")
-    console.log("   - Booking: PENDING (waiting for celebrity)")
-    console.log("   - Transfer: PENDING (waiting for celebrity acceptance)")
+    console.log("   - Order: PENDING (payment succeeded, waiting for celebrity)")
+    console.log("   - Booking: PENDING (waiting for celebrity acceptance)")
+    console.log("   - Transfer: DEFERRED (until delivery)")
   } catch (error) {
     console.error("❌ CRITICAL ERROR IN BOOKING PAYMENT SUCCESS HANDLER:")
     console.error("📋 Error message:", error instanceof Error ? error.message : "Unknown error")
@@ -319,7 +306,6 @@ async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) 
 
 async function handleBookingPaymentFailure(paymentIntent: Stripe.PaymentIntent) {
   console.log("🔄 Processing booking payment failure:", paymentIntent.id)
-
   try {
     // Update order status to failed
     const updatedOrder = await prisma.order.update({
@@ -330,7 +316,6 @@ async function handleBookingPaymentFailure(paymentIntent: Stripe.PaymentIntent) 
         transferStatus: "FAILED",
       },
     })
-
     console.log("✅ Booking payment failure processed for order:", updatedOrder.orderNumber)
   } catch (error) {
     console.error("❌ Error processing booking payment failure:", error)
@@ -371,11 +356,10 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     },
   })
 
-  // Initiate transfer to celebrity (100% of tip)
+  // Initiate transfer to celebrity (100% of tip) - Tips transfer immediately
   if (tip.celebrity.stripeConnectAccountId && tip.celebrity.stripePayoutsEnabled) {
     try {
       console.log("🔄 Initiating tip transfer to celebrity:", tip.celebrity.user.name)
-
       const transferResult = await transferTipPayment({
         accountId: tip.celebrity.stripeConnectAccountId,
         amount: paymentIntent.amount,
@@ -423,7 +407,6 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       console.log("✅ Tip transfer initiated successfully")
     } catch (error) {
       console.error("❌ Failed to initiate tip transfer:", error)
-
       // Update transfer status to failed
       await prisma.tip.update({
         where: { id: tip.id },
@@ -432,7 +415,6 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     }
   } else {
     console.log("⚠️ Celebrity doesn't have Connect account for tip transfer")
-
     // Update transfer status to pending
     await prisma.tip.update({
       where: { id: tip.id },
@@ -445,7 +427,6 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
 
 async function handleTipPaymentFailure(paymentIntent: Stripe.PaymentIntent) {
   console.log("🔄 Processing tip payment failure:", paymentIntent.id)
-
   // Update tip status to failed
   await prisma.tip.update({
     where: { paymentIntentId: paymentIntent.id },
@@ -454,7 +435,6 @@ async function handleTipPaymentFailure(paymentIntent: Stripe.PaymentIntent) {
       transferStatus: "FAILED",
     },
   })
-
   console.log("✅ Tip payment failure processed")
 }
 
@@ -478,7 +458,6 @@ async function handleConnectAccountUpdate(account: Stripe.Account) {
 
   // Determine account status using correct Prisma enum values
   let accountStatus: "PENDING" | "RESTRICTED" | "ACTIVE" | "REJECTED" = "PENDING"
-
   if (account.details_submitted && account.charges_enabled && account.payouts_enabled) {
     accountStatus = "ACTIVE"
   } else if (account.requirements?.disabled_reason) {
@@ -536,7 +515,6 @@ async function handleTransferCompleted(transfer: Stripe.Transfer) {
     return
   }
 
-  // Update transfer status
   await prisma.transfer.update({
     where: { stripeTransferId: transfer.id },
     data: {

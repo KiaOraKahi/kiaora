@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { stripe, calculatePaymentSplit } from "@/lib/stripe"
+import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle booking payment with 80/20 split
+// Handle booking payment - NO SPLIT CALCULATION (deferred until video upload)
 async function handleBookingPayment({
   session,
   celebrity,
@@ -88,20 +88,17 @@ async function handleBookingPayment({
     throw new Error("Missing required booking information")
   }
 
-  // Calculate platform fee (20%) and celebrity amount (80%)
   // Convert amount to cents for Stripe calculations
   const amountInCents = Math.round(amount * 100)
-  const { platformFee, celebrityAmount } = calculatePaymentSplit(amountInCents, 20)
 
-  console.log(`💰 Payment breakdown:`)
+  console.log(`💰 Payment collection:`)
   console.log(`   Total: $${amount}`)
-  console.log(`   Platform Fee (20%): $${platformFee / 100}`)
-  console.log(`   Celebrity Amount (80%): $${celebrityAmount / 100}`)
+  console.log(`   💰 Payment splits will be calculated ONLY when video is delivered`)
 
   // Generate unique order number
   const orderNumber = `KO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
 
-  // Create order first
+  // Create order first - NO PAYMENT SPLITS YET
   console.log("📝 Creating order...")
   const order = await prisma.order.create({
     data: {
@@ -112,9 +109,9 @@ async function handleBookingPayment({
       currency: "usd",
       status: "PENDING",
       paymentStatus: "PENDING",
-      // Platform fee tracking
-      platformFee: platformFee / 100, // Store in dollars
-      celebrityAmount: celebrityAmount / 100, // Store in dollars
+      // 🔥 REMOVED: No payment splits calculated yet
+      // platformFee: will be calculated when video is uploaded
+      // celebrityAmount: will be calculated when video is uploaded
       transferStatus: "PENDING",
       // Booking details
       recipientName: bookingData.recipientName,
@@ -167,10 +164,9 @@ async function handleBookingPayment({
       celebrityName: celebrity.user.name || "Unknown",
       userId: session.user.id,
       userName: session.user.name || "Unknown",
-      // Payment split info
+      // Payment info (no splits calculated yet)
       totalAmount: amountInCents.toString(),
-      platformFee: platformFee.toString(),
-      celebrityAmount: celebrityAmount.toString(),
+      // 🔥 REMOVED: Payment splits will be calculated when video is uploaded
       // Connect account info
       celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",
       canTransfer: celebrity.stripeConnectAccountId ? "true" : "false",
@@ -193,14 +189,15 @@ async function handleBookingPayment({
   console.log("   - Order created:", order.orderNumber)
   console.log("   - Payment Intent:", paymentIntent.id)
   console.log("   - Booking will be created after payment succeeds")
+  console.log("   - 💰 Payment splits will be calculated when video is delivered")
 
   return NextResponse.json({
     clientSecret: paymentIntent.client_secret,
     orderNumber: order.orderNumber,
     orderId: order.id,
     paymentType: "booking",
-    platformFee: platformFee / 100,
-    celebrityAmount: celebrityAmount / 100,
+    // 🔥 REMOVED: No split info returned since not calculated yet
+    message: "Payment splits will be calculated upon video delivery",
   })
 }
 

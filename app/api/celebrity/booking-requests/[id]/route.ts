@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { stripe } from "@/lib/stripe"
 import { sendBookingConfirmationToCustomer, sendBookingRejectionToCustomer } from "@/lib/email"
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -48,12 +49,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "Invalid action. Must be 'accept' or 'decline'" }, { status: 400 })
     }
 
-    // Convert action to status
-    const newBookingStatus = action === "accept" ? "CONFIRMED" : "CANCELLED"
-    const newOrderStatus = action === "accept" ? "CONFIRMED" : "CANCELLED"
-
-    console.log("🔄 Converting action to status:", { action, newBookingStatus, newOrderStatus })
-
     // Find the booking and verify ownership
     const booking = await prisma.booking.findFirst({
       where: {
@@ -72,6 +67,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             id: true,
             orderNumber: true,
             totalAmount: true,
+            paymentStatus: true,
+            paymentIntentId: true,
           },
         },
       },
@@ -88,7 +85,25 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       currentBookingStatus: booking.status,
       customerName: booking.user?.name,
       orderNumber: booking.order?.orderNumber,
+      paymentStatus: booking.order?.paymentStatus,
     })
+
+    // 🔥 CRITICAL: Verify payment succeeded before allowing acceptance
+    if (action === "accept" && booking.order?.paymentStatus !== "SUCCEEDED") {
+      console.log("❌ Cannot accept booking with unsuccessful payment:", booking.order?.paymentStatus)
+      return NextResponse.json(
+        {
+          error: "Cannot accept booking. Payment has not been completed successfully.",
+        },
+        { status: 400 },
+      )
+    }
+
+    // Convert action to status
+    const newBookingStatus = action === "accept" ? "CONFIRMED" : "CANCELLED"
+    const newOrderStatus = action === "accept" ? "CONFIRMED" : "CANCELLED"
+
+    console.log("🔄 Converting action to status:", { action, newBookingStatus, newOrderStatus })
 
     // Use transaction to update both booking and order status
     const result = await prisma.$transaction(async (tx) => {
@@ -114,6 +129,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               orderNumber: true,
               totalAmount: true,
               paymentStatus: true,
+              paymentIntentId: true,
             },
           },
         },
@@ -126,22 +142,67 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           data: {
             status: newOrderStatus,
             updatedAt: new Date(),
+            // 🔥 CRITICAL: Update transfer status based on action
+            transferStatus: action === "accept" ? "PENDING" : "CANCELLED",
           },
         })
         console.log("✅ Order status updated:", {
           orderId: booking.order.id,
           newStatus: newOrderStatus,
+          transferStatus: action === "accept" ? "PENDING" : "CANCELLED",
         })
       }
 
       return updatedBooking
     })
 
+    // 🔥 CRITICAL: Handle refund for declined bookings
+    if (action === "decline" && booking.order?.paymentIntentId) {
+      try {
+        console.log("💸 PROCESSING REFUND for declined booking...")
+        console.log("   - Payment Intent ID:", booking.order.paymentIntentId)
+        console.log("   - Order Number:", booking.order.orderNumber)
+        console.log("   - Amount:", booking.order.totalAmount)
+
+        // Create refund in Stripe
+        const refund = await stripe.refunds.create({
+          payment_intent: booking.order.paymentIntentId,
+          reason: "requested_by_customer", // Celebrity declined = customer request
+          metadata: {
+            orderId: booking.order.id,
+            orderNumber: booking.order.orderNumber,
+            celebrityId: celebrity.id,
+            reason: "Celebrity declined booking",
+          },
+        })
+
+        console.log("✅ Refund created successfully:", refund.id)
+
+        // Update order with refund information
+        await prisma.order.update({
+          where: { id: booking.order.id },
+          data: {
+            refundId: refund.id,
+            refundStatus: "PROCESSING",
+            refundAmount: refund.amount / 100, // Convert from cents to dollars
+            refundedAt: new Date(),
+          },
+        })
+
+        console.log("✅ Order updated with refund information")
+      } catch (refundError) {
+        console.error("❌ Failed to process refund:", refundError)
+        // Don't fail the booking decline if refund fails - log for manual processing
+        console.error("🚨 MANUAL REFUND REQUIRED for order:", booking.order.orderNumber)
+      }
+    }
+
     console.log("✅ Booking and Order status updated:", {
       bookingId: result.id,
       oldStatus: booking.status,
       newBookingStatus: result.status,
       newOrderStatus,
+      action,
     })
 
     // Send email notifications
@@ -184,7 +245,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       occasion: booking.occasion || "General Request",
       instructions: booking.instructions || "",
       amount: result.order?.totalAmount || 0,
-      requestedDate: booking.requestedDate?.toISOString() || new Date().toISOString(),
+      requestedDate: new Date().toISOString(),
       status: result.status.toLowerCase(),
       createdAt: result.createdAt.toISOString(),
       deadline: booking.deadline?.toISOString() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -197,6 +258,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       success: true,
       booking: formattedBooking,
       message: `Booking ${action === "accept" ? "accepted" : "declined"} successfully`,
+      ...(action === "decline" && { refundProcessed: true }),
     })
   } catch (error) {
     console.error("❌ Error updating booking request:", error)

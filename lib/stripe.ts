@@ -1,13 +1,18 @@
 import Stripe from "stripe"
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set in environment variables")
+  throw new Error("STRIPE_SECRET_KEY is not set")
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-05-28.basil",
-  typescript: true,
 })
+
+interface CreateConnectAccountData {
+  email: string
+  name: string
+  businessType?: "individual" | "company"
+}
 
 export const formatAmountForStripe = (amount: number): number => {
   return Math.round(amount * 100) // Convert to cents
@@ -45,6 +50,11 @@ export const createConnectAccount = async (celebrityData: {
   try {
     console.log("🔄 Creating Stripe Connect account for:", celebrityData.email)
 
+    // Safely split the name
+    const nameParts = (celebrityData.name || "Celebrity User").trim().split(" ")
+    const firstName = nameParts[0] || "Celebrity"
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "User"
+
     // Create Express account
     const account = await stripe.accounts.create({
       type: "express",
@@ -52,13 +62,17 @@ export const createConnectAccount = async (celebrityData: {
       email: celebrityData.email,
       business_type: celebrityData.businessType || "individual",
       individual: {
-        first_name: celebrityData.name.split(" ")[0],
-        last_name: celebrityData.name.split(" ").slice(1).join(" ") || celebrityData.name.split(" ")[0],
+        first_name: firstName,
+        last_name: lastName,
         email: celebrityData.email,
       },
       capabilities: {
-        transfers: { requested: true },
         card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+      business_profile: {
+        product_description: "Celebrity video messages and personalized content",
+        mcc: "7922", // Theatrical producers and miscellaneous entertainment services
       },
       settings: {
         payouts: {
@@ -81,7 +95,6 @@ export const createConnectAccount = async (celebrityData: {
     })
 
     console.log("✅ Onboarding link created")
-
     return {
       accountId: account.id,
       onboardingUrl: accountLink.url,
@@ -119,19 +132,22 @@ export const getConnectAccountStatus = async (accountId: string) => {
 /**
  * Create a new onboarding link for existing account
  */
-export const createOnboardingLink = async (accountId: string): Promise<string> => {
+export const createAccountLink = async (accountId: string, refreshUrl: string, returnUrl: string) => {
   try {
+    console.log("🔄 Creating account link for:", accountId)
+
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${process.env.NEXTAUTH_URL}/celebrity-dashboard?setup=refresh`,
-      return_url: `${process.env.NEXTAUTH_URL}/celebrity-dashboard?setup=complete`,
+      refresh_url: refreshUrl,
+      return_url: returnUrl,
       type: "account_onboarding",
     })
 
-    return accountLink.url
+    console.log("✅ Account link created:", accountLink.url)
+    return accountLink
   } catch (error) {
-    console.error("❌ Failed to create onboarding link:", error)
-    throw new Error(`Failed to create onboarding link: ${error instanceof Error ? error.message : "Unknown error"}`)
+    console.error("❌ Failed to create account link:", error)
+    throw new Error(`Failed to create account link: ${error instanceof Error ? error.message : "Unknown error"}`)
   }
 }
 
@@ -166,8 +182,7 @@ export const transferBookingPayment = async (transferData: {
 }): Promise<{ transferId: string; celebrityAmount: number; platformFee: number }> => {
   try {
     const platformFeePercentage = transferData.platformFeePercentage || 20 // Default 20%
-    const platformFee = Math.round(transferData.amount * (platformFeePercentage / 100))
-    const celebrityAmount = transferData.amount - platformFee
+    const { platformFee, celebrityAmount } = calculatePaymentSplit(transferData.amount, platformFeePercentage)
 
     console.log(`🔄 Transferring booking payment:`)
     console.log(`   Total: $${transferData.amount / 100}`)
@@ -294,6 +309,45 @@ export const listAccountTransfers = async (accountId: string, limit = 10) => {
   }
 }
 
+/**
+ * Get account balance
+ */
+export const getAccountBalance = async (accountId: string) => {
+  try {
+    const balance = await stripe.balance.retrieve({
+      stripeAccount: accountId,
+    })
+    return balance
+  } catch (error) {
+    console.error("❌ Failed to get account balance:", error)
+    throw new Error(`Failed to get account balance: ${error instanceof Error ? error.message : "Unknown error"}`)
+  }
+}
+
+/**
+ * Create payment intent
+ */
+export const createPaymentIntent = async (amount: number, currency = "usd", metadata: Record<string, string> = {}) => {
+  try {
+    console.log(`🔄 Creating payment intent: $${amount / 100}`)
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount), // Ensure it's an integer
+      currency,
+      metadata,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    })
+
+    console.log("✅ Payment intent created:", paymentIntent.id)
+    return paymentIntent
+  } catch (error) {
+    console.error("❌ Failed to create payment intent:", error)
+    throw new Error(`Failed to create payment intent: ${error instanceof Error ? error.message : "Unknown error"}`)
+  }
+}
+
 // ==========================================
 // TIP PAYMENT FUNCTIONS
 // ==========================================
@@ -394,7 +448,11 @@ export const calculatePaymentSplit = (
   totalAmount: number,
   platformFeePercentage = 20,
 ): { platformFee: number; celebrityAmount: number } => {
-  const platformFee = Math.round(totalAmount * (platformFeePercentage / 100))
+  // Ensure platformFeePercentage is a number
+  const feePercentage =
+    typeof platformFeePercentage === "string" ? Number.parseFloat(platformFeePercentage) : platformFeePercentage
+
+  const platformFee = Math.round(totalAmount * (feePercentage / 100))
   const celebrityAmount = totalAmount - platformFee
 
   return {
@@ -467,3 +525,7 @@ export const getSupportedCountries = (): string[] => {
 export const isCountrySupported = (countryCode: string): boolean => {
   return getSupportedCountries().includes(countryCode.toUpperCase())
 }
+
+/**
+ * Get account balance
+ */

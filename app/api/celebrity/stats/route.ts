@@ -33,23 +33,24 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-    // Get total earnings from orders with SUCCEEDED payment status
-    // We include all payment-successful orders regardless of completion status for earnings
-    const orderEarnings = await prisma.order.aggregate({
+    // 🔥 NEW: Only count COMPLETED orders for actual earnings
+    const completedOrderEarnings = await prisma.order.aggregate({
       where: {
         celebrityId: celebrity.id,
-        paymentStatus: "SUCCEEDED", // Only count paid orders
+        paymentStatus: "SUCCEEDED",
+        status: "COMPLETED", // 🔥 Only completed orders count as earned
       },
       _sum: {
         celebrityAmount: true,
       },
     })
 
-    // Get monthly earnings from orders
-    const monthlyOrderEarnings = await prisma.order.aggregate({
+    // 🔥 NEW: Monthly completed earnings
+    const monthlyCompletedEarnings = await prisma.order.aggregate({
       where: {
         celebrityId: celebrity.id,
         paymentStatus: "SUCCEEDED",
+        status: "COMPLETED",
         createdAt: {
           gte: startOfMonth,
         },
@@ -59,8 +60,34 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Get total tips - only from orders with SUCCEEDED payment status
-    // Tips are stored in the database as dollars (not cents), so no conversion needed
+    // 🔥 NEW: Calculate pending earnings (confirmed but not completed)
+    const pendingEarnings = await prisma.order.aggregate({
+      where: {
+        celebrityId: celebrity.id,
+        paymentStatus: "SUCCEEDED",
+        status: "CONFIRMED", // 🔥 Money held by platform for confirmed bookings
+      },
+      _sum: {
+        celebrityAmount: true,
+      },
+    })
+
+    // 🔥 NEW: Monthly pending earnings
+    const monthlyPendingEarnings = await prisma.order.aggregate({
+      where: {
+        celebrityId: celebrity.id,
+        paymentStatus: "SUCCEEDED",
+        status: "CONFIRMED",
+        createdAt: {
+          gte: startOfMonth,
+        },
+      },
+      _sum: {
+        celebrityAmount: true,
+      },
+    })
+
+    // Tips remain the same - they transfer immediately upon payment
     const tipEarnings = await prisma.tip.aggregate({
       where: {
         celebrityId: celebrity.id,
@@ -71,7 +98,6 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Get monthly tips
     const monthlyTipEarnings = await prisma.tip.aggregate({
       where: {
         celebrityId: celebrity.id,
@@ -85,20 +111,27 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Tips are already in dollars in the database, so no conversion needed
+    // Calculate earnings breakdown
+    const completedOrderAmount = completedOrderEarnings._sum.celebrityAmount || 0
+    const pendingOrderAmount = pendingEarnings._sum.celebrityAmount || 0
     const totalTipEarnings = tipEarnings._sum.amount || 0
+
+    const monthlyCompleted = monthlyCompletedEarnings._sum.celebrityAmount || 0
+    const monthlyPending = monthlyPendingEarnings._sum.celebrityAmount || 0
     const monthlyTips = monthlyTipEarnings._sum.amount || 0
 
-    // Calculate total earnings (order earnings + tips)
-    const totalOrderEarnings = orderEarnings._sum.celebrityAmount || 0
-    const monthlyOrders = monthlyOrderEarnings._sum.celebrityAmount || 0
-
-    // Get booking statistics - these are for workflow tracking, not earnings
-    const [pendingRequests, completedBookings, totalBookings] = await Promise.all([
+    // Get booking statistics
+    const [pendingRequests, confirmedBookings, completedBookings, totalBookings] = await Promise.all([
       prisma.booking.count({
         where: {
           celebrityId: celebrity.id,
           status: "PENDING",
+        },
+      }),
+      prisma.booking.count({
+        where: {
+          celebrityId: celebrity.id,
+          status: "CONFIRMED",
         },
       }),
       prisma.booking.count({
@@ -129,21 +162,32 @@ export async function GET(request: NextRequest) {
 
     // Calculate response rate and completion rate
     const responseRate =
-      totalBookings > 0 ? Math.round(((completedBookings + pendingRequests) / totalBookings) * 100) : 95
+      totalBookings > 0
+        ? Math.round(((completedBookings + confirmedBookings + pendingRequests) / totalBookings) * 100)
+        : 95
     const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 95
 
     const stats = {
-      // Earnings breakdown - based on SUCCEEDED payments only
-      totalEarnings: totalOrderEarnings + totalTipEarnings,
-      orderEarnings: totalOrderEarnings,
-      tipEarnings: totalTipEarnings,
-      monthlyEarnings: monthlyOrders + monthlyTips,
-      monthlyOrderEarnings: monthlyOrders,
+      // 🔥 NEW: Proper earnings breakdown
+      totalEarnings: completedOrderAmount + totalTipEarnings, // Only completed + tips
+      completedEarnings: completedOrderAmount, // Money already transferred
+      pendingEarnings: pendingOrderAmount, // Money held by platform (confirmed but not delivered)
+      tipEarnings: totalTipEarnings, // Tips (transferred immediately)
+
+      // Monthly breakdown
+      monthlyEarnings: monthlyCompleted + monthlyTips,
+      monthlyCompletedEarnings: monthlyCompleted,
+      monthlyPendingEarnings: monthlyPending,
       monthlyTipEarnings: monthlyTips,
 
-      // Booking statistics - for workflow tracking
-      pendingRequests,
-      completedBookings,
+      // Legacy fields for backward compatibility
+      orderEarnings: completedOrderAmount,
+      monthlyOrderEarnings: monthlyCompleted,
+
+      // Booking statistics
+      pendingRequests, // New requests waiting for acceptance
+      confirmedBookings, // Accepted but not delivered (money held by platform)
+      completedBookings, // Delivered (money transferred)
       totalBookings,
 
       // Performance metrics
@@ -151,17 +195,19 @@ export async function GET(request: NextRequest) {
       totalReviews: reviewStats._count.id || 0,
       responseRate,
       completionRate,
-      averageResponseTime: 24, // hours - could be calculated from actual data
+      averageResponseTime: 24, // hours
     }
 
     console.log("📊 Celebrity Stats:", {
       ...stats,
       calculation: {
-        totalOrderEarnings,
+        completedOrderAmount,
+        pendingOrderAmount,
         totalTipEarnings,
-        monthlyOrders,
+        monthlyCompleted,
+        monthlyPending,
         monthlyTips,
-        note: "Earnings based on SUCCEEDED payments only, regardless of order completion status",
+        note: "Only COMPLETED orders count as earned. CONFIRMED orders are pending (money held by platform).",
       },
     })
 

@@ -27,7 +27,6 @@ import {
   CheckCircle,
   XCircle,
   Settings,
-  Camera,
   BarChart3,
   Loader2,
   Save,
@@ -46,6 +45,7 @@ import {
   Heart,
   CreditCard,
   Gift,
+  Clock,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
@@ -55,10 +55,13 @@ interface DashboardStats {
   totalEarnings: number
   orderEarnings: number
   tipEarnings: number
+  pendingEarnings: number // 🔥 NEW: Money for confirmed but not delivered bookings
   monthlyEarnings: number
   monthlyOrderEarnings: number
   monthlyTipEarnings: number
+  monthlyPendingEarnings: number // 🔥 NEW: Monthly pending earnings
   pendingRequests: number
+  confirmedBookings: number // 🔥 NEW: Accepted but not delivered
   completedBookings: number
   totalBookings: number
   averageRating: number
@@ -195,10 +198,13 @@ export default function CelebrityDashboard() {
         totalEarnings: data.totalEarnings || 0,
         orderEarnings: data.orderEarnings || 0,
         tipEarnings: data.tipEarnings || 0,
+        pendingEarnings: data.pendingEarnings || 0, // 🔥 NEW
         monthlyEarnings: data.monthlyEarnings || 0,
         monthlyOrderEarnings: data.monthlyOrderEarnings || 0,
         monthlyTipEarnings: data.monthlyTipEarnings || 0,
+        monthlyPendingEarnings: data.monthlyPendingEarnings || 0, // 🔥 NEW
         pendingRequests: data.pendingRequests || 0,
+        confirmedBookings: data.confirmedBookings || 0, // 🔥 NEW
         completedBookings: data.completedBookings || 0,
         totalBookings: data.totalBookings || 0,
         averageRating: data.averageRating || 4.5,
@@ -215,10 +221,13 @@ export default function CelebrityDashboard() {
         totalEarnings: 0,
         orderEarnings: 0,
         tipEarnings: 0,
+        pendingEarnings: 0,
         monthlyEarnings: 0,
         monthlyOrderEarnings: 0,
         monthlyTipEarnings: 0,
+        monthlyPendingEarnings: 0,
         pendingRequests: 0,
+        confirmedBookings: 0,
         completedBookings: 0,
         totalBookings: 0,
         averageRating: 4.5,
@@ -714,7 +723,7 @@ export default function CelebrityDashboard() {
             <TabsContent value="overview" className="space-y-6">
               {/* Stats Cards */}
               {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
@@ -741,6 +750,26 @@ export default function CelebrityDashboard() {
                     </CardContent>
                   </Card>
 
+                  {/* 🔥 NEW: Pending Earnings Card */}
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-purple-200 text-sm font-medium">Pending Earnings</p>
+                          <p className="text-2xl font-bold text-orange-400">
+                            ${(stats.pendingEarnings || 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-purple-400 mt-1">
+                            From {stats.confirmedBookings || 0} confirmed bookings
+                          </p>
+                        </div>
+                        <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center">
+                          <Clock className="w-6 h-6 text-orange-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
@@ -751,11 +780,11 @@ export default function CelebrityDashboard() {
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-green-400">
-                              ${(stats.monthlyOrderEarnings || 0).toLocaleString()} bookings
+                              ${(stats.monthlyOrderEarnings || 0).toLocaleString()} completed
                             </span>
-                            {stats.monthlyTipEarnings > 0 && (
-                              <span className="text-xs text-yellow-400">
-                                +${(stats.monthlyTipEarnings || 0).toLocaleString()} tips
+                            {stats.monthlyPendingEarnings > 0 && (
+                              <span className="text-xs text-orange-400">
+                                +${(stats.monthlyPendingEarnings || 0).toLocaleString()} pending
                               </span>
                             )}
                           </div>
@@ -1029,7 +1058,7 @@ export default function CelebrityDashboard() {
               </div>
             </TabsContent>
 
-            {/* Payments Tab - NEW */}
+            {/* Payments Tab */}
             <TabsContent value="payments" className="space-y-6">
               <StripeConnectOnboarding />
             </TabsContent>
@@ -1509,290 +1538,161 @@ export default function CelebrityDashboard() {
 
             {/* Profile Tab */}
             <TabsContent value="profile" className="space-y-6">
-              {profileLoading ? (
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                  <CardContent className="flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-                  </CardContent>
-                </Card>
-              ) : profile ? (
-                <form onSubmit={handleProfileUpdate} className="space-y-6">
-                  {/* Profile Header */}
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                    <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <User className="w-5 h-5" />
-                        Profile Management
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {/* Success/Error Messages */}
+              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Edit Profile
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {profileLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                    </div>
+                  ) : profile ? (
+                    <form onSubmit={handleProfileUpdate} className="space-y-4">
                       {profileSuccess && (
-                        <div className="flex items-center gap-2 p-3 bg-green-500/20 border border-green-500/50 rounded-lg">
-                          <CheckCircle className="w-5 h-5 text-green-400" />
-                          <span className="text-green-300">Profile updated successfully!</span>
+                        <div className="p-4 bg-green-500/20 text-green-300 rounded-lg flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4" />
+                          Profile updated successfully!
                         </div>
                       )}
                       {profileError && (
-                        <div className="flex items-center gap-2 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-                          <AlertCircle className="w-5 h-5 text-red-400" />
-                          <span className="text-red-300">{profileError}</span>
+                        <div className="p-4 bg-red-500/20 text-red-300 rounded-lg flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          Error: {profileError}
                         </div>
                       )}
-
-                      {/* Profile Picture */}
-                      <div className="flex items-center gap-6">
-                        <div className="relative">
-                          <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                            {profile.image ? (
-                              <img
-                                src={profile.image || "/placeholder.svg"}
-                                alt={profile.name || "Profile"}
-                                className="w-full h-full rounded-full object-cover"
-                              />
-                            ) : (
-                              <User className="w-12 h-12 text-white" />
-                            )}
-                          </div>
-                          <Button
-                            type="button"
-                            size="icon"
-                            className="absolute -bottom-2 -right-2 w-8 h-8 bg-purple-600 hover:bg-purple-700"
-                          >
-                            <Camera className="w-4 h-4" />
-                          </Button>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="name">Name</Label>
+                          <Input
+                            type="text"
+                            id="name"
+                            value={profile.name}
+                            onChange={(e) => updateProfile("name", e.target.value)}
+                          />
                         </div>
                         <div>
-                          <h3 className="text-xl font-semibold text-white">{profile.name}</h3>
-                          <p className="text-purple-200">{profile.email}</p>
-                          <Badge className="bg-yellow-500/20 text-yellow-300 mt-2">
-                            <Star className="w-3 h-3 mr-1" />
-                            {profile.verified ? "Verified Celebrity" : "Pending Verification"}
-                          </Badge>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            type="email"
+                            id="email"
+                            value={profile.email}
+                            onChange={(e) => updateProfile("email", e.target.value)}
+                            disabled
+                          />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Basic Information */}
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                    <CardHeader>
-                      <CardTitle className="text-white">Basic Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="category" className="text-purple-200">
-                            Category
-                          </Label>
-                          <Select value={profile.category} onValueChange={(value) => updateProfile("category", value)}>
-                            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Actor">Actor</SelectItem>
-                              <SelectItem value="Musician">Musician</SelectItem>
-                              <SelectItem value="Athlete">Athlete</SelectItem>
-                              <SelectItem value="Comedian">Comedian</SelectItem>
-                              <SelectItem value="Influencer">Influencer</SelectItem>
-                              <SelectItem value="TV Personality">TV Personality</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="responseTime" className="text-purple-200">
-                            Response Time
-                          </Label>
-                          <Select
-                            value={profile.responseTime}
-                            onValueChange={(value) => updateProfile("responseTime", value)}
-                          >
-                            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                              <SelectValue placeholder="Select response time" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1 hour">1 hour</SelectItem>
-                              <SelectItem value="6 hours">6 hours</SelectItem>
-                              <SelectItem value="12 hours">12 hours</SelectItem>
-                              <SelectItem value="24 hours">24 hours</SelectItem>
-                              <SelectItem value="48 hours">48 hours</SelectItem>
-                              <SelectItem value="72 hours">72 hours</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="bio" className="text-purple-200">
-                          Short Bio
-                        </Label>
-                        <Input
+                      <div>
+                        <Label htmlFor="bio">Short Bio</Label>
+                        <Textarea
                           id="bio"
                           value={profile.bio}
                           onChange={(e) => updateProfile("bio", e.target.value)}
-                          placeholder="A brief description about yourself..."
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
-                          maxLength={150}
+                          placeholder="Write a short bio about yourself"
                         />
-                        <p className="text-xs text-purple-400">{profile.bio.length}/150 characters</p>
                       </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="longBio" className="text-purple-200">
-                          Long Bio
-                        </Label>
+                      <div>
+                        <Label htmlFor="longBio">Long Bio</Label>
                         <Textarea
                           id="longBio"
                           value={profile.longBio}
                           onChange={(e) => updateProfile("longBio", e.target.value)}
-                          placeholder="Tell your fans more about yourself, your career, achievements..."
-                          className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 min-h-[120px]"
-                          maxLength={1000}
+                          placeholder="Write a detailed bio about yourself"
                         />
-                        <p className="text-xs text-purple-400">{profile.longBio.length}/1000 characters</p>
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Pricing */}
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                    <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <DollarSign className="w-5 h-5" />
-                        Pricing Structure
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <Input
+                          type="text"
+                          id="category"
+                          value={profile.category}
+                          onChange={(e) => updateProfile("category", e.target.value)}
+                        />
+                      </div>
                       <div className="grid md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="pricePersonal" className="text-purple-200">
-                            Personal Messages
-                          </Label>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
-                            <Input
-                              id="pricePersonal"
-                              type="number"
-                              value={profile.pricePersonal}
-                              onChange={(e) => updateProfile("pricePersonal", Number.parseFloat(e.target.value) || 0)}
-                              className="bg-white/10 border-white/20 text-white pl-10"
-                              min="1"
-                              step="1"
-                            />
-                          </div>
-                          <p className="text-xs text-purple-400">Birthday wishes, congratulations, etc.</p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="priceBusiness" className="text-purple-200">
-                            Business Messages
-                          </Label>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
-                            <Input
-                              id="priceBusiness"
-                              type="number"
-                              value={profile.priceBusiness}
-                              onChange={(e) => updateProfile("priceBusiness", Number.parseFloat(e.target.value) || 0)}
-                              className="bg-white/10 border-white/20 text-white pl-10"
-                              min="1"
-                              step="1"
-                            />
-                          </div>
-                          <p className="text-xs text-purple-400">Corporate events, promotions, etc.</p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="priceCharity" className="text-purple-200">
-                            Charity Messages
-                          </Label>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
-                            <Input
-                              id="priceCharity"
-                              type="number"
-                              value={profile.priceCharity}
-                              onChange={(e) => updateProfile("priceCharity", Number.parseFloat(e.target.value) || 0)}
-                              className="bg-white/10 border-white/20 text-white pl-10"
-                              min="1"
-                              step="1"
-                            />
-                          </div>
-                          <p className="text-xs text-purple-400">Fundraising, awareness campaigns, etc.</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Availability */}
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                    <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <Calendar className="w-5 h-5" />
-                        Availability Settings
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="nextAvailable" className="text-purple-200">
-                            Next Available Date
-                          </Label>
+                        <div>
+                          <Label htmlFor="pricePersonal">Price (Personal)</Label>
                           <Input
-                            id="nextAvailable"
-                            type="date"
-                            value={profile.nextAvailable}
-                            onChange={(e) => updateProfile("nextAvailable", e.target.value)}
-                            className="bg-white/10 border-white/20 text-white"
+                            type="number"
+                            id="pricePersonal"
+                            value={profile.pricePersonal}
+                            onChange={(e) => updateProfile("pricePersonal", Number.parseFloat(e.target.value))}
                           />
-                          <p className="text-xs text-purple-400">When you can next fulfill requests</p>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-purple-200">Accepting New Bookings</Label>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={profile.isActive}
-                              onCheckedChange={(checked) => updateProfile("isActive", checked)}
-                            />
-                            <span className="text-white">
-                              {profile.isActive ? "Currently accepting" : "Not accepting"}
-                            </span>
-                          </div>
-                          <p className="text-xs text-purple-400">Turn off to pause new booking requests</p>
+                        <div>
+                          <Label htmlFor="priceBusiness">Price (Business)</Label>
+                          <Input
+                            type="number"
+                            id="priceBusiness"
+                            value={profile.priceBusiness}
+                            onChange={(e) => updateProfile("priceBusiness", Number.parseFloat(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="priceCharity">Price (Charity)</Label>
+                          <Input
+                            type="number"
+                            id="priceCharity"
+                            value={profile.priceCharity}
+                            onChange={(e) => updateProfile("priceCharity", Number.parseFloat(e.target.value))}
+                          />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Save Button */}
-                  <div className="flex justify-end">
-                    <Button
-                      type="submit"
-                      disabled={profileSaving}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    >
-                      {profileSaving ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Profile
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                  <CardContent className="text-center py-12">
-                    <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">Profile Not Found</h3>
-                    <p className="text-purple-200">Unable to load your profile information.</p>
-                  </CardContent>
-                </Card>
-              )}
+                      <div>
+                        <Label className="flex items-center space-x-2">
+                          <span>Active</span>
+                          <Switch
+                            id="active"
+                            checked={profile.isActive}
+                            onCheckedChange={(checked) => updateProfile("isActive", checked)}
+                          />
+                        </Label>
+                      </div>
+                      <div>
+                        <Label htmlFor="responseTime">Response Time</Label>
+                        <Select
+                          value={profile.responseTime}
+                          onValueChange={(value) => updateProfile("responseTime", value)}
+                        >
+                          <SelectTrigger className="w-40">
+                            <SelectValue placeholder="Select response time" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1-24 hours">1-24 hours</SelectItem>
+                            <SelectItem value="1-3 days">1-3 days</SelectItem>
+                            <SelectItem value="3-7 days">3-7 days</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        disabled={profileSaving}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      >
+                        {profileSaving ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Changes
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  ) : (
+                    <div className="text-center py-8">
+                      <User className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                      <p className="text-white font-semibold mb-2">Profile not found</p>
+                      <p className="text-purple-200">Please try again later.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
