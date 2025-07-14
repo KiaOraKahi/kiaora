@@ -94,7 +94,7 @@ interface CelebritiesResponse {
   }
 }
 
-const categories = ["All", "Actors", "Musicians", "Motivators", "Influencers", "Athletes", "Comedians"]
+const categories = ["All", "Actor", "Musician", "Motivator", "Influencer", "Athlete", "Comedian"]
 const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Rating", "Response Time"]
 
 export default function TalentsPage() {
@@ -136,7 +136,6 @@ export default function TalentsPage() {
         setCelebrities(data.celebrities)
         setPagination(data.pagination)
       } else {
-        console.error("Failed to fetch celebrities:", data.error)
         toast.error("Failed to load celebrities")
       }
     } catch (error) {

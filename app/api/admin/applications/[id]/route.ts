@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         celebrity = await tx.celebrity.create({
           data: {
             userId: user.id,
-            bio: `${application.profession} with ${application.experience}`,
+            bio: `${application.profession} - ${application.experience}`,
             longBio: application.achievements,
             category: application.category,
             pricePersonal: application.basePrice,
