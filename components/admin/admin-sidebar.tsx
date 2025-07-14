@@ -16,6 +16,7 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  UserCheck
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 
@@ -79,6 +80,12 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
           label: "Celebrities",
           icon: Star,
           badge: stats.totalCelebrities > 0 ? stats.totalCelebrities.toString() : null,
+        },
+        {
+          id: "applications",
+          label: "Applications",
+          icon: UserCheck,
+          badge: stats?.pendingApplications?.toString() || "0",
         },
       ],
     },

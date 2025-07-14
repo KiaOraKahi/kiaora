@@ -11,6 +11,7 @@ import { AdminOverview } from "@/components/admin/admin-overview"
 import { AdminUsers } from "@/components/admin/admin-users"
 import { AdminCelebrities } from "@/components/admin/admin-celebrities"
 import { AdminBookings } from "@/components/admin/admin-bookings"
+import { AdminApplications } from "@/components/admin/admin-applications"
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
@@ -56,6 +57,8 @@ export default function AdminDashboard() {
         return <AdminUsers />
       case "celebrities":
         return <AdminCelebrities />
+      case "applications":
+        return <AdminApplications />
       case "bookings":
         return <AdminBookings />
       case "financials":
