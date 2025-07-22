@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { createConnectAccount, createOnboardingLink, createLoginLink } from "@/lib/stripe"
+import { createConnectAccount, createAccountLink, createLoginLink } from "@/lib/stripe"
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,9 +60,12 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-          const onboardingUrl = await createOnboardingLink(celebrity.stripeConnectAccountId)
-
-          return NextResponse.json({ onboardingUrl })
+          const accountLink = await createAccountLink(
+            celebrity.stripeConnectAccountId,
+            `${baseUrl}/celebrity-dashboard?setup=refresh`,
+            `${baseUrl}/celebrity-dashboard?setup=complete`,
+          )
+          return NextResponse.json({ onboardingUrl: accountLink.url })
         } catch (error) {
           console.error("Error creating onboarding link:", error)
           return NextResponse.json({ error: "Failed to create onboarding link" }, { status: 500 })

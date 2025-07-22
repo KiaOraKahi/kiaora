@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ReviewModal } from "@/components/review-modal"
 import { TipModal } from "@/components/tip-modal"
+import VideoApprovalModal from "@/components/video-approval-modal"
+import VideoDeclineModal from "@/components/video-decline-modal"
 import {
   Download,
   Play,
@@ -23,18 +25,28 @@ import {
   ArrowLeft,
   Heart,
   Gift,
+  ThumbsUp,
+  ThumbsDown,
+  Eye,
+  MessageCircle,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
+import { toast } from "sonner"
 
 interface OrderDetails {
   id: string
   orderNumber: string
   status: string
+  approvalStatus?: string
+  approvedAt?: string | null
+  declinedAt?: string | null
+  declineReason?: string | null
+  revisionCount?: number
+  maxRevisions?: number
   totalAmount: number
   currency: string
   paymentStatus: string
@@ -78,60 +90,6 @@ interface TipData {
   paymentStatus: string
 }
 
-// Subtle starfield component
-const SubtleLuxuryStarfield = () => {
-  useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
-    if (existingStarfield) {
-      existingStarfield.remove()
-    }
-
-    const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
-
-      if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
-      } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
-      } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
-      }
-
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
-
-      return star
-    }
-
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
-
-    for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
-    }
-
-    document.body.appendChild(starfield)
-
-    return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
-      if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
-      }
-    }
-  }, [])
-
-  return null
-}
-
 export default function OrderDetailsPage() {
   const params = useParams()
   const { data: session } = useSession()
@@ -142,17 +100,8 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [videoLoading, setVideoLoading] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-      
-    useEffect(() => {
-      const checkMobile = () => {
-        setIsMobile(window.innerWidth < 1024)
-      }
-  
-      checkMobile()
-      window.addEventListener("resize", checkMobile)
-      return () => window.removeEventListener("resize", checkMobile)
-    }, [])
+  const [showApprovalModal, setShowApprovalModal] = useState(false)
+  const [showDeclineModal, setShowDeclineModal] = useState(false)
 
   useEffect(() => {
     if (orderNumber) {
@@ -195,8 +144,39 @@ export default function OrderDetailsPage() {
     }
   }
 
+  const handleApproveVideo = async () => {
+    if (!order) return
+
+    try {
+      const response = await fetch(`/api/orders/${order.orderNumber}/approve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setOrder({
+          ...order,
+          approvalStatus: "APPROVED",
+          approvedAt: new Date().toISOString(),
+          status: "COMPLETED",
+        })
+
+        toast.success("Video approved! Payment has been released to the celebrity.")
+      } else {
+        throw new Error(data.error || "Failed to approve video")
+      }
+    } catch (error) {
+      console.error("Error approving video:", error)
+      toast.error("Failed to approve video. Please try again.")
+      throw error
+    }
+  }
+
   const handleTipSuccess = () => {
-    // Refresh tips data after successful tip
     fetchTips()
   }
 
@@ -217,6 +197,7 @@ export default function OrderDetailsPage() {
       document.body.removeChild(a)
     } catch (error) {
       console.error("Error downloading video:", error)
+      toast.error("Failed to download video")
     } finally {
       setVideoLoading(false)
     }
@@ -230,10 +211,31 @@ export default function OrderDetailsPage() {
         return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
       case "confirmed":
         return "bg-blue-500/20 text-blue-300 border-blue-500/30"
+      case "pending_approval":
+        return "bg-purple-500/20 text-purple-300 border-purple-500/30"
       case "completed":
         return "bg-green-500/20 text-green-300 border-green-500/30"
+      case "revision_requested":
+        return "bg-orange-500/20 text-orange-300 border-orange-500/30"
       case "cancelled":
         return "bg-red-500/20 text-red-300 border-red-500/30"
+      default:
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    }
+  }
+
+  const getApprovalStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+
+    switch (status.toLowerCase()) {
+      case "pending_approval":
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+      case "approved":
+        return "bg-green-500/20 text-green-300 border-green-500/30"
+      case "declined":
+        return "bg-red-500/20 text-red-300 border-red-500/30"
+      case "revision_requested":
+        return "bg-orange-500/20 text-orange-300 border-orange-500/30"
       default:
         return "bg-gray-500/20 text-gray-300 border-gray-500/30"
     }
@@ -256,7 +258,7 @@ export default function OrderDetailsPage() {
 
   const formatStatusText = (status: string | undefined) => {
     if (!status) return "Unknown"
-    return status.charAt(0).toUpperCase() + status.slice(1)
+    return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
   const safeFormatDate = (dateString: string | null | undefined, formatStr: string) => {
@@ -268,11 +270,32 @@ export default function OrderDetailsPage() {
     }
   }
 
+  // Check if video is ready for approval
+  const isVideoReadyForApproval = () => {
+    return !!(
+    order?.videoUrl && 
+    order?.status?.toLowerCase() === "pending_approval"
+  );
+  }
+
+  // Check if video has been approved
+  const isVideoApproved = () => {
+    return order?.status.toLowerCase() === "completed"
+  }
+
+  // Check if tips and reviews should be allowed
+  const allowTipsAndReviews = () => {
+    return isVideoApproved()
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        {isMobile ? <MobileNavbar /> : <Navbar />}
-        <SubtleLuxuryStarfield />
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="stars"></div>
+          <div className="stars2"></div>
+          <div className="stars3"></div>
+        </div>
         <div className="relative z-10">
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
         </div>
@@ -283,12 +306,13 @@ export default function OrderDetailsPage() {
   if (error || !order) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden">
-        <SubtleLuxuryStarfield />
-        
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="stars"></div>
+          <div className="stars2"></div>
+          <div className="stars3"></div>
+        </div>
         <div className="relative z-10">
-          {isMobile ? <MobileNavbar /> : <Navbar />}
-          
-          {/* Error Message */}
+          <Navbar />
           <div className="container mx-auto px-4 pt-24 pb-12">
             <div className="text-center">
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
@@ -306,14 +330,15 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <SubtleLuxuryStarfield />
-      
-      {/* Main Content */}
+      {/* Animated Stars Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="stars"></div>
+        <div className="stars2"></div>
+        <div className="stars3"></div>
+      </div>
 
       <div className="relative z-10">
-        {isMobile ? <MobileNavbar /> : <Navbar />}
-        
-        {/* Main Content */}
+        <Navbar />
 
         <div className="container mx-auto px-4 pt-24 pb-12">
           {/* Header */}
@@ -329,10 +354,17 @@ export default function OrderDetailsPage() {
                 <h1 className="text-4xl font-bold text-white mb-2">Order Details</h1>
                 <p className="text-purple-200">Order #{order.orderNumber || "Unknown"}</p>
               </div>
-              <div className="text-right">
+              <div className="text-right space-y-2">
                 <Badge className={`text-lg px-4 py-2 ${getStatusColor(order.status)}`}>
                   {formatStatusText(order.status)}
                 </Badge>
+                {order.approvalStatus && (
+                  <div>
+                    <Badge className={`text-sm px-3 py-1 ${getApprovalStatusColor(order.approvalStatus)}`}>
+                      {formatStatusText(order.approvalStatus)}
+                    </Badge>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -340,13 +372,18 @@ export default function OrderDetailsPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Video Section */}
-              {order.status === "completed" && order.videoUrl && (
+              {/* Video Section - Show when video is uploaded */}
+              {order.videoUrl && (
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
                       <Play className="w-5 h-5" />
                       Your Video Message
+                      {isVideoReadyForApproval() && (
+                        <Badge className="ml-2 bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+                          Awaiting Your Approval
+                        </Badge>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -356,44 +393,95 @@ export default function OrderDetailsPage() {
                         Your browser does not support the video tag.
                       </video>
                     </div>
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={handleVideoDownload}
-                        disabled={videoLoading}
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                      >
-                        {videoLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Downloading...
-                          </>
-                        ) : (
-                          <>
-                            <Download className="w-4 h-4 mr-2" />
-                            Download Video
-                          </>
-                        )}
-                      </Button>
-                      {!order.hasReviewed && order.celebrity?.id && (
-                        <ReviewModal
-                          celebrityId={order.celebrity.id}
-                          celebrityName={order.celebrity.name || "Celebrity"}
-                          bookingId={order.booking?.id}
-                          onReviewSubmitted={() => {
-                            setOrder({ ...order, hasReviewed: true })
-                          }}
-                        >
+
+                    {/* Video Approval Section */}
+                    {isVideoReadyForApproval() && (
+                      <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Eye className="w-5 h-5 text-purple-400" />
+                          <h3 className="text-lg font-semibold text-white">Review Your Video</h3>
+                        </div>
+                        <p className="text-purple-200 text-sm mb-4">
+                          Please review your video message. Once you approve it, payment will be released to{" "}
+                          {order.celebrity?.name} and you'll be able to leave tips.
+                        </p>
+
+                        <div className="flex gap-3">
                           <Button
-                            variant="outline"
-                            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            onClick={() => setShowApprovalModal(true)}
+                            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                           >
-                            <Star className="w-4 h-4 mr-2" />
-                            Leave Review
+                            <ThumbsUp className="w-4 h-4 mr-2" />
+                            Approve Video
                           </Button>
-                        </ReviewModal>
-                      )}
-                    </div>
-                    {order.deliveredAt && (
+                          <Button
+                            onClick={() => setShowDeclineModal(true)}
+                            variant="outline"
+                            className="flex-1 bg-red-500/10 border-red-500/30 text-red-300 hover:bg-red-500/20"
+                          >
+                            <ThumbsDown className="w-4 h-4 mr-2" />
+                            Request Changes
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Video Actions - Only show after approval */}
+                    {isVideoApproved() && (
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={handleVideoDownload}
+                          disabled={videoLoading}
+                          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                        >
+                          {videoLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Downloading...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Video
+                            </>
+                          )}
+                        </Button>
+                        {/* {!order.hasReviewed && order.celebrity?.id && (
+                          <ReviewModal
+                            celebrityId={order.celebrity.id}
+                            celebrityName={order.celebrity.name || "Celebrity"}
+                            bookingId={order.booking?.id}
+                            onReviewSubmitted={() => {
+                              setOrder({ ...order, hasReviewed: true })
+                            }}
+                          >
+                            <Button
+                              variant="outline"
+                              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            >
+                              <Star className="w-4 h-4 mr-2" />
+                              Leave Review
+                            </Button>
+                          </ReviewModal>
+                        )} */}
+                      </div>
+                    )}
+
+                    {/* Approval Status Messages */}
+                    {order.approvedAt && (
+                      <p className="text-green-200 text-sm">
+                        ✅ Approved on {safeFormatDate(order.approvedAt, "MMMM d, yyyy 'at' h:mm a")}
+                      </p>
+                    )}
+                    {order.declinedAt && order.declineReason && (
+                      <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+                        <p className="text-orange-200 text-sm font-medium mb-2">
+                          Feedback sent on {safeFormatDate(order.declinedAt, "MMMM d, yyyy 'at' h:mm a")}:
+                        </p>
+                        <p className="text-orange-100 text-sm italic">"{order.declineReason}"</p>
+                      </div>
+                    )}
+                    {order.deliveredAt && isVideoApproved() && (
                       <p className="text-purple-200 text-sm">
                         Delivered on {safeFormatDate(order.deliveredAt, "MMMM d, yyyy 'at' h:mm a")}
                       </p>
@@ -402,8 +490,8 @@ export default function OrderDetailsPage() {
                 </Card>
               )}
 
-              {/* Tip Section - Show after video is delivered */}
-              {order.status === "completed" && order.celebrity?.id && (
+              {/* Tip Section - Only show after video approval */}
+              {allowTipsAndReviews() && order.celebrity?.id && (
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
@@ -462,7 +550,7 @@ export default function OrderDetailsPage() {
               )}
 
               {/* Order Status */}
-              {order.status !== "completed" && (
+              {!isVideoApproved() && (
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
@@ -490,6 +578,29 @@ export default function OrderDetailsPage() {
                             <p className="text-white font-semibold">Request Accepted!</p>
                             <p className="text-blue-200 text-sm">
                               {order.celebrity?.name || "The celebrity"} is working on your video message.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {order.status === "pending_approval" && (
+                        <div className="flex items-center gap-3 p-4 bg-purple-500/20 rounded-lg">
+                          <Eye className="w-6 h-6 text-purple-400" />
+                          <div>
+                            <p className="text-white font-semibold">Video Ready for Review!</p>
+                            <p className="text-purple-200 text-sm">
+                              {order.celebrity?.name || "The celebrity"} has uploaded your video. Please review it
+                              above.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {order.status === "revision_requested" && (
+                        <div className="flex items-center gap-3 p-4 bg-orange-500/20 rounded-lg">
+                          <MessageCircle className="w-6 h-6 text-orange-400" />
+                          <div>
+                            <p className="text-white font-semibold">Revision Requested</p>
+                            <p className="text-orange-200 text-sm">
+                              {order.celebrity?.name || "The celebrity"} is working on the changes you requested.
                             </p>
                           </div>
                         </div>
@@ -650,7 +761,7 @@ export default function OrderDetailsPage() {
               </Card>
 
               {/* Actions */}
-              {order.status === "completed" && !order.hasReviewed && order.celebrity?.id && (
+              {/* {allowTipsAndReviews() && !order.hasReviewed && order.celebrity?.id && (
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardHeader>
                     <CardTitle className="text-white">Share Your Experience</CardTitle>
@@ -674,9 +785,9 @@ export default function OrderDetailsPage() {
                     </ReviewModal>
                   </CardContent>
                 </Card>
-              )}
+              )} */}
 
-              {order.hasReviewed && (
+              {/* {order.hasReviewed && (
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 text-green-400">
@@ -685,13 +796,55 @@ export default function OrderDetailsPage() {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              )} */}
             </div>
           </div>
         </div>
 
         <Footer />
       </div>
+
+      {/* Approval Modal */}
+      {order && (
+        <VideoApprovalModal
+          isOpen={showApprovalModal}
+          onClose={() => setShowApprovalModal(false)}
+          order={{
+            id: order.id,
+            orderNumber: order.orderNumber,
+            videoUrl: order.videoUrl || "",
+            celebrity: {
+              name: order.celebrity?.name || "",
+              profileImage: order.celebrity?.image || "",
+            },
+            amount: order.totalAmount,
+          }}
+          onApprove={handleApproveVideo}
+        />
+      )}
+
+      {/* Decline Modal */}
+      {order && (
+        <VideoDeclineModal
+          isOpen={showDeclineModal}
+          onClose={() => setShowDeclineModal(false)}
+          order={{
+            id: order.id,
+            orderNumber: order.orderNumber,
+            videoUrl: order.videoUrl || "",
+            celebrity: {
+              name: order.celebrity?.name || "",
+              profileImage: order.celebrity?.image || "",
+              category: order.celebrity?.category || "",
+            },
+            customerName: order.user?.name || "",
+            occasion: order.occasion,
+            instructions: order.personalMessage,
+            price: order.totalAmount,
+            createdAt: order.createdAt,
+          }}
+        />
+      )}
     </div>
   )
 }

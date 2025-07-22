@@ -3,8 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { put } from "@vercel/blob"
-import { calculatePaymentSplit, transferBookingPayment } from "@/lib/stripe"
-import { sendVideoDeliveryNotification } from "@/lib/email"
+import { calculatePaymentSplit } from "@/lib/stripe"
+import { sendVideoApprovalNotification } from "@/lib/email"
 
 export async function POST(request: NextRequest) {
   try {
@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
             totalAmount: true,
             paymentStatus: true,
             paymentIntentId: true,
+            approvalStatus: true,
           },
         },
       },
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
       customerName: booking.user?.name,
       orderNumber: booking.order?.orderNumber,
       paymentStatus: booking.order?.paymentStatus,
+      approvalStatus: booking.order?.approvalStatus,
     })
 
     // Validate booking status - must be CONFIRMED
@@ -152,9 +154,9 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Video uploaded successfully:", blob.url)
 
-    // Update order with video URL and mark as completed
+    // 🔥 NEW WORKFLOW: Update order to PENDING_APPROVAL instead of COMPLETED
     const updatedOrder = await prisma.$transaction(async (tx) => {
-      // Get the full order details for transfer calculation
+      // Get the full order details for payment split calculation (but don't transfer yet)
       const fullOrder = await tx.order.findUnique({
         where: { id: booking.order!.id },
         include: {
@@ -168,38 +170,39 @@ export async function POST(request: NextRequest) {
       })
 
       if (!fullOrder) {
-        throw new Error("Order not found for transfer calculation")
+        throw new Error("Order not found for approval workflow")
       }
 
-      // 🔥 CRITICAL: Calculate payment splits when video is uploaded (completion)
-      console.log("💰 CALCULATING PAYMENT SPLITS ON COMPLETION...")
+      // Calculate payment splits for future use (but don't transfer yet)
+      console.log("💰 CALCULATING PAYMENT SPLITS FOR APPROVAL WORKFLOW...")
       const totalAmountCents = Math.round((fullOrder.totalAmount || 0) * 100) // Convert to cents
       const { platformFee, celebrityAmount } = calculatePaymentSplit(totalAmountCents)
 
-      console.log("💰 PAYMENT SPLIT CALCULATION:")
+      console.log("💰 PAYMENT SPLIT CALCULATION (HELD UNTIL APPROVAL):")
       console.log("   - Total Amount:", totalAmountCents, "cents")
       console.log("   - Platform Fee (20%):", platformFee, "cents")
       console.log("   - Celebrity Amount (80%):", celebrityAmount, "cents")
 
-      // Update order with video and payment splits
+      // Update order with video URL and set to PENDING_APPROVAL
       const order = await tx.order.update({
         where: { id: booking.order!.id },
         data: {
           videoUrl: blob.url,
-          status: "COMPLETED",
-          deliveredAt: new Date(),
+          status: "PENDING_APPROVAL", // 🔥 NEW: Don't mark as completed yet
+          approvalStatus: "PENDING_APPROVAL", // 🔥 NEW: Set approval status
+          deliveredAt: new Date(), // Video delivered, but not approved
           updatedAt: new Date(),
-          // Store calculated payment splits
+          // Store calculated payment splits for future transfer
           platformFee: platformFee / 100, // Convert from cents to dollars
           celebrityAmount: celebrityAmount / 100, // Convert from cents to dollars
         },
       })
 
-      // Update booking
+      // Update booking status to IN_PROGRESS (video uploaded, awaiting approval)
       await tx.booking.update({
         where: { id: bookingId },
         data: {
-          status: "COMPLETED",
+          status: "CONFIRMED", // 🔥 NEW: Not completed until approved
           updatedAt: new Date(),
         },
       })
@@ -207,108 +210,57 @@ export async function POST(request: NextRequest) {
       return { order, fullOrder, celebrityAmount, platformFee }
     })
 
-    // 🔥 CRITICAL: Initiate transfer to celebrity ONLY after video upload
-    console.log("💸 INITIATING TRANSFER TO CELEBRITY...")
-    if (celebrity.stripeConnectAccountId && celebrity.stripePayoutsEnabled && updatedOrder.order.id) {
-      try {
-        console.log("🔄 Initiating booking payment transfer to celebrity:", session.user?.name)
-        const transferResult = await transferBookingPayment({
-          accountId: celebrity.stripeConnectAccountId,
-          amount: updatedOrder.celebrityAmount, // Already in cents
-          currency: "usd",
-          orderId: updatedOrder.order.id,
-          orderNumber: booking.order?.orderNumber || `REQ-${booking.id.slice(-8)}`,
-          celebrityName: session.user?.name || "Celebrity",
-        })
-
-        // Update order with transfer info
-        await prisma.order.update({
-          where: { id: updatedOrder.order.id },
-          data: {
-            transferId: transferResult.transferId,
-            transferStatus: "IN_TRANSIT",
-          },
-        })
-
-        // Create transfer record
-        await prisma.transfer.create({
-          data: {
-            stripeTransferId: transferResult.transferId,
-            celebrityId: celebrity.id,
-            orderId: updatedOrder.order.id,
-            amount: updatedOrder.celebrityAmount, // In cents
-            currency: "usd",
-            type: "BOOKING_PAYMENT",
-            status: "IN_TRANSIT",
-            description: `Payment for completed booking ${booking.order?.orderNumber}`,
-          },
-        })
-
-        // Update celebrity total earnings
-        await prisma.celebrity.update({
-          where: { id: celebrity.id },
-          data: {
-            totalEarnings: {
-              increment: updatedOrder.celebrityAmount / 100, // Convert to dollars
-            },
-          },
-        })
-
-        console.log("✅ Transfer initiated successfully:", transferResult.transferId)
-      } catch (error) {
-        console.error("❌ Failed to initiate transfer:", error)
-        // Update transfer status to failed but don't fail the video upload
-        await prisma.order.update({
-          where: { id: updatedOrder.order.id },
-          data: { transferStatus: "FAILED" },
-        })
-      }
-    } else {
-      console.log("⚠️ Celebrity doesn't have Connect account for transfer")
-      // Update transfer status to pending
-      await prisma.order.update({
-        where: { id: updatedOrder.order.id },
-        data: { transferStatus: "PENDING" },
-      })
-    }
-
-    // Send delivery notification to customer
+    // 🔥 NEW: Send approval notification to customer instead of delivery notification
     try {
       if (booking.user?.email && booking.order?.orderNumber) {
-        console.log("📧 Sending delivery notification to customer...")
-        await sendVideoDeliveryNotification(booking.user.email, booking.user.name || "Customer", {
-          orderNumber: booking.order.orderNumber,
-          celebrityName: celebrity.user.name || "Celebrity",
-          videoUrl: blob.url,
-          recipientName: booking.recipientName || "Recipient",
-          occasion: booking.occasion || "General Request",
-        })
-        console.log("✅ Delivery notification sent successfully!")
+        console.log("📧 Sending video approval notification to customer...")
+        const emailResult = await sendVideoApprovalNotification(
+          booking.user.email,
+          booking.user.name || "Customer",
+          {
+            orderNumber: booking.order.orderNumber,
+            celebrityName: celebrity.user.name || "Celebrity",
+            videoUrl: blob.url,
+            recipientName: booking.recipientName || "Recipient",
+            occasion: booking.occasion || "General Request",
+            approvalUrl: `${process.env.NEXTAUTH_URL}/orders/${booking.order.orderNumber}`,
+          },
+        )
+
+        if (emailResult.success) {
+          console.log("✅ Video approval notification sent successfully!")
+        } else {
+          console.log("⚠️ Video approval notification failed but continuing:", emailResult.error)
+        }
       }
     } catch (emailError) {
-      console.error("❌ Failed to send delivery notification:", emailError)
+      console.error("❌ Failed to send video approval notification:", emailError)
       // Don't fail the request if email fails
     }
 
-    console.log("✅ VIDEO UPLOAD COMPLETED SUCCESSFULLY")
+    console.log("✅ VIDEO UPLOAD COMPLETED - AWAITING CUSTOMER APPROVAL")
     console.log("   - Video URL:", blob.url)
-    console.log("   - Booking Status: COMPLETED")
-    console.log("   - Order Status: COMPLETED")
-    console.log("   - Transfer Status:", celebrity.stripeConnectAccountId ? "IN_TRANSIT" : "PENDING")
+    console.log("   - Booking Status: IN_PROGRESS")
+    console.log("   - Order Status: PENDING_APPROVAL")
+    console.log("   - Approval Status: PENDING_APPROVAL")
+    console.log("   - Payment: HELD until customer approval")
 
     return NextResponse.json({
       success: true,
-      message: "Video uploaded and booking completed successfully",
+      message: "Video uploaded successfully and sent for customer approval",
       videoUrl: blob.url,
       filename: blob.pathname,
       order: {
         id: updatedOrder.order.id,
         orderNumber: booking.order?.orderNumber,
         status: updatedOrder.order.status,
+        approvalStatus: updatedOrder.order.approvalStatus,
         deliveredAt: updatedOrder.order.deliveredAt,
       },
-      transfer: {
-        status: celebrity.stripeConnectAccountId ? "IN_TRANSIT" : "PENDING",
+      workflow: {
+        stage: "PENDING_APPROVAL",
+        message: "Customer will review the video and approve or request changes",
+        paymentStatus: "HELD_UNTIL_APPROVAL",
         celebrityAmount: updatedOrder.celebrityAmount / 100, // Return in dollars
         platformFee: updatedOrder.platformFee / 100, // Return in dollars
       },

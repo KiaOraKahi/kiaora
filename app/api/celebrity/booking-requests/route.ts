@@ -6,12 +6,6 @@ import { prisma } from "@/lib/prisma"
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    console.log("🔍 Celebrity Booking Requests API - Session:", {
-      userId: session?.user?.id,
-      userEmail: session?.user?.email,
-      userRole: session?.user?.role,
-      userName: session?.user?.name,
-    })
 
     if (!session?.user?.id) {
       console.log("❌ Celebrity Booking Requests API - No session or user ID")
@@ -19,14 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get celebrity profile
-    console.log("🔍 Looking for celebrity profile with userId:", session.user.id)
     const celebrity = await prisma.celebrity.findUnique({
       where: { userId: session.user.id },
-    })
-
-    console.log("🔍 Celebrity profile found:", {
-      celebrityId: celebrity?.id,
-      celebrityUserId: celebrity?.userId,
     })
 
     if (!celebrity) {
@@ -39,9 +27,6 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") || "PENDING"
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
-
-    console.log("🔍 Query parameters:", { status, limit, offset })
-    console.log("🔍 Fetching booking requests for celebrity ID:", celebrity.id)
 
     // Fetch booking requests with related data including tips through order
     const bookingRequests = await prisma.booking.findMany({
@@ -66,6 +51,12 @@ export async function GET(request: NextRequest) {
             celebrityAmount: true,
             paymentStatus: true,
             createdAt: true,
+            approvalStatus: true,
+            approvedAt: true,
+            videoUrl: true,
+            declineReason: true,
+            declinedAt: true,
+            revisionCount: true,
             // Include tips for this order
             tips: {
               where: {
@@ -100,6 +91,7 @@ export async function GET(request: NextRequest) {
         tips: booking.order?.tips?.length || 0,
         tipAmounts: booking.order?.tips?.map((tip) => tip.amount) || [],
         createdAt: booking.createdAt,
+        approvalStatus: booking.order?.approvalStatus
       })),
     })
 
@@ -144,6 +136,12 @@ export async function GET(request: NextRequest) {
         createdAt: booking.createdAt.toISOString(),
         deadline: booking.deadline?.toISOString() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         paymentStatus: booking.order?.paymentStatus || "PENDING",
+        approvalStatus: booking.order?.approvalStatus.toLowerCase(),
+        approvedAt: booking.order?.approvedAt?.toISOString(),
+        videoUrl: booking.order?.videoUrl || "",
+        declineReason: booking.order?.declineReason || "",
+        declinedAt: booking.order?.declinedAt?.toISOString(),
+        revisionCount: booking.order?.revisionCount,
         tips:
           booking.order?.tips?.map((tip: any) => ({
             id: tip.id,

@@ -499,3 +499,345 @@ export async function sendVideoDeliveryNotification(
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
+
+// NEW: Send video approval notification to customer
+export async function sendVideoApprovalNotification(
+  email: string,
+  customerName: string,
+  orderDetails: {
+    orderNumber: string
+    celebrityName: string
+    recipientName: string
+    occasion: string
+    videoUrl: string
+    approvalUrl: string
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `🎬 Please review your video from ${orderDetails.celebrityName}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #8b5cf6 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">🎬 Your Video is Ready for Review!</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Great news ${customerName}! ${orderDetails.celebrityName} has completed your personalized video message for ${orderDetails.recipientName}. Please review and approve it.</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${orderDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Celebrity:</strong> ${orderDetails.celebrityName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>For:</strong> ${orderDetails.recipientName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Occasion:</strong> ${orderDetails.occasion}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Status:</strong> ⏳ Awaiting Your Approval</p>
+            </div>
+            <a href="${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}" style="display: inline-block; background: white; color: #f59e0b; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Review Video</a>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h3 style="color: #333; margin: 0 0 10px 0;">What happens next?</h3>
+            <ul style="color: #666; margin: 0; padding-left: 20px;">
+              <li><strong>Review the video</strong> - Watch it and make sure you're happy with the content</li>
+              <li><strong>Approve or request changes</strong> - You can accept it or ask for revisions</li>
+              <li><strong>Payment release</strong> - Your payment is held securely until you approve</li>
+              <li><strong>Download & share</strong> - Once approved, download and share your video!</li>
+            </ul>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p><strong>Important:</strong> Your payment is held securely until you approve the video.</p>
+            <p>If you need any changes, you can request up to 2 revisions at no extra cost.</p>
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - Your Video is Ready for Review!
+        
+        Great news ${customerName}!
+        
+        ${orderDetails.celebrityName} has completed your personalized video message for ${orderDetails.recipientName}. Please review and approve it.
+        
+        Order: ${orderDetails.orderNumber}
+        Celebrity: ${orderDetails.celebrityName}
+        For: ${orderDetails.recipientName}
+        Occasion: ${orderDetails.occasion}
+        Status: ⏳ Awaiting Your Approval
+        
+        Review your video: ${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}
+        
+        What happens next?
+        - Review the video and make sure you're happy with the content
+        - Approve or request changes (up to 2 revisions at no extra cost)
+        - Your payment is held securely until you approve
+        - Once approved, download and share your video!
+      `,
+    })
+
+    console.log("✅ Video approval notification email sent successfully!")
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    console.error("❌ Failed to send video approval notification email:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}
+
+// NEW: Send video approval confirmation to customer
+export async function sendVideoApprovalConfirmation(
+  email: string,
+  customerName: string,
+  orderDetails: {
+    orderNumber: string
+    celebrityName: string
+    recipientName: string
+    occasion: string
+    amount: number
+    videoUrl: string
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `✅ Video approved - Payment released for ${orderDetails.orderNumber}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">✅ Video Approved!</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Thank you ${customerName}! You've approved your video from ${orderDetails.celebrityName}. Your payment has been released and the order is now complete.</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${orderDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Celebrity:</strong> ${orderDetails.celebrityName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>For:</strong> ${orderDetails.recipientName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Occasion:</strong> ${orderDetails.occasion}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Amount:</strong> $${orderDetails.amount.toLocaleString()}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Status:</strong> ✅ Completed</p>
+            </div>
+            <a href="${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}" style="display: inline-block; background: white; color: #10b981; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Order</a>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p>🎉 Your video is now available to download and share!</p>
+            <p>💝 Consider leaving a tip or review for ${orderDetails.celebrityName}!</p>
+            <p>📱 Share your experience on social media and tag us!</p>
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - Video Approved!
+        
+        Thank you ${customerName}!
+        
+        You've approved your video from ${orderDetails.celebrityName}. Your payment has been released and the order is now complete.
+        
+        Order: ${orderDetails.orderNumber}
+        Celebrity: ${orderDetails.celebrityName}
+        For: ${orderDetails.recipientName}
+        Occasion: ${orderDetails.occasion}
+        Amount: $${orderDetails.amount.toLocaleString()}
+        Status: ✅ Completed
+        
+        View your order: ${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}
+        
+        Your video is now available to download and share!
+        Consider leaving a tip or review for ${orderDetails.celebrityName}!
+      `,
+    })
+
+    console.log("✅ Video approval confirmation email sent successfully!")
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    console.error("❌ Failed to send video approval confirmation email:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}
+
+// NEW: Send video decline notification to celebrity
+export async function sendVideoDeclineNotificationToCelebrity(
+  celebrityEmail: string,
+  celebrityName: string,
+  orderDetails: {
+    orderNumber: string
+    customerName: string
+    recipientName: string
+    occasion: string
+    declineReason: string
+    revisionCount: number
+    maxRevisions: number
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: celebrityEmail,
+      subject: `📝 Video revision requested - ${orderDetails.orderNumber}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #8b5cf6 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">📝 Video Revision Requested</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Hello ${celebrityName}, ${orderDetails.customerName} has requested a revision for their video order.</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${orderDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Customer:</strong> ${orderDetails.customerName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>For:</strong> ${orderDetails.recipientName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Occasion:</strong> ${orderDetails.occasion}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Revision:</strong> ${orderDetails.revisionCount} of ${orderDetails.maxRevisions}</p>
+            </div>
+            <a href="${process.env.NEXTAUTH_URL}/celebrity-dashboard" style="display: inline-block; background: white; color: #f59e0b; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Request</a>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h3 style="color: #333; margin: 0 0 10px 0;">Customer Feedback:</h3>
+            <p style="color: #666; margin: 0; font-style: italic;">"${orderDetails.declineReason}"</p>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p>Please create a new video addressing the customer's feedback.</p>
+            <p>Upload the revised video through your celebrity dashboard.</p>
+            ${
+              orderDetails.revisionCount >= orderDetails.maxRevisions
+                ? '<p style="color: #ef4444;"><strong>Note:</strong> This is the final revision allowed for this order.</p>'
+                : `<p>Revisions remaining: ${orderDetails.maxRevisions - orderDetails.revisionCount}</p>`
+            }
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - Video Revision Requested
+        
+        Hello ${celebrityName},
+        
+        ${orderDetails.customerName} has requested a revision for their video order.
+        
+        Order: ${orderDetails.orderNumber}
+        Customer: ${orderDetails.customerName}
+        For: ${orderDetails.recipientName}
+        Occasion: ${orderDetails.occasion}
+        Revision: ${orderDetails.revisionCount} of ${orderDetails.maxRevisions}
+        
+        Customer Feedback:
+        "${orderDetails.declineReason}"
+        
+        Please create a new video addressing the customer's feedback and upload it through your celebrity dashboard.
+        
+        Dashboard: ${process.env.NEXTAUTH_URL}/celebrity-dashboard
+        
+        ${
+          orderDetails.revisionCount >= orderDetails.maxRevisions
+            ? "Note: This is the final revision allowed for this order."
+            : `Revisions remaining: ${orderDetails.maxRevisions - orderDetails.revisionCount}`
+        }
+      `,
+    })
+
+    console.log("✅ Video decline notification email sent to celebrity!")
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    console.error("❌ Failed to send video decline notification email:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}
+
+// NEW: Send video decline confirmation to customer
+export async function sendVideoDeclineConfirmation(
+  email: string,
+  customerName: string,
+  orderDetails: {
+    orderNumber: string
+    celebrityName: string
+    recipientName: string
+    occasion: string
+    declineReason: string
+    revisionCount: number
+    maxRevisions: number
+  },
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Kia Ora Kahi" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `📝 Revision request sent - ${orderDetails.orderNumber}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">Kia Ora Kahi</h1>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 30px; border-radius: 10px; text-align: center;">
+            <h2 style="color: white; margin: 0 0 20px 0;">📝 Revision Request Sent</h2>
+            <p style="color: white; margin: 0 0 25px 0;">Thank you ${customerName}! Your revision request has been sent to ${orderDetails.celebrityName}. They will work on addressing your feedback.</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Order:</strong> ${orderDetails.orderNumber}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Celebrity:</strong> ${orderDetails.celebrityName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>For:</strong> ${orderDetails.recipientName}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Occasion:</strong> ${orderDetails.occasion}</p>
+              <p style="color: white; margin: 0 0 10px 0;"><strong>Revision:</strong> ${orderDetails.revisionCount} of ${orderDetails.maxRevisions}</p>
+            </div>
+            <a href="${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}" style="display: inline-block; background: white; color: #3b82f6; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Track Order</a>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h3 style="color: #333; margin: 0 0 10px 0;">Your Feedback:</h3>
+            <p style="color: #666; margin: 0; font-style: italic;">"${orderDetails.declineReason}"</p>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p>🎬 ${orderDetails.celebrityName} will create a new video based on your feedback</p>
+            <p>📧 You'll receive an email when the revised video is ready for review</p>
+            <p>💰 Your payment remains securely held until you approve the video</p>
+            ${
+              orderDetails.revisionCount >= orderDetails.maxRevisions
+                ? '<p style="color: #ef4444;"><strong>Note:</strong> This was your final revision for this order.</p>'
+                : `<p>Revisions remaining: ${orderDetails.maxRevisions - orderDetails.revisionCount}</p>`
+            }
+          </div>
+        </div>
+      `,
+      text: `
+        Kia Ora Kahi - Revision Request Sent
+        
+        Thank you ${customerName}!
+        
+        Your revision request has been sent to ${orderDetails.celebrityName}. They will work on addressing your feedback.
+        
+        Order: ${orderDetails.orderNumber}
+        Celebrity: ${orderDetails.celebrityName}
+        For: ${orderDetails.recipientName}
+        Occasion: ${orderDetails.occasion}
+        Revision: ${orderDetails.revisionCount} of ${orderDetails.maxRevisions}
+        
+        Your Feedback:
+        "${orderDetails.declineReason}"
+        
+        What happens next:
+        - ${orderDetails.celebrityName} will create a new video based on your feedback
+        - You'll receive an email when the revised video is ready for review
+        - Your payment remains securely held until you approve the video
+        
+        Track your order: ${process.env.NEXTAUTH_URL}/orders/${orderDetails.orderNumber}
+        
+        ${
+          orderDetails.revisionCount >= orderDetails.maxRevisions
+            ? "Note: This was your final revision for this order."
+            : `Revisions remaining: ${orderDetails.maxRevisions - orderDetails.revisionCount}`
+        }
+      `,
+    })
+
+    console.log("✅ Video decline confirmation email sent successfully!")
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    console.error("❌ Failed to send video decline confirmation email:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}

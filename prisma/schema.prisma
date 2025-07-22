@@ -211,6 +211,14 @@ model Order {
   // Payout tracking - NEW FIELD
   payoutStatus    TransferStatus @default(PENDING)
   
+  // Video Approval System - NEW FIELDS
+  approvalStatus  ApprovalStatus @default(PENDING_APPROVAL)
+  approvedAt      DateTime?
+  declinedAt      DateTime?
+  declineReason   String?      @db.Text
+  revisionCount   Int          @default(0)
+  maxRevisions    Int          @default(2)
+  
   // Booking Details
   recipientName       String
   occasion           String
@@ -372,7 +380,7 @@ model Payout {
   amount            Float
   platformFee       Float
   currency          String        @default("usd")
-  stripeTransferId  String?       @unique
+  stripeTransferId  String?       
   status            TransferStatus @default(PENDING)
   paidAt            DateTime?
   createdAt         DateTime      @default(now())
@@ -401,9 +409,11 @@ enum OrderStatus {
   PENDING
   CONFIRMED
   IN_PROGRESS
+  PENDING_APPROVAL
   COMPLETED
   CANCELLED
   REFUNDED
+  REVISION_REQUESTED
 }
 
 enum PaymentStatus {
@@ -422,6 +432,13 @@ enum BookingStatus {
   COMPLETED
   CANCELLED
   REFUNDED
+}
+
+enum ApprovalStatus {
+  PENDING_APPROVAL
+  APPROVED
+  DECLINED
+  REVISION_REQUESTED
 }
 
 enum TokenType {

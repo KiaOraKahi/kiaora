@@ -41,12 +41,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized - not your order" }, { status: 403 })
     }
 
-    // Check if order is completed (can only tip completed orders)
-    if (order.status !== "COMPLETED") {
-      return NextResponse.json({ error: "Can only tip completed orders" }, { status: 400 })
+    // 🔥 NEW: Check if video has been approved by customer
+    console.log("🔍 Checking video approval status...")
+    console.log("   - Order Status:", order.status)
+    console.log("   - Approval Status:", order.approvalStatus)
+    console.log("   - Video URL:", order.videoUrl ? "Present" : "Missing")
+
+    // Only allow tips after video has been approved
+    if (order.approvalStatus !== "APPROVED") {
+      console.log("❌ Tips not allowed - video not approved yet")
+
+      let errorMessage = "Tips are only allowed after you approve the video."
+
+      if (order.approvalStatus === "PENDING_APPROVAL") {
+        errorMessage = "Please review and approve the video before sending a tip."
+      } else if (order.approvalStatus === "DECLINED") {
+        errorMessage = "Video is being revised. Tips will be available after you approve the new version."
+      } else if (order.approvalStatus === "REVISION_REQUESTED") {
+        errorMessage = "Celebrity is working on revisions. Tips will be available after you approve the video."
+      }
+
+      return NextResponse.json(
+        {
+          error: errorMessage,
+          approvalRequired: true,
+          currentStatus: order.approvalStatus,
+        },
+        { status: 400 },
+      )
     }
 
-    console.log("✅ Order validation passed")
+    // Additional check: Order must be completed
+    if (order.status !== "COMPLETED") {
+      return NextResponse.json(
+        {
+          error: "Tips are only allowed for completed orders with approved videos.",
+          orderStatus: order.status,
+        },
+        { status: 400 },
+      )
+    }
+
+    console.log("✅ Order and approval validation passed")
 
     // Check if celebrity has Stripe Connect account
     const celebrity = order.celebrity
@@ -97,15 +133,19 @@ export async function POST(request: NextRequest) {
         customerName: order.user.name || "Unknown",
         celebrityAmount: celebrityAmount.toString(),
         platformFee: platformFee.toString(),
-        canTransfer: canTransfer.toString(),
+        canTransfer: canTransfer?.toString() || "",
         stripeConnectAccountId: celebrity.stripeConnectAccountId || "",
+        // NEW: Add approval metadata
+        approvalStatus: order.approvalStatus,
+        approvedAt: order.approvedAt?.toISOString() || "",
+        videoApproved: "true", // Confirmed approved at this point
       },
-      description: `Tip for ${celebrity.user.name} - Order ${order.orderNumber}`,
+      description: `Tip for ${celebrity.user.name} - Order ${order.orderNumber} (Video Approved)`,
     })
 
     console.log("✅ Stripe PaymentIntent created for tip:", paymentIntent.id)
 
-    // Update tip with payment intent ID (FIXED: removed stripePaymentIntentId)
+    // Update tip with payment intent ID
     await prisma.tip.update({
       where: { id: tip.id },
       data: {
@@ -113,7 +153,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    console.log("✅ Tip payment intent created successfully")
+    console.log("✅ Tip payment intent created successfully for approved video")
 
     return NextResponse.json({
       success: true,
@@ -121,6 +161,8 @@ export async function POST(request: NextRequest) {
       tipId: tip.id,
       amount: amount,
       celebrityName: celebrity.user.name,
+      approvalStatus: order.approvalStatus,
+      message: "Tip created for approved video",
     })
   } catch (error) {
     console.error("❌ Tip payment creation error:", error)
@@ -152,7 +194,13 @@ export async function GET(request: NextRequest) {
     // Find the order and verify ownership
     const order = await prisma.order.findUnique({
       where: { orderNumber },
-      select: { id: true, userId: true },
+      select: {
+        id: true,
+        userId: true,
+        approvalStatus: true,
+        status: true,
+        videoUrl: true,
+      },
     })
 
     if (!order) {
@@ -179,14 +227,27 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Calculate total tips
+    // Calculate total tips (only successful ones)
     const totalTips = tips.filter((tip) => tip.paymentStatus === "SUCCEEDED").reduce((sum, tip) => sum + tip.amount, 0)
+
+    console.log("📊 Tips fetched for order:", {
+      orderNumber,
+      approvalStatus: order.approvalStatus,
+      tipCount: tips.length,
+      totalTips,
+      videoApproved: order.approvalStatus === "APPROVED",
+    })
 
     return NextResponse.json({
       success: true,
       tips,
       totalTips,
       tipCount: tips.length,
+      // NEW: Include approval info for client-side validation
+      orderStatus: order.status,
+      approvalStatus: order.approvalStatus,
+      videoApproved: order.approvalStatus === "APPROVED",
+      hasVideo: !!order.videoUrl,
     })
   } catch (error) {
     console.error("❌ Error fetching tips:", error)

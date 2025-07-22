@@ -95,7 +95,7 @@ interface CelebritiesResponse {
 }
 
 const categories = ["All", "Actor", "Musician", "Motivator", "Influencer", "Athlete", "Comedian"]
-const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Rating", "Response Time"]
+const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Response Time"]
 
 export default function TalentsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
@@ -166,13 +166,7 @@ export default function TalentsPage() {
   }
 
   const handleBookNow = (celebrity: Celebrity) => {
-    toast.success("Booking Started!", {
-      description: `Starting booking process for ${celebrity.name}`,
-      action: {
-        label: "View Details",
-        onClick: () => (window.location.href = `/celebrities/${celebrity.id}`),
-      },
-    })
+    window.location.href = `/celebrities/${celebrity.id}`
   }
 
   return (
@@ -309,8 +303,8 @@ export default function TalentsPage() {
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-white text-sm">{celebrity.rating}</span>
-                            <span className="text-purple-300 text-xs">({celebrity.reviewCount})</span>
+                            {/* <span className="text-white text-sm">{celebrity.rating}</span>
+                            <span className="text-purple-300 text-xs">({celebrity.reviewCount})</span> */}
                           </div>
                           <span className="text-2xl font-bold text-yellow-300">${celebrity.price}</span>
                         </div>

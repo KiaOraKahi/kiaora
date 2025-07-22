@@ -315,13 +315,13 @@ export default function CelebrityDetailPage() {
 
                   {/* Stats */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div className="text-center">
+                    {/* <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                         <span className="text-2xl font-bold">{celebrity.rating}</span>
                       </div>
                       <p className="text-purple-300 text-sm">{celebrity.reviewCount} Reviews</p>
-                    </div>
+                    </div> */}
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <Clock className="w-5 h-5 text-purple-400" />
@@ -390,9 +390,9 @@ export default function CelebrityDetailPage() {
                 <TabsTrigger value="samples" className="data-[state=active]:bg-purple-500">
                   Samples
                 </TabsTrigger>
-                <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500">
+                {/* <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500">
                   Reviews
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger value="availability" className="data-[state=active]:bg-purple-500">
                   Availability
                 </TabsTrigger>
@@ -489,7 +489,7 @@ export default function CelebrityDetailPage() {
               </TabsContent>
 
               {/* Reviews Tab */}
-              <TabsContent value="reviews" className="mt-8">
+              {/* <TabsContent value="reviews" className="mt-8">
                 {celebrity.reviews && celebrity.reviews.length > 0 ? (
                   <div className="space-y-6">
                     {celebrity.reviews.map((review) => (
@@ -542,7 +542,7 @@ export default function CelebrityDetailPage() {
                     <p className="text-purple-200">Be the first to book and leave a review!</p>
                   </div>
                 )}
-              </TabsContent>
+              </TabsContent> */}
 
               {/* Availability Tab */}
               <TabsContent value="availability" className="mt-8">

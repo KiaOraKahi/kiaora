@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
@@ -20,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
-import { Loader2, Heart, AlertCircle, CheckCircle } from "lucide-react"
+import { Loader2, Heart, AlertCircle, CheckCircle, Clock, Lock } from "lucide-react"
 import { toast } from "sonner"
 
 // Initialize Stripe outside of component to avoid recreating it on each render
@@ -40,6 +39,38 @@ interface TipModalProps {
 // Wrapper component that provides Stripe Elements context
 export function TipModal({ children, orderNumber, celebrityName, celebrityImage, onTipSuccess }: TipModalProps) {
   const [open, setOpen] = useState(false)
+  const [orderStatus, setOrderStatus] = useState<{
+    status: string
+    approvalStatus: string
+    isApproved: boolean
+  } | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  // Check order approval status when modal opens
+  useEffect(() => {
+    if (open && orderNumber) {
+      checkOrderApprovalStatus()
+    }
+  }, [open, orderNumber])
+
+  const checkOrderApprovalStatus = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/orders/${orderNumber}`)
+      if (response.ok) {
+        const data = await response.json()
+        setOrderStatus({
+          status: data.status,
+          approvalStatus: data.approvalStatus,
+          isApproved: data.approvalStatus === "APPROVED",
+        })
+      }
+    } catch (error) {
+      console.error("Error checking order status:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -49,6 +80,8 @@ export function TipModal({ children, orderNumber, celebrityName, celebrityImage,
           orderNumber={orderNumber}
           celebrityName={celebrityName}
           celebrityImage={celebrityImage}
+          orderStatus={orderStatus}
+          loading={loading}
           onTipSuccess={() => {
             setOpen(false)
             onTipSuccess?.()
@@ -64,8 +97,13 @@ function TipModalContent({
   orderNumber,
   celebrityName,
   celebrityImage,
+  orderStatus,
+  loading: statusLoading,
   onTipSuccess,
-}: Omit<TipModalProps, "children">) {
+}: Omit<TipModalProps, "children"> & {
+  orderStatus: { status: string; approvalStatus: string; isApproved: boolean } | null
+  loading: boolean
+}) {
   const stripe = useStripe()
   const elements = useElements()
   const router = useRouter()
@@ -102,6 +140,12 @@ function TipModalContent({
 
     if (!stripe || !elements) {
       setError("Stripe has not loaded yet. Please try again.")
+      return
+    }
+
+    // Check approval status before allowing tip
+    if (!orderStatus?.isApproved) {
+      setError("Tips can only be sent after the video has been approved.")
       return
     }
 
@@ -185,6 +229,72 @@ function TipModalContent({
     }
   }
 
+  // Show loading state while checking order status
+  if (statusLoading) {
+    return (
+      <DialogContent className="sm:max-w-md">
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-purple-500" />
+          <span className="ml-2 text-muted-foreground">Checking order status...</span>
+        </div>
+      </DialogContent>
+    )
+  }
+
+  // Show approval required message if video not approved
+  if (orderStatus && !orderStatus.isApproved) {
+    return (
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-orange-500" />
+            Tips Not Available Yet
+          </DialogTitle>
+          <DialogDescription>
+            Tips can only be sent after you've approved the video from {celebrityName}.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col items-center justify-center py-6 space-y-4">
+          <div className="rounded-full bg-orange-100 p-3">
+            <Clock className="h-8 w-8 text-orange-600" />
+          </div>
+
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold">Video Approval Required</h3>
+            <p className="text-muted-foreground text-sm">
+              {orderStatus.approvalStatus === "PENDING_APPROVAL"
+                ? `${celebrityName} has uploaded your video and it's ready for review. Please approve it first to unlock tipping.`
+                : orderStatus.approvalStatus === "DECLINED"
+                  ? `You've requested revisions for this video. Tips will be available after you approve the final version.`
+                  : `This video is still being processed. Tips will be available once the video is approved.`}
+            </p>
+          </div>
+
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 w-full">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-2 h-2 bg-orange-400 rounded-full mt-2"></div>
+              </div>
+              <div className="text-sm">
+                <p className="font-medium text-orange-800">Current Status:</p>
+                <p className="text-orange-700 capitalize">
+                  {orderStatus.approvalStatus.replace("_", " ").toLowerCase()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
+            Refresh Status
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    )
+  }
+
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
@@ -216,6 +326,12 @@ function TipModalContent({
             <div>
               <p className="font-medium">{celebrityName}</p>
               <p className="text-sm text-muted-foreground">Order #{orderNumber}</p>
+              {orderStatus?.isApproved && (
+                <p className="text-xs text-green-600 flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  Video approved
+                </p>
+              )}
             </div>
           </div>
 

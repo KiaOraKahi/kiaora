@@ -169,11 +169,11 @@ export const createLoginLink = async (accountId: string): Promise<string> => {
 // ==========================================
 
 /**
- * Transfer booking payment to celebrity (80% split)
+ * Transfer booking payment to celebrity (80% split) - ONLY AFTER APPROVAL
  */
 export const transferBookingPayment = async (transferData: {
   accountId: string
-  amount: number // Total booking amount
+  amount: number // Total booking amount in cents
   currency: string
   orderId: string
   orderNumber: string
@@ -184,7 +184,7 @@ export const transferBookingPayment = async (transferData: {
     const platformFeePercentage = transferData.platformFeePercentage || 20 // Default 20%
     const { platformFee, celebrityAmount } = calculatePaymentSplit(transferData.amount, platformFeePercentage)
 
-    console.log(`🔄 Transferring booking payment:`)
+    console.log(`🔄 Transferring booking payment AFTER APPROVAL:`)
     console.log(`   Total: $${transferData.amount / 100}`)
     console.log(`   Platform Fee (${platformFeePercentage}%): $${platformFee / 100}`)
     console.log(`   Celebrity Amount (${100 - platformFeePercentage}%): $${celebrityAmount / 100}`)
@@ -193,19 +193,20 @@ export const transferBookingPayment = async (transferData: {
       amount: celebrityAmount,
       currency: transferData.currency,
       destination: transferData.accountId,
-      description: `Booking payment for order ${transferData.orderNumber} - ${transferData.celebrityName}`,
+      description: `Approved video payment for order ${transferData.orderNumber} - ${transferData.celebrityName}`,
       metadata: {
-        type: "booking_payment",
+        type: "approved_booking_payment",
         orderId: transferData.orderId,
         orderNumber: transferData.orderNumber,
         celebrityName: transferData.celebrityName,
         originalAmount: transferData.amount.toString(),
         platformFee: platformFee.toString(),
         platformFeePercentage: platformFeePercentage.toString(),
+        trigger: "customer_approval",
       },
     })
 
-    console.log("✅ Booking transfer successful:", transfer.id)
+    console.log("✅ Approved booking transfer successful:", transfer.id)
 
     return {
       transferId: transfer.id,
@@ -213,17 +214,17 @@ export const transferBookingPayment = async (transferData: {
       platformFee,
     }
   } catch (error) {
-    console.error("❌ Failed to transfer booking payment:", error)
+    console.error("❌ Failed to transfer approved booking payment:", error)
     throw new Error(`Failed to transfer booking payment: ${error instanceof Error ? error.message : "Unknown error"}`)
   }
 }
 
 /**
- * Transfer tip to celebrity (100% to celebrity)
+ * Transfer tip to celebrity (100% to celebrity) - ONLY AFTER VIDEO APPROVAL
  */
 export const transferTipPayment = async (transferData: {
   accountId: string
-  amount: number // Tip amount
+  amount: number // Tip amount in cents
   currency: string
   tipId: string
   orderId: string
@@ -232,7 +233,7 @@ export const transferTipPayment = async (transferData: {
   customerName: string
 }): Promise<{ transferId: string }> => {
   try {
-    console.log(`🔄 Transferring tip payment:`)
+    console.log(`🔄 Transferring tip payment AFTER VIDEO APPROVAL:`)
     console.log(`   Tip Amount: $${transferData.amount / 100}`)
     console.log(`   Celebrity gets: $${transferData.amount / 100} (100%)`)
 
@@ -240,25 +241,73 @@ export const transferTipPayment = async (transferData: {
       amount: transferData.amount, // 100% to celebrity
       currency: transferData.currency,
       destination: transferData.accountId,
-      description: `Tip from ${transferData.customerName} for order ${transferData.orderNumber}`,
+      description: `Tip from ${transferData.customerName} for approved order ${transferData.orderNumber}`,
       metadata: {
-        type: "tip_payment",
+        type: "approved_tip_payment",
         tipId: transferData.tipId,
         orderId: transferData.orderId,
         orderNumber: transferData.orderNumber,
         celebrityName: transferData.celebrityName,
         customerName: transferData.customerName,
+        trigger: "video_approval",
       },
     })
 
-    console.log("✅ Tip transfer successful:", transfer.id)
+    console.log("✅ Approved tip transfer successful:", transfer.id)
 
     return {
       transferId: transfer.id,
     }
   } catch (error) {
-    console.error("❌ Failed to transfer tip payment:", error)
+    console.error("❌ Failed to transfer approved tip payment:", error)
     throw new Error(`Failed to transfer tip payment: ${error instanceof Error ? error.message : "Unknown error"}`)
+  }
+}
+
+/**
+ * Process all pending transfers for an approved order
+ */
+export const processApprovedOrderTransfers = async (orderData: {
+  orderId: string
+  orderNumber: string
+  celebrityId: string
+  celebrityName: string
+  stripeConnectAccountId: string
+  totalAmount: number // in cents
+  platformFeePercentage?: number
+}): Promise<{
+  bookingTransfer: { transferId: string; celebrityAmount: number; platformFee: number }
+  tipTransfers: { transferId: string; tipId: string; amount: number }[]
+}> => {
+  try {
+    console.log("🔄 Processing all transfers for approved order:", orderData.orderNumber)
+
+    // 1. Transfer main booking payment
+    const bookingTransfer = await transferBookingPayment({
+      accountId: orderData.stripeConnectAccountId,
+      amount: orderData.totalAmount,
+      currency: "usd",
+      orderId: orderData.orderId,
+      orderNumber: orderData.orderNumber,
+      celebrityName: orderData.celebrityName,
+      platformFeePercentage: orderData.platformFeePercentage,
+    })
+
+    // 2. Transfer any pending tips for this order
+    const tipTransfers: { transferId: string; tipId: string; amount: number }[] = []
+
+    // Note: This would need to be called from the approval API route
+    // where we have access to the database to fetch pending tips
+
+    console.log("✅ All transfers processed for approved order")
+
+    return {
+      bookingTransfer,
+      tipTransfers,
+    }
+  } catch (error) {
+    console.error("❌ Failed to process approved order transfers:", error)
+    throw new Error(`Failed to process transfers: ${error instanceof Error ? error.message : "Unknown error"}`)
   }
 }
 
@@ -519,13 +568,6 @@ export const getSupportedCountries = (): string[] => {
   ]
 }
 
-/**
- * Check if country supports Stripe Connect
- */
 export const isCountrySupported = (countryCode: string): boolean => {
   return getSupportedCountries().includes(countryCode.toUpperCase())
 }
-
-/**
- * Get account balance
- */

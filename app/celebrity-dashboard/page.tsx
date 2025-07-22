@@ -46,6 +46,9 @@ import {
   CreditCard,
   Gift,
   Clock,
+  PlayCircle,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
@@ -69,6 +72,10 @@ interface DashboardStats {
   responseRate: number
   averageResponseTime: number
   completionRate: number
+  // 🔥 NEW: Approval-related stats
+  pendingApprovalCount: number
+  approvedThisMonth: number
+  declinedThisMonth: number
 }
 
 interface BookingRequest {
@@ -90,6 +97,12 @@ interface BookingRequest {
   deadline: string
   paymentStatus: string
   videoUrl?: string
+  // 🔥 NEW: Approval fields
+  approvalStatus?: string
+  approvedAt?: string
+  declinedAt?: string
+  declineReason?: string
+  revisionCount?: number
   tips: Array<{
     id: string
     amount: number
@@ -178,7 +191,7 @@ export default function CelebrityDashboard() {
     fetchBookingRequests()
     fetchAllOrders()
     fetchProfile()
-    fetchReviews()
+    // fetchReviews()
   }, [session, status, isCelebrity])
 
   const fetchDashboardData = async () => {
@@ -212,6 +225,10 @@ export default function CelebrityDashboard() {
         responseRate: data.responseRate || 95,
         averageResponseTime: data.averageResponseTime || 24,
         completionRate: data.completionRate || 95,
+        // 🔥 NEW: Approval stats
+        pendingApprovalCount: data.pendingApprovalCount || 0,
+        approvedThisMonth: data.approvedThisMonth || 0,
+        declinedThisMonth: data.declinedThisMonth || 0,
       })
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching stats:", error)
@@ -235,6 +252,9 @@ export default function CelebrityDashboard() {
         responseRate: 95,
         averageResponseTime: 24,
         completionRate: 95,
+        pendingApprovalCount: 0,
+        approvedThisMonth: 0,
+        declinedThisMonth: 0,
       })
     } finally {
       setLoading(false)
@@ -272,6 +292,12 @@ export default function CelebrityDashboard() {
         deadline: request.deadline,
         paymentStatus: request.paymentStatus,
         videoUrl: request.videoUrl,
+        // 🔥 NEW: Approval fields
+        approvalStatus: request.approvalStatus,
+        approvedAt: request.approvedAt,
+        declinedAt: request.declinedAt,
+        declineReason: request.declineReason,
+        revisionCount: request.revisionCount || 0,
         tips: request.tips || [],
       }))
 
@@ -315,9 +341,14 @@ export default function CelebrityDashboard() {
         deadline: request.deadline,
         paymentStatus: request.paymentStatus,
         videoUrl: request.videoUrl,
+        // 🔥 NEW: Approval fields
+        approvalStatus: request.approvalStatus,
+        approvedAt: request.approvedAt,
+        declinedAt: request.declinedAt,
+        declineReason: request.declineReason,
+        revisionCount: request.revisionCount || 0,
         tips: request.tips || [],
       }))
-
       setAllOrders(transformedOrders)
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching all orders:", error)
@@ -349,28 +380,28 @@ export default function CelebrityDashboard() {
     }
   }
 
-  const fetchReviews = async () => {
-    try {
-      console.log("⭐ Celebrity Dashboard - Fetching reviews...")
-      setReviewsLoading(true)
-      const response = await fetch("/api/celebrity/reviews")
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("❌ Celebrity Dashboard - Reviews fetch failed:", errorText)
-        throw new Error(`Failed to fetch reviews: ${response.status} ${errorText}`)
-      }
-      const data = await response.json()
-      setReviews(data.reviews || [])
-      setReviewStats(data.stats || null)
-      console.log("✅ Celebrity Dashboard - Reviews loaded successfully")
-    } catch (error) {
-      console.error("❌ Celebrity Dashboard - Error fetching reviews:", error)
-      setReviews([])
-      setReviewStats(null)
-    } finally {
-      setReviewsLoading(false)
-    }
-  }
+  // const fetchReviews = async () => {
+  //   try {
+  //     console.log("⭐ Celebrity Dashboard - Fetching reviews...")
+  //     setReviewsLoading(true)
+  //     const response = await fetch("/api/celebrity/reviews")
+  //     if (!response.ok) {
+  //       const errorText = await response.text()
+  //       console.error("❌ Celebrity Dashboard - Reviews fetch failed:", errorText)
+  //       throw new Error(`Failed to fetch reviews: ${response.status} ${errorText}`)
+  //     }
+  //     const data = await response.json()
+  //     setReviews(data.reviews || [])
+  //     setReviewStats(data.stats || null)
+  //     console.log("✅ Celebrity Dashboard - Reviews loaded successfully")
+  //   } catch (error) {
+  //     console.error("❌ Celebrity Dashboard - Error fetching reviews:", error)
+  //     setReviews([])
+  //     setReviewStats(null)
+  //   } finally {
+  //     setReviewsLoading(false)
+  //   }
+  // }
 
   const handleBookingAction = async (requestId: string, action: "accept" | "decline") => {
     try {
@@ -509,8 +540,25 @@ export default function CelebrityDashboard() {
     if (orderFilter === "confirmed") return allOrders.filter((order) => order.status === "confirmed")
     if (orderFilter === "completed") return allOrders.filter((order) => order.status === "completed")
     if (orderFilter === "cancelled") return allOrders.filter((order) => order.status === "cancelled")
+    // 🔥 NEW: Approval-based filters
+    if (orderFilter === "pending_approval")
+      return allOrders.filter((order) => order.approvalStatus === "PENDING_APPROVAL")
+    if (orderFilter === "approved") return allOrders.filter((order) => order.approvalStatus === "APPROVED")
+    if (orderFilter === "declined") return allOrders.filter((order) => order.approvalStatus === "DECLINED")
     return allOrders
   }
+
+  // 🔥 NEW: Get declined orders that need revision
+  // const getDeclinedOrders = () => {
+  //   return allOrders.filter((order) => order.approvalStatus?.toLowerCase() === "declined" && order.revisionCount || 0 < 2)
+  // }
+  const getDeclinedOrders = () => {
+  return allOrders.filter((order) => 
+    order.approvalStatus?.toLowerCase() === "declined" && 
+    (order.revisionCount || 0) < 2
+  )
+}
+  console.log("Declined orders", getDeclinedOrders());
 
   const getStatusBadgeColor = (status: string) => {
     if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
@@ -523,6 +571,23 @@ export default function CelebrityDashboard() {
         return "bg-green-500/20 text-green-300 border-green-500/30"
       case "cancelled":
         return "bg-red-500/20 text-red-300 border-red-500/30"
+      default:
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    }
+  }
+
+  // 🔥 NEW: Get approval status badge color
+  const getApprovalStatusBadgeColor = (approvalStatus: string) => {
+    if (!approvalStatus) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    switch (approvalStatus.toLowerCase()) {
+      case "pending_approval":
+        return "bg-orange-500/20 text-orange-300 border-orange-500/30"
+      case "approved":
+        return "bg-green-500/20 text-green-300 border-green-500/30"
+      case "declined":
+        return "bg-red-500/20 text-red-300 border-red-500/30"
+      case "revision_requested":
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
       default:
         return "bg-gray-500/20 text-gray-300 border-gray-500/30"
     }
@@ -702,10 +767,10 @@ export default function CelebrityDashboard() {
                 <Package className="w-4 h-4 mr-2" />
                 Orders ({allOrders.length})
               </TabsTrigger>
-              <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              {/* <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
                 <Star className="w-4 h-4 mr-2" />
                 Reviews ({reviewStats?.totalReviews || 0})
-              </TabsTrigger>
+              </TabsTrigger> */}
               <TabsTrigger
                 value="calendar"
                 className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
@@ -721,6 +786,108 @@ export default function CelebrityDashboard() {
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6">
+              {/* 🔥 NEW: Urgent Action Required Section */}
+              {getDeclinedOrders().length > 0 && (
+                <Card className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500/30 backdrop-blur-lg">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-red-400" />🚨 Urgent: Revision Requests (
+                      {getDeclinedOrders().length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-red-200 text-sm mb-4">
+                      These customers have requested changes to their videos. Please upload revised videos as soon as
+                      possible.
+                    </p>
+                    {getDeclinedOrders()
+                      .slice(0, 3)
+                      .map((order) => (
+                        <motion.div
+                          key={order.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-10 h-10">
+                                <AvatarImage src={order.customerImage || "/placeholder.svg"} />
+                                <AvatarFallback>{order.customerName.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-white font-semibold">{order.orderNumber}</p>
+                                <p className="text-red-200 text-sm">
+                                  {order.occasion} for {order.recipientName}
+                                </p>
+                                <p className="text-red-300 text-xs">
+                                  Declined {order.declinedAt ? format(new Date(order.declinedAt), "MMM d") : "recently"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <Badge className="bg-red-500/20 text-red-300 mb-2">
+                                Revision {(order.revisionCount || 0) + 1}/2
+                              </Badge>
+                              <p className="text-green-400 font-semibold">
+                                ${(order.celebrityAmount || 0).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          {order.declineReason && (
+                            <div className="mb-3">
+                              <p className="text-red-200 text-xs font-medium mb-1">Customer Feedback:</p>
+                              <p className="text-white text-sm bg-red-500/10 p-2 rounded italic">
+                                "{order.declineReason}"
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <VideoUploadModal
+                              bookingId={order.id}
+                              orderNumber={order.orderNumber}
+                              customerName={order.customerName}
+                              onUploadSuccess={handleVideoUploadSuccess}
+                            >
+                              <Button className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white">
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Upload Revision
+                              </Button>
+                            </VideoUploadModal>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setActiveTab("orders")
+                                setOrderFilter("declined")
+                              }}
+                              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Details
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ))}
+
+                    {getDeclinedOrders().length > 3 && (
+                      <Button
+                        variant="outline"
+                        className="w-full bg-red-500/10 border-red-500/30 text-red-300 hover:bg-red-500/20"
+                        onClick={() => {
+                          setActiveTab("orders")
+                          setOrderFilter("declined")
+                        }}
+                      >
+                        View All {getDeclinedOrders().length} Revision Requests
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Stats Cards */}
               {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
@@ -750,21 +917,17 @@ export default function CelebrityDashboard() {
                     </CardContent>
                   </Card>
 
-                  {/* 🔥 NEW: Pending Earnings Card */}
+                  {/* 🔥 NEW: Pending Approval Card */}
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-purple-200 text-sm font-medium">Pending Earnings</p>
-                          <p className="text-2xl font-bold text-orange-400">
-                            ${(stats.pendingEarnings || 0).toLocaleString()}
-                          </p>
-                          <p className="text-xs text-purple-400 mt-1">
-                            From {stats.confirmedBookings || 0} confirmed bookings
-                          </p>
+                          <p className="text-purple-200 text-sm font-medium">Pending Approval</p>
+                          <p className="text-2xl font-bold text-orange-400">{stats.pendingApprovalCount || 0}</p>
+                          <p className="text-xs text-purple-400 mt-1">Videos awaiting customer review</p>
                         </div>
                         <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center">
-                          <Clock className="w-6 h-6 text-orange-400" />
+                          <PlayCircle className="w-6 h-6 text-orange-400" />
                         </div>
                       </div>
                     </CardContent>
@@ -779,13 +942,9 @@ export default function CelebrityDashboard() {
                             ${(stats.monthlyEarnings || 0).toLocaleString()}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-green-400">
-                              ${(stats.monthlyOrderEarnings || 0).toLocaleString()} completed
-                            </span>
-                            {stats.monthlyPendingEarnings > 0 && (
-                              <span className="text-xs text-orange-400">
-                                +${(stats.monthlyPendingEarnings || 0).toLocaleString()} pending
-                              </span>
+                            <span className="text-xs text-green-400">{stats.approvedThisMonth || 0} approved</span>
+                            {stats.declinedThisMonth > 0 && (
+                              <span className="text-xs text-red-400">{stats.declinedThisMonth} declined</span>
                             )}
                           </div>
                         </div>
@@ -815,7 +974,7 @@ export default function CelebrityDashboard() {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                  {/* <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -832,7 +991,7 @@ export default function CelebrityDashboard() {
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
+                  </Card> */}
 
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardContent className="p-6">
@@ -1000,7 +1159,7 @@ export default function CelebrityDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                {/* <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
                       <Star className="w-5 h-5" />
@@ -1054,7 +1213,7 @@ export default function CelebrityDashboard() {
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </TabsContent>
 
@@ -1211,7 +1370,7 @@ export default function CelebrityDashboard() {
                     <div className="flex items-center gap-2">
                       <Filter className="w-4 h-4 text-purple-300" />
                       <Select value={orderFilter} onValueChange={setOrderFilter}>
-                        <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
+                        <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -1220,6 +1379,9 @@ export default function CelebrityDashboard() {
                           <SelectItem value="confirmed">Confirmed</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="pending_approval">Pending Approval</SelectItem>
+                          <SelectItem value="approved">Approved</SelectItem>
+                          <SelectItem value="declined">Declined</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1237,7 +1399,7 @@ export default function CelebrityDashboard() {
                       <p className="text-purple-200">
                         {orderFilter === "all"
                           ? "Orders will appear here when you receive bookings."
-                          : `No ${orderFilter} orders found.`}
+                          : `No ${orderFilter.replace("_", " ")} orders found.`}
                       </p>
                     </div>
                   ) : (
@@ -1262,6 +1424,12 @@ export default function CelebrityDashboard() {
                                     ? order.status.charAt(0).toUpperCase() + order.status.slice(1)
                                     : "Unknown"}
                                 </Badge>
+                                {/* 🔥 NEW: Approval Status Badge */}
+                                {order.approvalStatus && (
+                                  <Badge className={getApprovalStatusBadgeColor(order.approvalStatus)}>
+                                    {order.approvalStatus.replace("_", " ")}
+                                  </Badge>
+                                )}
                               </div>
                               <p className="text-purple-200 text-sm mb-1">
                                 <strong>From:</strong> {order.customerName}
@@ -1303,6 +1471,21 @@ export default function CelebrityDashboard() {
                           </p>
                         </div>
 
+                        {/* 🔥 NEW: Decline Reason Display */}
+                        {order.approvalStatus === "DECLINED" && order.declineReason && (
+                          <div className="mb-4">
+                            <p className="text-red-300 text-sm font-medium mb-2">Customer Feedback:</p>
+                            <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg">
+                              <p className="text-red-200 text-sm">{order.declineReason}</p>
+                              {order.revisionCount && (
+                                <p className="text-red-300 text-xs mt-2">
+                                  Revision {order.revisionCount} of 2 requested
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Display tips if any */}
                         {order.tips && order.tips.length > 0 && (
                           <div className="mb-4">
@@ -1343,7 +1526,36 @@ export default function CelebrityDashboard() {
                               </Button>
                             </VideoUploadModal>
                           )}
-                          {order.status === "completed" && order.videoUrl && (
+                          {/* 🔥 NEW: Pending Approval Status */}
+                          {order.approvalStatus === "PENDING_APPROVAL" && order.videoUrl && (
+                            <div className="flex-1 flex items-center gap-2 p-3 bg-orange-500/20 rounded-lg">
+                              <Clock className="w-5 h-5 text-orange-400" />
+                              <span className="text-orange-300 font-medium">Awaiting Customer Approval</span>
+                            </div>
+                          )}
+                          {/* 🔥 NEW: Approved Status */}
+                          {order.approvalStatus === "APPROVED" && order.videoUrl && (
+                            <div className="flex-1 flex items-center gap-2 p-3 bg-green-500/20 rounded-lg">
+                              <CheckCircle className="w-5 h-5 text-green-400" />
+                              <span className="text-green-300 font-medium">Video Approved & Delivered</span>
+                            </div>
+                          )}
+                          {/* 🔥 NEW: Declined Status - Upload Revision */}
+                          {order.approvalStatus === "DECLINED" && (order.revisionCount || 0) < 2 && (
+                            <VideoUploadModal
+                              bookingId={order.id}
+                              orderNumber={order.orderNumber}
+                              customerName={order.customerName}
+                              onUploadSuccess={handleVideoUploadSuccess}
+                            >
+                              <Button className="flex-1 bg-yellow-600 hover:bg-yellow-700">
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload Revision ({(order.revisionCount || 0) + 1}/2)
+                              </Button>
+                            </VideoUploadModal>
+                          )}
+                          {/* Legacy completed status */}
+                          {order.status === "completed" && !order.approvalStatus && order.videoUrl && (
                             <div className="flex-1 flex items-center gap-2 p-3 bg-green-500/20 rounded-lg">
                               <CheckCircle className="w-5 h-5 text-green-400" />
                               <span className="text-green-300 font-medium">Video Delivered</span>
@@ -1365,9 +1577,9 @@ export default function CelebrityDashboard() {
             </TabsContent>
 
             {/* Reviews Tab */}
-            <TabsContent value="reviews" className="space-y-6">
+            {/* <TabsContent value="reviews" className="space-y-6"> */}
               {/* Review Stats */}
-              {reviewStats && (
+              {/* {reviewStats && (
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardHeader>
@@ -1421,10 +1633,10 @@ export default function CelebrityDashboard() {
                     </CardContent>
                   </Card>
                 </div>
-              )}
+              )} */}
 
               {/* All Reviews */}
-              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+              {/* <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <MessageSquare className="w-5 h-5" />
@@ -1441,7 +1653,7 @@ export default function CelebrityDashboard() {
                       <Star className="w-12 h-12 text-purple-400 mx-auto mb-4" />
                       <p className="text-white font-semibold mb-2">No reviews yet</p>
                       <p className="text-purple-200">
-                        Reviews from your customers will appear here after they complete their orders.
+                        Reviews from your customers will appear here after they approve their videos.
                       </p>
                     </div>
                   ) : (
@@ -1508,8 +1720,8 @@ export default function CelebrityDashboard() {
                     ))
                   )}
                 </CardContent>
-              </Card>
-            </TabsContent>
+              </Card> */}
+            {/* </TabsContent> */}
 
             {/* Calendar Tab */}
             <TabsContent value="calendar" className="space-y-6">
