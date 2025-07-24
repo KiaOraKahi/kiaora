@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle transfer events - FIX: Use switch statement to avoid TypeScript issues
-    switch (event.type) {
+    switch (event.type as string) {
       case "transfer.created": {
         const transfer = event.data.object as Stripe.Transfer
         console.log("🔄 Transfer created:", transfer.id)
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         break
       }
 
-      case "transfer.paid": {
+      case "transfer.updated": {
         const transfer = event.data.object as Stripe.Transfer
         console.log("✅ Transfer completed:", transfer.id)
         try {
@@ -329,6 +329,13 @@ async function handleBookingPaymentFailure(paymentIntent: Stripe.PaymentIntent) 
 
 async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   console.log("🔄 Processing tip payment success:", paymentIntent.id)
+  console.log("💰 Payment Intent Details:", {
+    id: paymentIntent.id,
+    amount: paymentIntent.amount,
+    currency: paymentIntent.currency,
+    status: paymentIntent.status,
+    metadata: paymentIntent.metadata
+  })
 
   // Find and update the tip
   const tip = await prisma.tip.findUnique({
@@ -340,14 +347,35 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       order: true,
       user: true,
     },
-
-    
   })
 
   if (!tip) {
     console.log("⚠️ Tip not found for payment intent:", paymentIntent.id)
+    // Debug: Check all recent tips
+    const recentTips = await prisma.tip.findMany({
+      select: {
+        id: true,
+        paymentIntentId: true,
+        amount: true,
+        paymentStatus: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    })
+    console.log("📋 Recent tips in database:", recentTips)
     return
   }
+
+  console.log("✅ TIP FOUND:", {
+    tipId: tip.id,
+    amount: tip.amount,
+    currency: tip.currency,
+    currentStatus: tip.paymentStatus,
+    celebrity: tip.celebrity.user.name,
+    customerName: tip.user.name,
+    orderNumber: tip.order.orderNumber
+  })
 
   // Update tip status
   await prisma.tip.update({
@@ -357,6 +385,7 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       paidAt: new Date(),
     },
   })
+    console.log("✅ Tip payment status updated")
 
   console.log("🔍 Connect Account Debug Info:", {
     accountId: tip.celebrity.stripeConnectAccountId,
@@ -365,10 +394,55 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     onboardingComplete: tip.celebrity.stripeOnboardingComplete
   });
 
+    // DETAILED Connect account check
+  console.log("🔍 DETAILED Connect Account Check:")
+  console.log("   - stripeConnectAccountId:", tip.celebrity.stripeConnectAccountId)
+  console.log("   - stripePayoutsEnabled:", tip.celebrity.stripePayoutsEnabled)
+  console.log("   - stripeAccountStatus:", tip.celebrity.stripeAccountStatus)
+  console.log("   - stripeOnboardingComplete:", tip.celebrity.stripeOnboardingComplete)
+
+  // Verify with Stripe directly
+  if (tip.celebrity.stripeConnectAccountId) {
+    try {
+      console.log("🔍 Fetching Connect account from Stripe...")
+      const stripeAccount = await stripe.accounts.retrieve(tip.celebrity.stripeConnectAccountId)
+      console.log("📊 Stripe Connect Account Status:", {
+        id: stripeAccount.id,
+        charges_enabled: stripeAccount.charges_enabled,
+        payouts_enabled: stripeAccount.payouts_enabled,
+        details_submitted: stripeAccount.details_submitted,
+        requirements: stripeAccount.requirements,
+        country: stripeAccount.country,
+        default_currency: stripeAccount.default_currency
+      })
+      
+      if (stripeAccount.requirements?.currently_due && stripeAccount.requirements.currently_due.length > 0) {
+        console.log("⚠️ Account has outstanding requirements:", stripeAccount.requirements.currently_due)
+      }
+    } catch (stripeError) {
+      console.error("❌ Error fetching Stripe account:", stripeError)
+    }
+  }
+
+  // Check platform balance
+  try {
+    console.log("🔍 Checking platform balance...")
+    const balance = await stripe.balance.retrieve()
+    console.log("💰 Platform Balance:", {
+      available: balance.available,
+      pending: balance.pending
+    })
+  } catch (balanceError) {
+    console.error("❌ Error fetching balance:", balanceError)
+  }
+
   // Initiate transfer to celebrity (100% of tip) - Tips transfer immediately
   if (tip.celebrity.stripeConnectAccountId && tip.celebrity.stripePayoutsEnabled) {
     try {
       console.log("🔄 Initiating tip transfer to celebrity:", tip.celebrity.user.name)
+      console.log("   - To celebrity:", tip.celebrity.user.name)
+      console.log("   - Amount:", paymentIntent.amount, "cents")
+      console.log("   - Account ID:", tip.celebrity.stripeConnectAccountId)
       const transferResult = await transferTipPayment({
         accountId: tip.celebrity.stripeConnectAccountId,
         amount: paymentIntent.amount,
@@ -380,6 +454,9 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         customerName: tip.user.name || "Customer",
       })
 
+      console.log("✅ TIP TRANSFER INITIATED SUCCESSFULLY:")
+      console.log("   - Transfer ID:", transferResult.transferId)
+
       // Update tip with transfer info
       await prisma.tip.update({
         where: { id: tip.id },
@@ -388,6 +465,8 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
           transferStatus: "IN_TRANSIT",
         },
       })
+
+      console.log("✅ Tip transfer status updated to IN_TRANSIT")
 
       // Create transfer record
       await prisma.transfer.create({
@@ -403,6 +482,8 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         },
       })
 
+      console.log("✅ Transfer record created in database")
+
       // Update celebrity total tips
       await prisma.celebrity.update({
         where: { id: tip.celebrityId },
@@ -412,23 +493,45 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
           },
         },
       })
+      console.log("✅ Celebrity total tips updated")
 
       console.log("✅ Tip transfer initiated successfully")
     } catch (error) {
-      console.error("❌ Failed to initiate tip transfer:", error)
+      console.error("❌ CRITICAL ERROR Failed to initiate tip transfer:", error)
+      // Type guard for different error types
+      if (error instanceof Error) {
+        console.error("   Error type:", error.constructor.name)
+        console.error("   Error message:", error.message)
+      }
+
+      // Check if it's a Stripe error specifically
+      if (error && typeof error === 'object' && 'type' in error) {
+        const stripeError = error as Stripe.StripeRawError
+        console.error("   Stripe error type:", stripeError.type)
+        console.error("   Stripe error code:", stripeError.code)
+        console.error("   Stripe error param:", stripeError.param)
+        console.error("   Stripe error decline_code:", stripeError.decline_code)
+      }
+
+      console.error("   Full error:", error)
+
       // Update transfer status to failed
       await prisma.tip.update({
         where: { id: tip.id },
         data: { transferStatus: "FAILED" },
       })
+      console.log("💥 Tip transfer status updated to FAILED")
     }
   } else {
-    console.log("⚠️ Celebrity doesn't have Connect account for tip transfer")
+    console.log("⚠️ CANNOT TRANSFER TIP:")
+    console.log("   - Has Connect account:", !!tip.celebrity.stripeConnectAccountId)
+    console.log("   - Payouts enabled:", tip.celebrity.stripePayoutsEnabled)
     // Update transfer status to pending
     await prisma.tip.update({
       where: { id: tip.id },
       data: { transferStatus: "PENDING" },
     })
+    console.log("⏳ Tip transfer status updated to PENDING")
   }
 
   console.log("✅ Tip payment processed successfully")
