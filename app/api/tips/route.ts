@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         celebrityId: celebrity.id,
         amount: amount,
-        currency: "usd",
+        currency: "nzd",
         message: message || null,
         paymentStatus: "PENDING",
       },
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     // Create Stripe payment intent for tip
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
-      currency: "usd",
+      currency: "nzd",
       metadata: {
         type: "tip",
         tipId: tip.id,

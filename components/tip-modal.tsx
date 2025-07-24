@@ -62,7 +62,7 @@ export function TipModal({ children, orderNumber, celebrityName, celebrityImage,
         setOrderStatus({
           status: data.status,
           approvalStatus: data.approvalStatus,
-          isApproved: data.approvalStatus === "APPROVED",
+          isApproved: data.approvalStatus === "approved",
         })
       }
     } catch (error) {
@@ -75,6 +75,7 @@ export function TipModal({ children, orderNumber, celebrityName, celebrityImage,
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTitle></DialogTitle>
       <Elements stripe={stripePromise}>
         <TipModalContent
           orderNumber={orderNumber}

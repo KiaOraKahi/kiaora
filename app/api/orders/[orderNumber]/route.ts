@@ -99,6 +99,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       createdAt: order.createdAt.toISOString(),
       paidAt: order.paidAt?.toISOString() || null,
       deliveredAt: order.deliveredAt?.toISOString() || null,
+      approvalStatus: order.approvalStatus?.toLowerCase() || "pending",
 
       // Booking details
       recipientName: order.recipientName || "",

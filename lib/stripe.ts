@@ -233,6 +233,11 @@ export const transferTipPayment = async (transferData: {
   customerName: string
 }): Promise<{ transferId: string }> => {
   try {
+     console.log("🔍 Pre-transfer validation:", {
+      accountId: transferData.accountId,
+      amount: transferData.amount,
+      currency: transferData.currency
+    });
     console.log(`🔄 Transferring tip payment AFTER VIDEO APPROVAL:`)
     console.log(`   Tip Amount: $${transferData.amount / 100}`)
     console.log(`   Celebrity gets: $${transferData.amount / 100} (100%)`)
@@ -286,7 +291,7 @@ export const processApprovedOrderTransfers = async (orderData: {
     const bookingTransfer = await transferBookingPayment({
       accountId: orderData.stripeConnectAccountId,
       amount: orderData.totalAmount,
-      currency: "usd",
+      currency: "nzd",
       orderId: orderData.orderId,
       orderNumber: orderData.orderNumber,
       celebrityName: orderData.celebrityName,
@@ -376,7 +381,7 @@ export const getAccountBalance = async (accountId: string) => {
 /**
  * Create payment intent
  */
-export const createPaymentIntent = async (amount: number, currency = "usd", metadata: Record<string, string> = {}) => {
+export const createPaymentIntent = async (amount: number, currency = "nzd", metadata: Record<string, string> = {}) => {
   try {
     console.log(`🔄 Creating payment intent: $${amount / 100}`)
 
@@ -513,7 +518,7 @@ export const calculatePaymentSplit = (
 /**
  * Format currency for display
  */
-export const formatCurrency = (amount: number, currency = "usd"): string => {
+export const formatCurrency = (amount: number, currency = "nzd"): string => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency.toUpperCase(),

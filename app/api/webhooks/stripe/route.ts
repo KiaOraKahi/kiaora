@@ -340,6 +340,8 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       order: true,
       user: true,
     },
+
+    
   })
 
   if (!tip) {
@@ -355,6 +357,13 @@ async function handleTipPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       paidAt: new Date(),
     },
   })
+
+  console.log("🔍 Connect Account Debug Info:", {
+    accountId: tip.celebrity.stripeConnectAccountId,
+    payoutsEnabled: tip.celebrity.stripePayoutsEnabled,
+    accountStatus: tip.celebrity.stripeAccountStatus,
+    onboardingComplete: tip.celebrity.stripeOnboardingComplete
+  });
 
   // Initiate transfer to celebrity (100% of tip) - Tips transfer immediately
   if (tip.celebrity.stripeConnectAccountId && tip.celebrity.stripePayoutsEnabled) {
@@ -474,7 +483,7 @@ async function handleConnectAccountUpdate(account: Stripe.Account) {
       stripeOnboardingComplete: account.details_submitted || false,
       stripeChargesEnabled: account.charges_enabled || false,
       stripePayoutsEnabled: account.payouts_enabled || false,
-      preferredCurrency: account.default_currency || "usd",
+      preferredCurrency: account.default_currency || "nzd",
       bankCountry: account.country || null,
     },
   })
