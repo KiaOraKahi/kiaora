@@ -49,14 +49,20 @@ export const createConnectAccount = async (celebrityData: {
 }): Promise<{ accountId: string; onboardingUrl: string }> => {
   try {
     console.log("🔄 Creating Stripe Connect account for:", celebrityData.email)
+    console.log("📍 Country:", celebrityData.country)
 
     // Safely split the name
     const nameParts = (celebrityData.name || "Celebrity User").trim().split(" ")
     const firstName = nameParts[0] || "Celebrity"
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "User"
 
-    // Create Express account
-    const account = await stripe.accounts.create({
+    // 🔥 FIX: Check if this is a New Zealand account
+    const isNewZealand = celebrityData.country.toLowerCase() === 'nz'
+    
+    console.log("🏛️ Service Agreement:", isNewZealand ? "recipient (for NZ)" : "full (default)")
+
+    // Build account creation parameters
+    const accountParams: Stripe.AccountCreateParams = {
       type: "express",
       country: celebrityData.country,
       email: celebrityData.email,
@@ -82,9 +88,21 @@ export const createConnectAccount = async (celebrityData: {
           },
         },
       },
-    })
+    }
+
+    // 🔥 KEY FIX: Add recipient service agreement for NZ accounts
+    if (isNewZealand) {
+      accountParams.tos_acceptance = {
+        service_agreement: "recipient"
+      }
+      console.log("✅ Applied 'recipient' service agreement for New Zealand account")
+    }
+
+    // Create Express account
+    const account = await stripe.accounts.create(accountParams)
 
     console.log("✅ Connect account created:", account.id)
+    console.log("📋 Service agreement:", isNewZealand ? "recipient" : "full (default)")
 
     // Create onboarding link
     const accountLink = await stripe.accountLinks.create({
@@ -104,6 +122,25 @@ export const createConnectAccount = async (celebrityData: {
     throw new Error(`Failed to create Connect account: ${error instanceof Error ? error.message : "Unknown error"}`)
   }
 }
+
+export const updateExistingNZAccount = async (accountId: string) => {
+  try {
+    console.log("🔄 Updating existing NZ account to recipient agreement:", accountId)
+    
+    const updatedAccount = await stripe.accounts.update(accountId, {
+      tos_acceptance: {
+        service_agreement: "recipient"
+      }
+    })
+    
+    console.log("✅ Successfully updated to recipient service agreement")
+    return updatedAccount
+  } catch (error) {
+    console.error("❌ Failed to update existing account:", error)
+    throw error
+  }
+}
+
 
 /**
  * Get Connect account status and details
