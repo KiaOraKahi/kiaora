@@ -16,7 +16,9 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  UserCheck
+  UserCheck,
+  Edit3,
+  Briefcase,
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 
@@ -32,6 +34,7 @@ interface SidebarStats {
   totalCelebrities: number
   pendingApplications: number
   totalBookings: number
+  totalServices?: number
 }
 
 export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, setSidebarOpen }: AdminSidebarProps) {
@@ -41,6 +44,7 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
     totalCelebrities: 0,
     pendingApplications: 0,
     totalBookings: 0,
+    totalServices: 0,
   })
 
   useEffect(() => {
@@ -57,6 +61,7 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
           totalCelebrities: data.totalCelebrities,
           pendingApplications: data.pendingApplications,
           totalBookings: data.totalBookings,
+          totalServices: data.totalServices || 0,
         })
       }
     } catch (error) {
@@ -105,6 +110,19 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
           label: "Content",
           icon: FileText,
           badge: stats.pendingApplications > 0 ? stats.pendingApplications.toString() : null,
+        },
+      ],
+    },
+    {
+      id: "content-management",
+      title: "Content Management",
+      items: [
+        { id: "site-content", label: "Site Content", icon: Edit3, badge: null },
+        {
+          id: "services",
+          label: "Services",
+          icon: Briefcase,
+          // badge: stats.totalServices > 0 ? stats.totalServices.toString() : null,
         },
       ],
     },
@@ -178,7 +196,6 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
                       <ChevronRight className="w-4 h-4" />
                     )}
                   </button>
-
                   <AnimatePresence>
                     {expandedSections.includes(section.id) && (
                       <motion.div

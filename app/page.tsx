@@ -1,9 +1,9 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
-import { MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift, Clock, DollarSign } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
@@ -11,82 +11,28 @@ import MobileNavbar from "@/components/frontend/mobile-navbar"
 import Footer from "@/components/frontend/footer"
 import LiveChatWidget from "@/components/frontend/live-chat-widget"
 import { useRouter } from "next/navigation"
+import { formatPrice, heroGreetings } from "@/lib/services-data"
+import type { EnhancedServiceData, ServicesApiResponse } from "@/types/services"
 
-// Update the services array to use correct image extensions
-const services = [
-  {
-    id: 1,
-    icon: <Zap className="w-8 h-8" />,
-    title: "Quick shout-outs",
-    description: "Fast and fun personalised shout-outs",
-    color: "from-yellow-500 to-orange-500",
-    talents: [
-      { name: "Kevin Hart", image: "/talents/1.jpeg" },
-      { name: "Ryan Reynolds", image: "/talents/2.jpg" },
-      { name: "Emma Stone", image: "/talents/3.jpg" },
-    ],
-  },
-  {
-    id: 2,
-    icon: <MessageCircle className="w-8 h-8" />,
-    title: "Personalised video messages",
-    description: "Custom video messages tailored specifically for you or your loved ones",
-    color: "from-blue-500 to-cyan-500",
-    talents: [
-      { name: "John Legend", image: "/talents/4.jpg" },
-      { name: "Oprah Winfrey", image: "/talents/5.jpg" },
-      { name: "Taylor Swift", image: "/talents/6.jpg" },
-    ],
-  },
-  {
-    id: 3,
-    icon: <Laugh className="w-8 h-8" />,
-    title: "Roast someone",
-    description: "Videos that tease or make fun of someone, in a good-natured way",
-    color: "from-red-500 to-pink-500",
-    talents: [
-      { name: "Dave Chappelle", image: "/talents/1.jpeg" },
-      { name: "Amy Schumer", image: "/talents/2.jpg" },
-      { name: "Kevin Hart", image: "/talents/3.jpg" },
-    ],
-  },
-  {
-    id: 4,
-    icon: <Video className="w-8 h-8" />,
-    title: "5min Live interaction",
-    description: "Real-time video calls and live one on one interactions",
-    color: "from-purple-500 to-indigo-500",
-    talents: [
-      { name: "MrBeast", image: "/talents/4.jpg" },
-      { name: "Emma Chamberlain", image: "/talents/5.jpg" },
-      { name: "PewDiePie", image: "/talents/6.jpg" },
-    ],
-  },
-  {
-    id: 5,
-    icon: <Briefcase className="w-8 h-8" />,
-    title: "Business endorsements",
-    description: "Professional endorsements and business shout-outs",
-    color: "from-green-500 to-emerald-500",
-    talents: [
-      { name: "Gary Vaynerchuk", image: "/talents/1.jpeg" },
-      { name: "Tony Robbins", image: "/talents/2.jpg" },
-      { name: "Shark Tank Cast", image: "/talents/3.jpg" },
-    ],
-  },
-  {
-    id: 6,
-    icon: <Gift className="w-8 h-8" />,
-    title: "Motivational video messages",
-    description: "Inspiring and uplifting messages to boost confidence and motivation",
-    color: "from-indigo-500 to-purple-500",
-    talents: [
-      { name: "Tony Robbins", image: "/talents/4.jpg" },
-      { name: "Oprah Winfrey", image: "/talents/5.jpg" },
-      { name: "Mel Robbins", image: "/talents/6.jpg" },
-    ],
-  },
-]
+// Icon mapping helper
+const getIconComponent = (iconName: string) => {
+  switch (iconName) {
+    case "Zap":
+      return <Zap className="w-8 h-8" />
+    case "MessageCircle":
+      return <MessageCircle className="w-8 h-8" />
+    case "Laugh":
+      return <Laugh className="w-8 h-8" />
+    case "Video":
+      return <Video className="w-8 h-8" />
+    case "Briefcase":
+      return <Briefcase className="w-8 h-8" />
+    case "Gift":
+      return <Gift className="w-8 h-8" />
+    default:
+      return <Sparkles className="w-8 h-8" />
+  }
+}
 
 const talents = [
   {
@@ -153,6 +99,56 @@ const talents = [
 
 const categories = ["All", "Actors", "Musicians", "Motivators", "Influencers"]
 
+// Animated Hero Title Component
+const AnimatedHeroTitle = () => {
+  const greetings = heroGreetings
+  const [currentGreeting, setCurrentGreeting] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentGreeting((prev) => (prev + 1) % greetings.length)
+    }, 3000) // Change every 3 seconds
+
+    return () => clearInterval(interval)
+  }, [greetings.length])
+
+  return (
+    <motion.h1
+      className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-2"
+      animate={{
+        backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Number.POSITIVE_INFINITY,
+        ease: "linear",
+      }}
+      style={{
+        backgroundSize: "200% 200%",
+        filter: "drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))",
+      }}
+    >
+      <motion.span
+        key={currentGreeting}
+        initial={{ opacity: 0, y: 20 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.5 }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          textShadow: [
+            "0 0 20px rgba(255, 215, 0, 0.5)",
+            "0 0 40px rgba(138, 43, 226, 0.5)",
+            "0 0 20px rgba(255, 215, 0, 0.5)",
+          ],
+        }}
+      >
+        {greetings[currentGreeting]}
+      </motion.span>
+    </motion.h1>
+  )
+}
+
 // Subtle starfield component with fewer, more elegant stars
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
@@ -216,6 +212,9 @@ export default function KiaOraHomepage() {
   const [isMobile, setIsMobile] = useState(false)
   const [currentServiceIndex, setCurrentServiceIndex] = useState(0)
   const [currentTalentIndex, setCurrentTalentIndex] = useState(0)
+  const [services, setServices] = useState<EnhancedServiceData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [fallbackDataUsed, setFallbackDataUsed] = useState(false)
   const router = useRouter()
 
   // Check if mobile
@@ -227,6 +226,40 @@ export default function KiaOraHomepage() {
     checkMobile()
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  // Fetch services data from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch("/api/services")
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch services")
+        }
+
+        const data: ServicesApiResponse = await response.json()
+        setServices(data.services)
+        setFallbackDataUsed(data.fallbackDataUsed)
+
+        if (data.fallbackDataUsed) {
+          console.log("Using fallback data - no services in database yet")
+          toast.info("Using demo data", {
+            description: "Real service data will appear once services are added to the database",
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error)
+        toast.error("Failed to load services", {
+          description: "Please refresh the page to try again",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
   }, [])
 
   // Rotate through talent images to show variety
@@ -245,6 +278,7 @@ export default function KiaOraHomepage() {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % Math.ceil(talents.length / 3))
     }, 4000)
+
     return () => clearInterval(interval)
   }, [])
 
@@ -267,6 +301,17 @@ export default function KiaOraHomepage() {
         onClick: () => (window.location.href = `/celebrities/${talent.id}`),
       },
     })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-yellow-200">Loading services...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -304,38 +349,8 @@ export default function KiaOraHomepage() {
               transition={{ duration: 1, delay: 0.2 }}
               className="mb-8 relative"
             >
-              <motion.h1
-                className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-2"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "linear",
-                }}
-                style={{
-                  backgroundSize: "200% 200%",
-                  filter: "drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))",
-                }}
-              >
-                <motion.span
-                  animate={{
-                    textShadow: [
-                      "0 0 20px rgba(255, 215, 0, 0.5)",
-                      "0 0 40px rgba(138, 43, 226, 0.5)",
-                      "0 0 20px rgba(255, 215, 0, 0.5)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "easeInOut",
-                  }}
-                >
-                  Kia Ora Kahi
-                </motion.span>
-              </motion.h1>
+              {/* Animated Hero Title */}
+              <AnimatedHeroTitle />
 
               {/* Personalised Videos Stamp - Directly under the text */}
               <motion.div
@@ -351,7 +366,6 @@ export default function KiaOraHomepage() {
                       PERSONALISED VIDEOS
                     </div>
                   </div>
-
                   {/* Stamp glow effect */}
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-red-500/30 to-pink-500/30 rounded-lg blur-md -z-10"
@@ -392,7 +406,6 @@ export default function KiaOraHomepage() {
             >
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
                 <h2 className="text-2xl font-bold text-white mb-8">Featured Talents</h2>
-
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
                   {services.map((service, index) => {
                     // Show different talents for variety - cycle through all 3 talents per service
@@ -423,13 +436,11 @@ export default function KiaOraHomepage() {
                                 priority={index < 3}
                               />
                             </div>
-
                             {/* Service Icon Overlay */}
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <div className="text-white">{service.icon}</div>
+                              <div className="text-white">{getIconComponent(service.icon)}</div>
                             </div>
                           </div>
-
                           {/* Sparkle Effect */}
                           <motion.div
                             className="absolute -inset-2 rounded-full"
@@ -447,7 +458,6 @@ export default function KiaOraHomepage() {
                             }}
                           />
                         </div>
-
                         {/* Current Talent Name */}
                         <p className="text-yellow-200 text-xs mt-1 opacity-75">{currentTalent.name}</p>
                       </motion.div>
@@ -459,10 +469,7 @@ export default function KiaOraHomepage() {
           </div>
         </section>
 
-        {/* Video Samples Carousel */}
-        {/* <VideoSamplesCarousel /> */}
-
-        {/* Services Section */}
+        {/* Services Section with Pricing */}
         <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <motion.div
@@ -492,30 +499,82 @@ export default function KiaOraHomepage() {
                   whileTap={{ scale: 0.95 }}
                   className="group touch-manipulation cursor-pointer"
                   onClick={() => {
-                    // Map service titles to service IDs for URL
-                    const serviceMap: { [key: string]: string } = {
-                      "Quick shout-outs": "shout-outs",
-                      "Personalised video messages": "personal",
-                      "Roast someone": "roast",
-                      "5min Live interaction": "live",
-                      "Business endorsements": "business",
-                      "Motivational video messages": "motivation",
-                    }
-                    const serviceId = serviceMap[service.title]
-                    if (serviceId) {
-                      router.push(`/services?service=${serviceId}`)
-                    }
+                    router.push(`/services?service=${service.id}`)
                   }}
                 >
                   <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
                     <CardContent className="p-6 sm:p-8">
+                      {/* Service Icon */}
                       <div
                         className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}
                       >
-                        <div className="text-white">{service.icon}</div>
+                        <div className="text-white">{getIconComponent(service.icon)}</div>
                       </div>
+
+                      {/* Popular Badge */}
+                      {service.popular && (
+                        <Badge className="mb-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold">
+                          Most Popular
+                        </Badge>
+                      )}
+
+                      {/* Service Title */}
                       <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">{service.title}</h3>
-                      <p className="text-yellow-200 leading-relaxed">{service.description}</p>
+
+                      {/* Service Description */}
+                      <p className="text-yellow-200 leading-relaxed mb-6">{service.description}</p>
+
+                      {/* Pricing Information */}
+                      <div className="space-y-3 mb-6">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-yellow-300 flex items-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            Starting Price:
+                          </span>
+                          <span className="text-white font-semibold">{formatPrice(service.startingPrice)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-yellow-300 flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            Duration:
+                          </span>
+                          <span className="text-white">{service.duration}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-yellow-300">Delivery:</span>
+                          <span className="text-white">{service.deliveryTime}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm border-t border-white/10 pt-3">
+                          <span className="text-orange-300 font-semibold">ASAP Price:</span>
+                          <span className="text-orange-200 font-semibold">
+                            {formatPrice(service.asapPrice)} within {service.asapDeliveryTime}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Sample Talents Preview */}
+                      <div className="mb-4">
+                        <h4 className="text-white font-semibold mb-3 text-sm">Featured Talents</h4>
+                        <div className="flex -space-x-2">
+                          {service.talents.slice(0, 3).map((talent, idx) => (
+                            <div
+                              key={idx}
+                              className="relative w-8 h-8 rounded-full border-2 border-white/20 overflow-hidden"
+                            >
+                              <Image
+                                src={talent.image || "/placeholder.svg"}
+                                alt={talent.name}
+                                fill
+                                className="object-cover"
+                                sizes="32px"
+                              />
+                            </div>
+                          ))}
+                          <div className="w-8 h-8 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
+                            <span className="text-xs text-white font-semibold">+</span>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>

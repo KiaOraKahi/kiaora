@@ -44,13 +44,6 @@ const addOns = [
     price: 99,
   },
   {
-    id: "hd",
-    icon: <Camera className="w-5 h-5" />,
-    title: "4K HD Quality",
-    description: "Ultra-high definition video",
-    price: 49,
-  },
-  {
     id: "music",
     icon: <Music className="w-5 h-5" />,
     title: "Background Music",

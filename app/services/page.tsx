@@ -18,172 +18,37 @@ import {
   Zap,
   Laugh,
   Gift,
+  Clock,
+  DollarSign,
+  Timer,
 } from "lucide-react"
 import Image from "next/image"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 import { toast } from "sonner"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
+import { formatPrice } from "@/lib/services-data"
+import type { EnhancedServiceData } from "@/types/services"
 
-// Updated services to match the footer URL parameters
-const services = [
-  {
-    id: "shoutouts",
-    icon: <Zap className="w-8 h-8" />,
-    title: "Quick shout-outs",
-    shortDescription: "Fast and fun personalized shout-outs from your favorite talent",
-    fullDescription:
-      "Get instant energy with quick, personalized shout-outs from your favorite talent. Perfect for birthdays, congratulations, or just to brighten someone's day with a burst of celebrity excitement.",
-    color: "from-yellow-500 to-orange-500",
-    price: "Starting at $49",
-    duration: "30 seconds - 1 minute",
-    deliveryTime: "24-48 hours",
-    features: [
-      "Quick personalized message",
-      "Mention recipient's name",
-      "High-energy delivery",
-      "HD video quality",
-      "Fast turnaround",
-      "Perfect for social sharing",
-    ],
-    popular: true,
-    samples: [
-      { celebrity: "Kevin Hart", thumbnail: "/talents/1.jpeg" },
-      { celebrity: "Ryan Reynolds", thumbnail: "/talents/2.jpg" },
-      { celebrity: "Emma Stone", thumbnail: "/talents/3.jpg" },
-    ],
-  },
-  {
-    id: "personal",
-    icon: <MessageCircle className="w-8 h-8" />,
-    title: "Personalised video messages",
-    shortDescription: "Custom video messages tailored specifically for you or your loved ones",
-    fullDescription:
-      "Experience the magic of a fully personalized video message crafted specifically for you or your loved ones. Our talent takes time to create meaningful, heartfelt content that will be treasured forever.",
-    color: "from-blue-500 to-cyan-500",
-    price: "Starting at $149",
-    duration: "2-5 minutes",
-    deliveryTime: "3-7 days",
-    features: [
-      "Fully customizable content",
-      "Personal anecdotes when possible",
-      "Detailed personalization",
-      "HD video quality",
-      "Unlimited replays",
-      "Digital download included",
-    ],
-    popular: true,
-    samples: [
-      { celebrity: "John Legend", thumbnail: "/talents/4.jpg" },
-      { celebrity: "Oprah Winfrey", thumbnail: "/talents/5.jpg" },
-      { celebrity: "Taylor Swift", thumbnail: "/talents/6.jpg" },
-    ],
-  },
-  {
-    id: "roast",
-    icon: <Laugh className="w-8 h-8" />,
-    title: "Roast someone",
-    shortDescription: "Hilarious roasts and playful banter from comedy legends",
-    fullDescription:
-      "Get ready to laugh until it hurts! Our comedy talent will deliver epic roasts and playful banter that's perfectly crafted to entertain while keeping it fun and friendly. Great for friends who love good humor!",
-    color: "from-red-500 to-pink-500",
-    price: "Starting at $99",
-    duration: "1-3 minutes",
-    deliveryTime: "2-5 days",
-    features: [
-      "Hilarious custom roasts",
-      "Playful and friendly tone",
-      "Comedy legend delivery",
-      "Shareable content",
-      "Perfect for friends",
-      "Guaranteed laughs",
-    ],
-    popular: false,
-    samples: [
-      { celebrity: "Dave Chappelle", thumbnail: "/talents/1.jpeg" },
-      { celebrity: "Amy Schumer", thumbnail: "/talents/2.jpg" },
-      { celebrity: "Kevin Hart", thumbnail: "/talents/3.jpg" },
-    ],
-  },
-  {
-    id: "live",
-    icon: <Video className="w-8 h-8" />,
-    title: "5min Live interaction",
-    shortDescription: "Real-time video calls and live interactions with talent",
-    fullDescription:
-      "Experience the ultimate fan interaction with exclusive 5-minute live video calls. Have real conversations, ask questions, and create once-in-a-lifetime memories with your favorite talent.",
-    color: "from-purple-500 to-indigo-500",
-    price: "Starting at $999",
-    duration: "5 minutes",
-    deliveryTime: "Schedule in advance",
-    features: [
-      "Real-time video conversation",
-      "Interactive Q&A session",
-      "Screen recording included",
-      "Flexible scheduling",
-      "Technical support provided",
-      "Exclusive experience",
-    ],
-    popular: false,
-    samples: [
-      { celebrity: "MrBeast", thumbnail: "/talents/4.jpg" },
-      { celebrity: "Emma Chamberlain", thumbnail: "/talents/5.jpg" },
-      { celebrity: "PewDiePie", thumbnail: "/talents/6.jpg" },
-    ],
-  },
-  {
-    id: "business",
-    icon: <Briefcase className="w-8 h-8" />,
-    title: "Business endorsements",
-    shortDescription: "Professional endorsements and business shoutouts",
-    fullDescription:
-      "Boost your business credibility with professional talent endorsements. Perfect for product launches, company milestones, team motivation, or marketing campaigns that need that extra star power.",
-    color: "from-green-500 to-emerald-500",
-    price: "Starting at $499",
-    duration: "1-3 minutes",
-    deliveryTime: "5-10 days",
-    features: [
-      "Professional business endorsement",
-      "Brand/product mentions",
-      "Company milestone celebrations",
-      "Team motivation messages",
-      "Marketing campaign content",
-      "Commercial usage rights",
-    ],
-    popular: false,
-    samples: [
-      { celebrity: "Gary Vaynerchuk", thumbnail: "/talents/1.jpeg" },
-      { celebrity: "Tony Robbins", thumbnail: "/talents/2.jpg" },
-      { celebrity: "Shark Tank Cast", thumbnail: "/talents/3.jpg" },
-    ],
-  },
-  {
-    id: "motivation",
-    icon: <Gift className="w-8 h-8" />,
-    title: "Motivational video messages",
-    shortDescription: "Inspiring and uplifting messages to boost confidence and motivation",
-    fullDescription:
-      "Get the inspiration you need from world-renowned motivational speakers and successful entrepreneurs. Perfect for overcoming challenges, achieving goals, or starting new ventures with confidence.",
-    color: "from-indigo-500 to-purple-500",
-    price: "Starting at $199",
-    duration: "3-7 minutes",
-    deliveryTime: "2-5 days",
-    features: [
-      "Personalized motivational content",
-      "Goal-specific encouragement",
-      "Success strategies shared",
-      "Confidence-building messages",
-      "Life coaching insights",
-      "Inspirational quotes included",
-    ],
-    popular: true,
-    samples: [
-      { celebrity: "Tony Robbins", thumbnail: "/talents/4.jpg" },
-      { celebrity: "Oprah Winfrey", thumbnail: "/talents/5.jpg" },
-      { celebrity: "Mel Robbins", thumbnail: "/talents/6.jpg" },
-    ],
-  },
-]
+// Icon mapping helper
+const getIconComponent = (iconName: string) => {
+  switch (iconName) {
+    case "Zap":
+      return <Zap className="w-8 h-8" />
+    case "MessageCircle":
+      return <MessageCircle className="w-8 h-8" />
+    case "Laugh":
+      return <Laugh className="w-8 h-8" />
+    case "Video":
+      return <Video className="w-8 h-8" />
+    case "Briefcase":
+      return <Briefcase className="w-8 h-8" />
+    case "Gift":
+      return <Gift className="w-8 h-8" />
+    default:
+      return <Sparkles className="w-8 h-8" />
+  }
+}
 
 const addOns = [
   {
@@ -293,19 +158,56 @@ export default function ServicesPage() {
   const [showSampleModal, setShowSampleModal] = useState(false)
   const [selectedSample, setSelectedSample] = useState<any>(null)
   const [isMobile, setIsMobile] = useState(false)
-        
-      useEffect(() => {
-        const checkMobile = () => {
-          setIsMobile(window.innerWidth < 1024)
+  const [services, setServices] = useState<EnhancedServiceData[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  // Fetch services data from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch("/api/services")
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch services")
         }
-    
-        checkMobile()
-        window.addEventListener("resize", checkMobile)
-        return () => window.removeEventListener("resize", checkMobile)
-      }, [])
+
+        const data = await response.json()
+        setServices(data.services)
+
+        if (data.fallbackDataUsed) {
+          console.log("Using fallback data - no services in database yet")
+          toast.info("Using demo data", {
+            description: "Real service data will appear once services are added to the database",
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error)
+        toast.error("Failed to load services", {
+          description: "Please refresh the page to try again",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
+  }, [])
 
   // Add useEffect to handle URL parameters
   useEffect(() => {
+    if (services.length === 0) return // Wait for services to load
+
     const urlParams = new URLSearchParams(window.location.search)
     const serviceParam = urlParams.get("service")
 
@@ -326,7 +228,7 @@ export default function ServicesPage() {
         }, 500) // Increased timeout for better reliability
       }
     }
-  }, [])
+  }, [services])
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId)
@@ -334,6 +236,17 @@ export default function ServicesPage() {
   }
 
   const selectedServiceData = services.find((s) => s.id === selectedService)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-yellow-200">Loading services...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -395,24 +308,43 @@ export default function ServicesPage() {
                     <div
                       className={`w-16 h-16 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
                     >
-                      <div className="text-white">{service.icon}</div>
+                      <div className="text-white">{getIconComponent(service.icon)}</div>
                     </div>
 
                     <h3 className="text-2xl font-bold text-white mb-3">{service.title}</h3>
                     <p className="text-yellow-200 mb-6 leading-relaxed">{service.shortDescription}</p>
 
+                    {/* Pricing Information */}
                     <div className="space-y-3 mb-6">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-yellow-300">Starting Price:</span>
-                        <span className="text-white font-semibold">{service.price}</span>
+                        <span className="text-yellow-300 flex items-center gap-2">
+                          <DollarSign className="w-4 h-4" />
+                          Starting Price:
+                        </span>
+                        <span className="text-white font-semibold">{formatPrice(service.startingPrice)}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-yellow-300">Duration:</span>
+                        <span className="text-yellow-300 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          Duration:
+                        </span>
                         <span className="text-white">{service.duration}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-yellow-300">Delivery:</span>
+                        <span className="text-yellow-300 flex items-center gap-2">
+                          <Timer className="w-4 h-4" />
+                          Delivery:
+                        </span>
                         <span className="text-white">{service.deliveryTime}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm border-t border-white/10 pt-3">
+                        <span className="text-orange-300 font-semibold flex items-center gap-2">
+                          <Zap className="w-4 h-4" />
+                          ASAP:
+                        </span>
+                        <span className="text-orange-200 font-semibold">
+                          {formatPrice(service.asapPrice)} within {service.asapDeliveryTime}
+                        </span>
                       </div>
                     </div>
 
@@ -489,11 +421,11 @@ export default function ServicesPage() {
                         <div
                           className={`w-16 h-16 rounded-full bg-gradient-to-r ${selectedServiceData?.color} flex items-center justify-center`}
                         >
-                          <div className="text-white">{selectedServiceData?.icon}</div>
+                          <div className="text-white">{getIconComponent(selectedServiceData?.icon || "")}</div>
                         </div>
                         <div>
                           <h2 className="text-4xl font-bold text-white">{selectedServiceData?.title}</h2>
-                          <p className="text-yellow-200">{selectedServiceData?.price}</p>
+                          <p className="text-yellow-200">{formatPrice(selectedServiceData?.startingPrice || 0)}</p>
                         </div>
                       </div>
 
@@ -526,6 +458,13 @@ export default function ServicesPage() {
                             <div className="flex items-center justify-between">
                               <span className="text-yellow-200">Delivery Time:</span>
                               <span className="text-white font-semibold">{selectedServiceData?.deliveryTime}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-yellow-200">ASAP Price:</span>
+                              <span className="text-orange-200 font-semibold">
+                                {formatPrice(selectedServiceData?.asapPrice || 0)} within{" "}
+                                {selectedServiceData?.asapDeliveryTime}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-yellow-200">Format:</span>
