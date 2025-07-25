@@ -50,7 +50,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             role: "CELEBRITY",
             isVerified: true,
             password: hashedPassword,
-            image: application.profilePhotoUrl, // 🎯 Save profile photo to user
+            image: application.profilePhotoUrl,
           },
         })
         console.log("✅ Created new user with image:", user.image)
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           data: {
             role: "CELEBRITY",
             isVerified: true,
-            image: application.profilePhotoUrl, // 🎯 Update user image
+            image: application.profilePhotoUrl,
           },
         })
         console.log("✅ Updated existing user with image:", user.image)
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           category: application.category,
           pricePersonal: application.basePrice,
           priceBusiness: application.rushPrice,
-          priceCharity: Math.round(application.basePrice * 0.8), // 20% discount for charity
+          priceCharity: Math.round(application.basePrice * 0.8),
           rating: 4.5,
           averageRating: 4.5,
           totalReviews: 0,
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           tags: application.languages || [],
           achievements: [application.achievements],
           nextAvailable: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-          coverImage: application.profilePhotoUrl || null, // ✅ Cover image
+          coverImage: application.profilePhotoUrl || null,
           // Social media handles
           // instagramHandle: application.instagramHandle,
           // twitterHandle: application.twitterHandle,
@@ -126,7 +126,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       console.log("✅ Approval email sent successfully")
     } catch (emailError) {
       console.error("❌ Failed to send approval email:", emailError)
-      // Don't fail the entire operation if email fails
     }
 
     return NextResponse.json({

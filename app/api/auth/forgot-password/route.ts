@@ -9,19 +9,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { email } = forgotPasswordSchema.parse(body)
 
-    // Check if user exists
     const user = await prisma.user.findUnique({
       where: { email },
     })
 
     if (!user) {
-      // Don't reveal if user exists or not
       return NextResponse.json({
         message: "If an account with that email exists, we've sent a password reset link.",
       })
     }
 
-    // Generate reset token
     const token = crypto.randomBytes(32).toString("hex")
 
     await prisma.verificationToken.create({
@@ -29,11 +26,10 @@ export async function POST(req: NextRequest) {
         email,
         token,
         type: "PASSWORD_RESET",
-        expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        expires: new Date(Date.now() + 60 * 60 * 1000),
       },
     })
 
-    // Send reset email
     await sendPasswordResetEmail(email, token)
 
     return NextResponse.json({

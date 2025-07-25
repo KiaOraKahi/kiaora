@@ -107,7 +107,7 @@ const AnimatedHeroTitle = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentGreeting((prev) => (prev + 1) % greetings.length)
-    }, 3000) // Change every 3 seconds
+    }, 3000)
 
     return () => clearInterval(interval)
   }, [greetings.length])
@@ -160,7 +160,7 @@ const SubtleLuxuryStarfield = () => {
 
     const createStar = () => {
       const star = document.createElement("div")
-      const size = Math.random() * 2 + 1 // Smaller, more subtle stars
+      const size = Math.random() * 2 + 1
       const type = Math.random()
 
       if (type > 0.97) {
@@ -187,7 +187,6 @@ const SubtleLuxuryStarfield = () => {
     const starfield = document.createElement("div")
     starfield.className = "starfield"
 
-    // Fewer stars for subtlety - only 60 total
     for (let i = 0; i < 60; i++) {
       starfield.appendChild(createStar())
     }

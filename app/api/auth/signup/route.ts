@@ -10,28 +10,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, email, password, role } = signUpSchema.parse(body)
 
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     })
 
     if (existingUser) {
       if (!existingUser.isVerified) {
-        // User exists but not verified, resend verification email
         const verificationToken = crypto.randomBytes(32).toString("hex")
 
-        // Delete old verification tokens
         await prisma.verificationToken.deleteMany({
           where: { email },
         })
 
-        // Create new verification token
         await prisma.verificationToken.create({
           data: {
             email,
             token: verificationToken,
             type: "EMAIL_VERIFICATION",
-            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
           },
         })
 
@@ -48,10 +44,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User with this email already exists and is verified" }, { status: 400 })
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
     const user = await prisma.user.create({
       data: {
         name,
@@ -61,7 +55,6 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Generate verification token
     const verificationToken = crypto.randomBytes(32).toString("hex")
 
     await prisma.verificationToken.create({
@@ -73,7 +66,6 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Send verification email
     await sendVerificationEmail(email, verificationToken)
 
     return NextResponse.json(

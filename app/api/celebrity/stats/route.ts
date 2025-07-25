@@ -26,13 +26,12 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-    // 🔥 CRITICAL CHANGE: Only count COMPLETED orders as actual earnings
     // Get total earnings from COMPLETED orders only
     const completedOrderEarnings = await prisma.order.aggregate({
       where: {
         celebrityId: celebrity.id,
         paymentStatus: "SUCCEEDED",
-        status: "COMPLETED", // 🔥 Only completed orders count as earnings
+        status: "COMPLETED",
       },
       _sum: {
         celebrityAmount: true,
@@ -44,7 +43,7 @@ export async function GET(request: NextRequest) {
       where: {
         celebrityId: celebrity.id,
         paymentStatus: "SUCCEEDED",
-        status: "COMPLETED", // 🔥 Only completed orders
+        status: "COMPLETED",
         createdAt: {
           gte: startOfMonth,
         },
@@ -54,12 +53,11 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // 🔥 NEW: Calculate pending earnings (confirmed but not delivered)
     const pendingOrderEarnings = await prisma.order.aggregate({
       where: {
         celebrityId: celebrity.id,
         paymentStatus: "SUCCEEDED",
-        status: "CONFIRMED", // 🔥 Confirmed but not completed yet
+        status: "CONFIRMED",
       },
       _sum: {
         celebrityAmount: true,
@@ -87,7 +85,7 @@ export async function GET(request: NextRequest) {
         celebrityId: celebrity.id,
         paymentStatus: "SUCCEEDED",
         order: {
-          status: "COMPLETED", // 🔥 Only tips from completed orders
+          status: "COMPLETED",
         },
       },
       _sum: {
@@ -148,14 +146,13 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
-    // 🔥 NEW: Get approval workflow statistics
     const [pendingApprovalCount, approvedThisMonth, declinedThisMonth, revisionRequestedCount] = await Promise.all([
       // Orders awaiting customer approval
       prisma.order.count({
         where: {
           celebrityId: celebrity.id,
           approvalStatus: "PENDING_APPROVAL",
-          status: "CONFIRMED", // Video uploaded, awaiting approval
+          status: "CONFIRMED",
         },
       }),
       // Orders approved this month
@@ -208,31 +205,29 @@ export async function GET(request: NextRequest) {
     const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 95
 
     const stats = {
-      // 🔥 UPDATED: Earnings breakdown - only COMPLETED orders count as actual earnings
-      totalEarnings: completedOrderAmount + totalTipEarnings, // Only completed
-      orderEarnings: completedOrderAmount, // Only completed
-      tipEarnings: totalTipEarnings, // Only from completed orders
+      totalEarnings: completedOrderAmount + totalTipEarnings,
+      orderEarnings: completedOrderAmount,
+      tipEarnings: totalTipEarnings,
 
-      // 🔥 NEW: Pending earnings - money for confirmed but not delivered bookings
-      pendingEarnings: pendingOrderAmount, // Confirmed but not completed
+      pendingEarnings: pendingOrderAmount,
 
       // Monthly breakdown
-      monthlyEarnings: monthlyCompleted + monthlyTips, // Only completed
-      monthlyOrderEarnings: monthlyCompleted, // Only completed
-      monthlyTipEarnings: monthlyTips, // Only from completed
-      monthlyPendingEarnings: monthlyPending, // Confirmed but not completed this month
+      monthlyEarnings: monthlyCompleted + monthlyTips,
+      monthlyOrderEarnings: monthlyCompleted,
+      monthlyTipEarnings: monthlyTips, 
+      monthlyPendingEarnings: monthlyPending,
 
       // Booking statistics
-      pendingRequests, // Waiting for celebrity acceptance
-      confirmedBookings, // Accepted but not delivered
-      completedBookings, // Delivered
+      pendingRequests,
+      confirmedBookings,
+      completedBookings,
       totalBookings,
 
       // Approval workflow statistics
-      pendingApprovalCount, // Videos awaiting customer approval
-      approvedThisMonth, // Monthly approved videos
-      declinedThisMonth, // Monthly declined videos
-      revisionRequestedCount, // Videos needing revision
+      pendingApprovalCount,
+      approvedThisMonth,
+      declinedThisMonth,
+      revisionRequestedCount,
 
       // Approval rate calculation
       approvalRate:
@@ -243,7 +238,7 @@ export async function GET(request: NextRequest) {
       totalReviews: reviewStats._count.id || 0,
       responseRate,
       completionRate,
-      averageResponseTime: 24, // hours - could be calculated from actual data
+      averageResponseTime: 24,
     }
 
     return NextResponse.json(stats)

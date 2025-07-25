@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
     const response = {
       summary: {
         totalEarnings: totalEarnings._sum.amount || 0,
-        pendingEarnings: Math.round((pendingEarnings._sum.totalAmount || 0) * 0.9), // 90% after platform fee
+        pendingEarnings: Math.round((pendingEarnings._sum.totalAmount || 0) * 0.9),
         totalPlatformFees: totalPlatformFees._sum.platformFee || 0,
         totalPayouts: recentPayouts.length,
       },
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
         orderNumber: order.orderNumber,
         recipientName: order.recipientName,
         totalAmount: order.totalAmount,
-        expectedPayout: Math.round(order.totalAmount * 0.9), // 90% after platform fee
+        expectedPayout: Math.round(order.totalAmount * 0.9),
         createdAt: order.createdAt.toISOString(),
         deliveredAt: order.deliveredAt?.toISOString(),
       })),

@@ -57,10 +57,9 @@ export async function GET(request: NextRequest) {
             declineReason: true,
             declinedAt: true,
             revisionCount: true,
-            // Include tips for this order
             tips: {
               where: {
-                paymentStatus: "SUCCEEDED", // Only include successful tip payments
+                paymentStatus: "SUCCEEDED", 
               },
               select: {
                 id: true,
@@ -128,10 +127,10 @@ export async function GET(request: NextRequest) {
         occasion: booking.occasion || "General Request",
         instructions: booking.instructions || "",
         amount: booking.order?.totalAmount || 0,
-        celebrityAmount: booking.order?.celebrityAmount || 0, // Amount celebrity receives (80%)
-        tipAmount: totalTips, // Total tips received (already in dollars)
-        totalEarnings: (booking.order?.celebrityAmount || 0) + totalTips, // Celebrity amount + tips
-        requestedDate: booking.createdAt.toISOString(), // Use booking creation date
+        celebrityAmount: booking.order?.celebrityAmount || 0,
+        tipAmount: totalTips,
+        totalEarnings: (booking.order?.celebrityAmount || 0) + totalTips,
+        requestedDate: booking.createdAt.toISOString(),
         status: booking.status.toLowerCase(),
         createdAt: booking.createdAt.toISOString(),
         deadline: booking.deadline?.toISOString() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -145,7 +144,7 @@ export async function GET(request: NextRequest) {
         tips:
           booking.order?.tips?.map((tip: any) => ({
             id: tip.id,
-            amount: tip.amount, // Already in dollars, no conversion needed
+            amount: tip.amount,
             message: tip.message,
             createdAt: tip.createdAt.toISOString(),
           })) || [],

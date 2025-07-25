@@ -88,7 +88,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       paymentStatus: booking.order?.paymentStatus,
     })
 
-    // 🔥 CRITICAL: Verify payment succeeded before allowing acceptance
     if (action === "accept" && booking.order?.paymentStatus !== "SUCCEEDED") {
       console.log("❌ Cannot accept booking with unsuccessful payment:", booking.order?.paymentStatus)
       return NextResponse.json(
@@ -142,7 +141,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           data: {
             status: newOrderStatus,
             updatedAt: new Date(),
-            // 🔥 CRITICAL: Update transfer status based on action
             transferStatus: action === "accept" ? "PENDING" : "CANCELLED",
           },
         })

@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "20")
     const offset = (page - 1) * limit
 
-    // Build where clause
     const where: any = {}
 
     if (search) {

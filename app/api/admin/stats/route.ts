@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get all stats in parallel
     const [
       totalUsers,
       totalCelebrities,
@@ -23,36 +22,27 @@ export async function GET(request: NextRequest) {
       totalRevenue,
       averageOrderValue,
     ] = await Promise.all([
-      // Total users
       prisma.user.count(),
 
-      // Total celebrities
       prisma.user.count({
         where: { role: "CELEBRITY" },
       }),
 
-      // Total bookings
       prisma.booking.count(),
-
-      // Total orders
       prisma.order.count(),
 
-      // Pending applications
       prisma.celebrityApplication.count({
         where: { status: "PENDING" },
       }),
 
-      // Active users (users with verified email)
       prisma.user.count({
         where: { emailVerified: { not: null } },
       }),
 
-      // Completed bookings
       prisma.booking.count({
         where: { status: "COMPLETED" },
       }),
 
-      // Total revenue from completed orders
       prisma.order.aggregate({
         where: {
           status: "COMPLETED",
@@ -63,7 +53,6 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // Average order value
       prisma.order.aggregate({
         where: {
           status: "COMPLETED",
@@ -75,12 +64,10 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
-    // Calculate cancelled bookings
     const cancelledBookings = await prisma.booking.count({
       where: { status: "CANCELLED" },
     })
 
-    // Get monthly growth (compare this month to last month)
     const now = new Date()
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -112,11 +99,11 @@ export async function GET(request: NextRequest) {
       totalOrders,
       totalRevenue: totalRevenue._sum.totalAmount || 0,
       pendingApplications,
-      monthlyGrowth: Math.round(monthlyGrowth * 10) / 10, // Round to 1 decimal
+      monthlyGrowth: Math.round(monthlyGrowth * 10) / 10,
       activeUsers,
       completedBookings,
       cancelledBookings,
-      averageOrderValue: Math.round((averageOrderValue._avg.totalAmount || 0) * 100) / 100, // Round to 2 decimals
+      averageOrderValue: Math.round((averageOrderValue._avg.totalAmount || 0) * 100) / 100,
     })
   } catch (error) {
     console.error("Error fetching admin stats:", error)

@@ -84,7 +84,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               role: "CELEBRITY",
               isVerified: true,
               password: hashedPassword,
-              image: application.profilePhotoUrl, // Save profile photo to user table
+              image: application.profilePhotoUrl,
               emailVerified: new Date(),
             },
           })
@@ -96,7 +96,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             data: {
               role: "CELEBRITY",
               isVerified: true,
-              image: application.profilePhotoUrl, // Update profile photo in user table
+              image: application.profilePhotoUrl,
             },
           })
           console.log("✅ Existing user updated with profile image:", user.image)
@@ -111,7 +111,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             category: application.category,
             pricePersonal: application.basePrice,
             priceBusiness: application.rushPrice || Math.round(application.basePrice * 1.5),
-            priceCharity: Math.round(application.basePrice * 0.8), // 20% discount for charity
+            priceCharity: Math.round(application.basePrice * 0.8),
             rating: 4.5,
             averageRating: 4.5,
             totalReviews: 0,
@@ -123,10 +123,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             tags: application.languages || [],
             achievements: [application.achievements],
             nextAvailable: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-            coverImage: application.profilePhotoUrl, // Save profile photo to celebrity table
+            coverImage: application.profilePhotoUrl,
           },
         })
-        console.log("✅ Celebrity profile created with cover image:", celebrity.coverImage)
       }
 
       return { updatedApplication, user, celebrity }

@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-// GET /api/admin/services - Get all services for admin management
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -28,7 +27,6 @@ export async function GET() {
   }
 }
 
-// POST /api/admin/services - Create new service
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -55,13 +53,11 @@ export async function POST(request: NextRequest) {
       features,
     } = data
 
-    // Get the next order number
     const lastService = await prisma.service.findFirst({
       orderBy: { order: "desc" },
     })
     const nextOrder = (lastService?.order || 0) + 1
 
-    // Create service with features
     const service = await prisma.service.create({
       data: {
         title,

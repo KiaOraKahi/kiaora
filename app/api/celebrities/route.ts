@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
           user: {
             select: {
               name: true,
-              image: true, // This will contain the uploaded profile photo
+              image: true,
             },
           },
           reviews: {
@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
     const formattedCelebrities = celebrities.map((celebrity) => ({
       id: celebrity.id,
       name: celebrity.user.name || "Celebrity",
-      image: celebrity.user.image || "/placeholder.svg?height=400&width=400", // 🎯 Use user's uploaded image
+      image: celebrity.user.image || "/placeholder.svg?height=400&width=400",
       category: celebrity.category || "Entertainment",
       bio: celebrity.bio || "Professional celebrity",
       price: celebrity.pricePersonal || celebrity.price || 299,
@@ -212,9 +212,9 @@ export async function GET(request: NextRequest) {
       priceBusiness: celebrity.priceBusiness || 599,
       priceCharity: celebrity.priceCharity || 199,
       rating: celebrity.averageRating || 4.5,
-      reviewCount: celebrity._count.reviews || 0, // Frontend expects reviewCount
+      reviewCount: celebrity._count.reviews || 0,
       responseTime: celebrity.responseTime || "24 hours",
-      completedVideos: celebrity.completionRate || 95, // Frontend expects completedVideos
+      completedVideos: celebrity.completionRate || 95,
       verified: celebrity.verified || false,
       featured: celebrity.featured || false,
       nextAvailable: celebrity.nextAvailable || "2024-01-15",
@@ -227,9 +227,9 @@ export async function GET(request: NextRequest) {
         page,
         limit,
         total,
-        totalPages, // Frontend expects totalPages
-        hasNext, // Frontend expects hasNext
-        hasPrev, // Frontend expects hasPrev
+        totalPages,
+        hasNext,
+        hasPrev, 
       },
     })
   } catch (error) {

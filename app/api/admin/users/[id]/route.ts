@@ -13,7 +13,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const userId = params.id
 
-    // Get user with detailed information
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -63,7 +62,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // Get recent orders
     const recentOrders = await prisma.order.findMany({
       where: { userId },
       select: {
@@ -86,7 +84,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       take: 10,
     })
 
-    // Transform the data
     const transformedUser = {
       id: user.id,
       name: user.name || "Unknown",
@@ -159,7 +156,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
 
-    // Check if user exists and has no orders/bookings if trying to delete
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -176,7 +172,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // Update the user
     await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -199,7 +194,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     const userId = params.id
 
-    // Check if user has any orders or bookings
     const userWithRelations = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -220,7 +214,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Cannot delete user with existing orders or bookings" }, { status: 400 })
     }
 
-    // Delete the user
     await prisma.user.delete({
       where: { id: userId },
     })

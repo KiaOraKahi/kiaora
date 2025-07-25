@@ -154,7 +154,6 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Video uploaded successfully:", blob.url)
 
-    // 🔥 NEW WORKFLOW: Update order to PENDING_APPROVAL instead of COMPLETED
     const updatedOrder = await prisma.$transaction(async (tx) => {
       // Get the full order details for payment split calculation (but don't transfer yet)
       const fullOrder = await tx.order.findUnique({
@@ -175,7 +174,7 @@ export async function POST(request: NextRequest) {
 
       // Calculate payment splits for future use (but don't transfer yet)
       console.log("💰 CALCULATING PAYMENT SPLITS FOR APPROVAL WORKFLOW...")
-      const totalAmountCents = Math.round((fullOrder.totalAmount || 0) * 100) // Convert to cents
+      const totalAmountCents = Math.round((fullOrder.totalAmount || 0) * 100)
       const { platformFee, celebrityAmount } = calculatePaymentSplit(totalAmountCents)
 
       console.log("💰 PAYMENT SPLIT CALCULATION (HELD UNTIL APPROVAL):")
@@ -188,13 +187,13 @@ export async function POST(request: NextRequest) {
         where: { id: booking.order!.id },
         data: {
           videoUrl: blob.url,
-          status: "PENDING_APPROVAL", // 🔥 NEW: Don't mark as completed yet
-          approvalStatus: "PENDING_APPROVAL", // 🔥 NEW: Set approval status
-          deliveredAt: new Date(), // Video delivered, but not approved
+          status: "PENDING_APPROVAL", 
+          approvalStatus: "PENDING_APPROVAL",
+          deliveredAt: new Date(),
           updatedAt: new Date(),
           // Store calculated payment splits for future transfer
-          platformFee: platformFee / 100, // Convert from cents to dollars
-          celebrityAmount: celebrityAmount / 100, // Convert from cents to dollars
+          platformFee: platformFee / 100,
+          celebrityAmount: celebrityAmount / 100,
         },
       })
 
@@ -202,7 +201,7 @@ export async function POST(request: NextRequest) {
       await tx.booking.update({
         where: { id: bookingId },
         data: {
-          status: "CONFIRMED", // 🔥 NEW: Not completed until approved
+          status: "CONFIRMED",
           updatedAt: new Date(),
         },
       })
@@ -210,7 +209,6 @@ export async function POST(request: NextRequest) {
       return { order, fullOrder, celebrityAmount, platformFee }
     })
 
-    // 🔥 NEW: Send approval notification to customer instead of delivery notification
     try {
       if (booking.user?.email && booking.order?.orderNumber) {
         console.log("📧 Sending video approval notification to customer...")
@@ -228,17 +226,16 @@ export async function POST(request: NextRequest) {
         )
 
         if (emailResult.success) {
-          console.log("✅ Video approval notification sent successfully!")
+          console.log("Video approval notification sent successfully!")
         } else {
-          console.log("⚠️ Video approval notification failed but continuing:", emailResult.error)
+          console.log("Video approval notification failed but continuing:", emailResult.error)
         }
       }
     } catch (emailError) {
-      console.error("❌ Failed to send video approval notification:", emailError)
-      // Don't fail the request if email fails
+      console.error("Failed to send video approval notification:", emailError)
     }
 
-    console.log("✅ VIDEO UPLOAD COMPLETED - AWAITING CUSTOMER APPROVAL")
+    console.log("VIDEO UPLOAD COMPLETED - AWAITING CUSTOMER APPROVAL")
     console.log("   - Video URL:", blob.url)
     console.log("   - Booking Status: IN_PROGRESS")
     console.log("   - Order Status: PENDING_APPROVAL")

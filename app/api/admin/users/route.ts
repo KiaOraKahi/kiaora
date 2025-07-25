@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "50")
     const skip = (page - 1) * limit
 
-    // Build where clause
     const where: any = {}
 
     if (search) {
@@ -32,7 +31,6 @@ export async function GET(request: NextRequest) {
       where.role = role
     }
 
-    // Get users with their related data
     const [users, totalCount] = await Promise.all([
       prisma.user.findMany({
         where,
@@ -68,7 +66,6 @@ export async function GET(request: NextRequest) {
       prisma.user.count({ where }),
     ])
 
-    // Transform users data
     const transformedUsers = users.map((user) => ({
       id: user.id,
       name: user.name || "Unknown",
@@ -83,7 +80,6 @@ export async function GET(request: NextRequest) {
       totalSpent: user.orders.reduce((sum: number, order: any) => sum + order.totalAmount, 0),
     }))
 
-    // Get stats
     const [totalUsers, verifiedUsers, celebrities, fans, admins] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({

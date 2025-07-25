@@ -40,16 +40,16 @@ export default function AdminDashboard() {
     )
   }
 
-  // if (!session || session.user.role !== "ADMIN") {
-  //   return (
-  //     <div className="min-h-screen bg-black text-white flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-  //         <p className="text-gray-400">You don't have permission to access this page.</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  if (!session || session.user.role !== "ADMIN") {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <p className="text-gray-400">You don't have permission to access this page.</p>
+        </div>
+      </div>
+    )
+  }
 
   const renderActiveSection = () => {
     switch (activeSection) {

@@ -92,7 +92,7 @@ export default function AdminApplications() {
 
       if (response.ok) {
         toast.success("Application approved successfully")
-        fetchApplications() // Refresh the list
+        fetchApplications()
       } else {
         toast.error(data.error || "Failed to approve application")
       }
@@ -119,7 +119,7 @@ export default function AdminApplications() {
 
       if (response.ok) {
         toast.success("Application rejected")
-        fetchApplications() // Refresh the list
+        fetchApplications()
       } else {
         toast.error(data.error || "Failed to reject application")
       }

@@ -109,9 +109,6 @@ async function handleBookingPayment({
       currency: "usd",
       status: "PENDING",
       paymentStatus: "PENDING",
-      // 🔥 REMOVED: No payment splits calculated yet
-      // platformFee: will be calculated when video is uploaded
-      // celebrityAmount: will be calculated when video is uploaded
       transferStatus: "PENDING",
       // Booking details
       recipientName: bookingData.recipientName,
@@ -166,7 +163,6 @@ async function handleBookingPayment({
       userName: session.user.name || "Unknown",
       // Payment info (no splits calculated yet)
       totalAmount: amountInCents.toString(),
-      // 🔥 REMOVED: Payment splits will be calculated when video is uploaded
       // Connect account info
       celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",
       canTransfer: celebrity.stripeConnectAccountId ? "true" : "false",
@@ -196,7 +192,6 @@ async function handleBookingPayment({
     orderNumber: order.orderNumber,
     orderId: order.id,
     paymentType: "booking",
-    // 🔥 REMOVED: No split info returned since not calculated yet
     message: "Payment splits will be calculated upon video delivery",
   })
 }
@@ -277,7 +272,7 @@ async function handleTipPayment({
       userName: session.user.name || "Unknown",
       // Tip info (100% to celebrity)
       tipAmount: amountInCents.toString(),
-      celebrityAmount: amountInCents.toString(), // 100% of tip
+      celebrityAmount: amountInCents.toString(),
       // Connect account info
       celebrityConnectAccountId: celebrity.stripeConnectAccountId || "",
       canTransfer: celebrity.stripeConnectAccountId ? "true" : "false",
@@ -304,6 +299,6 @@ async function handleTipPayment({
     orderNumber: orderNumber,
     paymentType: "tip",
     tipAmount: amount,
-    celebrityAmount: amount, // 100% goes to celebrity
+    celebrityAmount: amount,
   })
 }

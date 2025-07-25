@@ -54,9 +54,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       data: updateData,
     })
 
-    // Log the admin action
-    console.log(`Admin ${session.user.email} performed action "${action}" on celebrity ${celebrity.user.name}`)
-
     return NextResponse.json({
       success: true,
       message: `Celebrity ${action}d successfully`,
