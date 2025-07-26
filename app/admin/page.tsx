@@ -13,7 +13,7 @@ import { AdminCelebrities } from "@/components/admin/admin-celebrities"
 import { AdminBookings } from "@/components/admin/admin-bookings"
 import { AdminApplications } from "@/components/admin/admin-applications"
 import { AdminContentManagement } from "@/components/admin/admin-content-management"
-import AdminServices from "@/components/admin/admin-services"
+import { AdminServices } from "@/components/admin/admin-services"
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()

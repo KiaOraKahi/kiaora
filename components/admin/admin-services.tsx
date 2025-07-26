@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -19,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,100 +34,182 @@ import {
   Plus,
   Edit,
   Trash2,
+  Save,
   X,
-  DollarSign,
-  Clock,
-  Zap,
+  Briefcase,
   MessageCircle,
   Video,
-  Briefcase,
-  Sparkles,
+  Zap,
   Laugh,
   Gift,
+  Sparkles,
+  DollarSign,
+  Clock,
+  Timer,
+  Star,
   Eye,
   EyeOff,
 } from "lucide-react"
 import { toast } from "sonner"
 
-interface ServiceFeature {
-  id?: string
-  text: string
-  order: number
-}
-
 interface Service {
   id: string
-  numericId: number
   title: string
-  description: string
-  shortDescription?: string
-  fullDescription?: string
+  shortDescription: string
+  fullDescription: string
   icon: string
   color: string
   startingPrice: number
   asapPrice: number
-  currency: string
   duration: string
   deliveryTime: string
   asapDeliveryTime: string
-  isActive: boolean
   popular: boolean
+  isActive: boolean
   order: number
   features: ServiceFeature[]
-  samples: any[]
-  talents: any[]
   createdAt: string
   updatedAt: string
 }
 
+interface ServiceFeature {
+  id: string
+  text: string
+  order: number
+}
+
+interface ServiceFormData {
+  title: string
+  shortDescription: string
+  fullDescription: string
+  icon: string
+  color: string
+  startingPrice: number
+  asapPrice: number
+  duration: string
+  deliveryTime: string
+  asapDeliveryTime: string
+  popular: boolean
+  isActive: boolean
+  features: string[]
+}
+
 const iconOptions = [
-  { value: "Zap", label: "Zap", icon: <Zap className="w-4 h-4" /> },
+  { value: "Briefcase", label: "Briefcase", icon: <Briefcase className="w-4 h-4" /> },
   { value: "MessageCircle", label: "Message Circle", icon: <MessageCircle className="w-4 h-4" /> },
   { value: "Video", label: "Video", icon: <Video className="w-4 h-4" /> },
-  { value: "Briefcase", label: "Briefcase", icon: <Briefcase className="w-4 h-4" /> },
-  { value: "Sparkles", label: "Sparkles", icon: <Sparkles className="w-4 h-4" /> },
+  { value: "Zap", label: "Zap", icon: <Zap className="w-4 h-4" /> },
   { value: "Laugh", label: "Laugh", icon: <Laugh className="w-4 h-4" /> },
   { value: "Gift", label: "Gift", icon: <Gift className="w-4 h-4" /> },
+  { value: "Sparkles", label: "Sparkles", icon: <Sparkles className="w-4 h-4" /> },
 ]
 
 const colorOptions = [
-  { value: "from-yellow-500 to-orange-500", label: "Yellow to Orange" },
   { value: "from-purple-500 to-pink-500", label: "Purple to Pink" },
   { value: "from-blue-500 to-cyan-500", label: "Blue to Cyan" },
   { value: "from-green-500 to-emerald-500", label: "Green to Emerald" },
+  { value: "from-yellow-500 to-orange-500", label: "Yellow to Orange" },
   { value: "from-red-500 to-pink-500", label: "Red to Pink" },
   { value: "from-indigo-500 to-purple-500", label: "Indigo to Purple" },
 ]
 
-export default function AdminServices() {
+const getIconComponent = (iconName: string) => {
+  switch (iconName) {
+    case "Briefcase":
+      return <Briefcase className="w-8 h-8" />
+    case "MessageCircle":
+      return <MessageCircle className="w-8 h-8" />
+    case "Video":
+      return <Video className="w-8 h-8" />
+    case "Zap":
+      return <Zap className="w-8 h-8" />
+    case "Laugh":
+      return <Laugh className="w-8 h-8" />
+    case "Gift":
+      return <Gift className="w-8 h-8" />
+    case "Sparkles":
+      return <Sparkles className="w-8 h-8" />
+    default:
+      return <Briefcase className="w-8 h-8" />
+  }
+}
+
+export function AdminServices() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [formData, setFormData] = useState<Partial<Service>>({})
-  const [features, setFeatures] = useState<string[]>([])
-
-  // Fetch services
-  const fetchServices = async () => {
-    try {
-      const response = await fetch("/api/admin/services")
-      if (!response.ok) throw new Error("Failed to fetch services")
-      const data = await response.json()
-      setServices(data.services || [])
-    } catch (error) {
-      console.error("Error fetching services:", error)
-      toast.error("Failed to load services")
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [formData, setFormData] = useState<ServiceFormData>({
+    title: "",
+    shortDescription: "",
+    fullDescription: "",
+    icon: "Briefcase",
+    color: "from-purple-500 to-pink-500",
+    startingPrice: 299,
+    asapPrice: 399,
+    duration: "30-60 seconds",
+    deliveryTime: "3-7 days",
+    asapDeliveryTime: "24-48 hours",
+    popular: false,
+    isActive: true,
+    features: [""],
+  })
 
   useEffect(() => {
     fetchServices()
   }, [])
 
-  // Handle create service
+  const fetchServices = async () => {
+    try {
+      setLoading(true)
+      console.log("Fetching services from admin API...")
+
+      const response = await fetch("/api/admin/services")
+      console.log("Response status:", response.status)
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log("Received data:", data)
+        console.log("Services array:", data.services)
+
+        setServices(data.services || [])
+
+        if (data.services && data.services.length > 0) {
+          console.log(`Successfully loaded ${data.services.length} services`)
+        } else {
+          console.log("No services found in response")
+        }
+      } else {
+        const errorData = await response.json()
+        console.error("API Error:", errorData)
+        toast.error(`Failed to fetch services: ${errorData.error || "Unknown error"}`)
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error)
+      toast.error("Error loading services")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      shortDescription: "",
+      fullDescription: "",
+      icon: "Briefcase",
+      color: "from-purple-500 to-pink-500",
+      startingPrice: 299,
+      asapPrice: 399,
+      duration: "30-60 seconds",
+      deliveryTime: "3-7 days",
+      asapDeliveryTime: "24-48 hours",
+      popular: false,
+      isActive: true,
+      features: [""],
+    })
+  }
+
   const handleCreateService = async () => {
     try {
       const response = await fetch("/api/admin/services", {
@@ -135,25 +217,44 @@ export default function AdminServices() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          features,
-          samples: [],
-          talents: [],
+          features: formData.features.filter((f) => f.trim() !== ""),
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to create service")
-
-      toast.success("Service created successfully!")
-      setIsCreateModalOpen(false)
-      resetForm()
-      fetchServices()
+      if (response.ok) {
+        toast.success("Service created successfully!")
+        setShowCreateModal(false)
+        resetForm()
+        fetchServices()
+      } else {
+        const error = await response.json()
+        toast.error(error.message || "Failed to create service")
+      }
     } catch (error) {
       console.error("Error creating service:", error)
-      toast.error("Failed to create service")
+      toast.error("Error creating service")
     }
   }
 
-  // Handle update service
+  const handleEditService = (service: Service) => {
+    setEditingService(service)
+    setFormData({
+      title: service.title,
+      shortDescription: service.shortDescription,
+      fullDescription: service.fullDescription,
+      icon: service.icon,
+      color: service.color,
+      startingPrice: service.startingPrice,
+      asapPrice: service.asapPrice,
+      duration: service.duration,
+      deliveryTime: service.deliveryTime,
+      asapDeliveryTime: service.asapDeliveryTime,
+      popular: service.popular,
+      isActive: service.isActive,
+      features: service.features.map((f) => f.text),
+    })
+  }
+
   const handleUpdateService = async () => {
     if (!editingService) return
 
@@ -163,315 +264,294 @@ export default function AdminServices() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          features,
+          features: formData.features.filter((f) => f.trim() !== ""),
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to update service")
-
-      toast.success("Service updated successfully!")
-      setIsEditModalOpen(false)
-      setEditingService(null)
-      resetForm()
-      fetchServices()
+      if (response.ok) {
+        toast.success("Service updated successfully!")
+        setEditingService(null)
+        resetForm()
+        fetchServices()
+      } else {
+        const error = await response.json()
+        toast.error(error.message || "Failed to update service")
+      }
     } catch (error) {
       console.error("Error updating service:", error)
-      toast.error("Failed to update service")
+      toast.error("Error updating service")
     }
   }
 
-  // Handle delete service
   const handleDeleteService = async (serviceId: string) => {
     try {
       const response = await fetch(`/api/admin/services/${serviceId}`, {
         method: "DELETE",
       })
 
-      if (!response.ok) throw new Error("Failed to delete service")
-
-      toast.success("Service deleted successfully!")
-      fetchServices()
+      if (response.ok) {
+        toast.success("Service deleted successfully!")
+        fetchServices()
+      } else {
+        const error = await response.json()
+        toast.error(error.message || "Failed to delete service")
+      }
     } catch (error) {
       console.error("Error deleting service:", error)
-      toast.error("Failed to delete service")
+      toast.error("Error deleting service")
     }
   }
 
-  // Handle toggle active status
-  const handleToggleActive = async (service: Service) => {
+  const toggleServiceStatus = async (serviceId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/admin/services/${service.id}`, {
+      const response = await fetch(`/api/admin/services/${serviceId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...service,
-          isActive: !service.isActive,
-          features: service.features.map((f) => f.text),
-        }),
+        body: JSON.stringify({ isActive }),
       })
 
-      if (!response.ok) throw new Error("Failed to update service")
-
-      toast.success(`Service ${!service.isActive ? "activated" : "deactivated"}!`)
-      fetchServices()
+      if (response.ok) {
+        toast.success(`Service ${isActive ? "activated" : "deactivated"}!`)
+        fetchServices()
+      } else {
+        toast.error("Failed to update service status")
+      }
     } catch (error) {
-      console.error("Error updating service:", error)
-      toast.error("Failed to update service")
+      console.error("Error updating service status:", error)
+      toast.error("Error updating service status")
     }
   }
 
-  // Reset form
-  const resetForm = () => {
-    setFormData({})
-    setFeatures([])
-    setEditingService(null)
-  }
-
-  // Open edit modal
-  const openEditModal = (service: Service) => {
-    setEditingService(service)
-    setFormData(service)
-    setFeatures(service.features.map((f) => f.text))
-    setIsEditModalOpen(true)
-  }
-
-  // Add feature
   const addFeature = () => {
-    setFeatures([...features, ""])
+    setFormData((prev) => ({
+      ...prev,
+      features: [...prev.features, ""],
+    }))
   }
 
-  // Update feature
-  const updateFeature = (index: number, value: string) => {
-    const newFeatures = [...features]
-    newFeatures[index] = value
-    setFeatures(newFeatures)
-  }
-
-  // Remove feature
   const removeFeature = (index: number) => {
-    setFeatures(features.filter((_, i) => i !== index))
+    setFormData((prev) => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index),
+    }))
   }
 
-  // Get icon component
-  const getIconComponent = (iconName: string) => {
-    const iconOption = iconOptions.find((option) => option.value === iconName)
-    return iconOption?.icon || <Sparkles className="w-4 h-4" />
+  const updateFeature = (index: number, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      features: prev.features.map((f, i) => (i === index ? value : f)),
+    }))
   }
+
+  const ServiceForm = () => (
+    <div className="space-y-6 max-h-[70vh] overflow-y-auto">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="title">Service Title</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+            placeholder="e.g., Quick Shout-outs"
+          />
+        </div>
+        <div>
+          <Label htmlFor="icon">Icon</Label>
+          <Select value={formData.icon} onValueChange={(value) => setFormData((prev) => ({ ...prev, icon: value }))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {iconOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  <div className="flex items-center gap-2">
+                    {option.icon}
+                    {option.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="color">Color Gradient</Label>
+        <Select value={formData.color} onValueChange={(value) => setFormData((prev) => ({ ...prev, color: value }))}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {colorOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <div className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded bg-gradient-to-r ${option.value}`} />
+                  {option.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="shortDescription">Short Description</Label>
+        <Textarea
+          id="shortDescription"
+          value={formData.shortDescription}
+          onChange={(e) => setFormData((prev) => ({ ...prev, shortDescription: e.target.value }))}
+          placeholder="Brief description for cards..."
+          rows={2}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="fullDescription">Full Description</Label>
+        <Textarea
+          id="fullDescription"
+          value={formData.fullDescription}
+          onChange={(e) => setFormData((prev) => ({ ...prev, fullDescription: e.target.value }))}
+          placeholder="Detailed description for service page..."
+          rows={3}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="startingPrice">Starting Price ($)</Label>
+          <Input
+            id="startingPrice"
+            type="number"
+            value={formData.startingPrice}
+            onChange={(e) => setFormData((prev) => ({ ...prev, startingPrice: Number(e.target.value) }))}
+          />
+        </div>
+        <div>
+          <Label htmlFor="asapPrice">ASAP Price ($)</Label>
+          <Input
+            id="asapPrice"
+            type="number"
+            value={formData.asapPrice}
+            onChange={(e) => setFormData((prev) => ({ ...prev, asapPrice: Number(e.target.value) }))}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="duration">Duration</Label>
+          <Input
+            id="duration"
+            value={formData.duration}
+            onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
+            placeholder="30-60 seconds"
+          />
+        </div>
+        <div>
+          <Label htmlFor="deliveryTime">Delivery Time</Label>
+          <Input
+            id="deliveryTime"
+            value={formData.deliveryTime}
+            onChange={(e) => setFormData((prev) => ({ ...prev, deliveryTime: e.target.value }))}
+            placeholder="3-7 days"
+          />
+        </div>
+        <div>
+          <Label htmlFor="asapDeliveryTime">ASAP Delivery</Label>
+          <Input
+            id="asapDeliveryTime"
+            value={formData.asapDeliveryTime}
+            onChange={(e) => setFormData((prev) => ({ ...prev, asapDeliveryTime: e.target.value }))}
+            placeholder="24-48 hours"
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label>Features</Label>
+        <div className="space-y-2">
+          {formData.features.map((feature, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <Input
+                value={feature}
+                onChange={(e) => updateFeature(index, e.target.value)}
+                placeholder="Enter feature..."
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => removeFeature(index)}
+                disabled={formData.features.length === 1}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+          <Button type="button" variant="outline" size="sm" onClick={addFeature}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Feature
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="popular"
+            checked={formData.popular}
+            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, popular: checked }))}
+          />
+          <Label htmlFor="popular">Mark as Popular</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="isActive"
+            checked={formData.isActive}
+            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isActive: checked }))}
+          />
+          <Label htmlFor="isActive">Active</Label>
+        </div>
+      </div>
+    </div>
+  )
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-white">Service Management</h2>
-          <p className="text-yellow-200 mt-2">Manage your platform services and pricing</p>
+          <h1 className="text-3xl font-bold text-white">Service Management</h1>
+          <p className="text-gray-400">Manage your platform services and offerings</p>
         </div>
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-bold">
+            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
               <Plus className="w-4 h-4 mr-2" />
-              Add Service
+              Create Service
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-black border-white/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl bg-black border-purple-500/30">
             <DialogHeader>
-              <DialogTitle>Create New Service</DialogTitle>
-              <DialogDescription className="text-yellow-200">Add a new service to your platform</DialogDescription>
+              <DialogTitle className="text-white">Create New Service</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Add a new service to your platform offerings.
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              {/* Basic Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="title">Service Title</Label>
-                  <Input
-                    id="title"
-                    value={formData.title || ""}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="bg-white/10 border-white/20"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="icon">Icon</Label>
-                  <Select
-                    value={formData.icon || ""}
-                    onValueChange={(value) => setFormData({ ...formData, icon: value })}
-                  >
-                    <SelectTrigger className="bg-white/10 border-white/20">
-                      <SelectValue placeholder="Select icon" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-black border-white/20">
-                      {iconOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="text-white">
-                          <div className="flex items-center gap-2">
-                            {option.icon}
-                            {option.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="color">Color Gradient</Label>
-                <Select
-                  value={formData.color || ""}
-                  onValueChange={(value) => setFormData({ ...formData, color: value })}
-                >
-                  <SelectTrigger className="bg-white/10 border-white/20">
-                    <SelectValue placeholder="Select color" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black border-white/20">
-                    {colorOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description || ""}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="bg-white/10 border-white/20"
-                  rows={3}
-                />
-              </div>
-
-              {/* Pricing */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="startingPrice">Starting Price ($)</Label>
-                  <Input
-                    id="startingPrice"
-                    type="number"
-                    value={formData.startingPrice || ""}
-                    onChange={(e) => setFormData({ ...formData, startingPrice: Number.parseFloat(e.target.value) })}
-                    className="bg-white/10 border-white/20"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="asapPrice">ASAP Price ($)</Label>
-                  <Input
-                    id="asapPrice"
-                    type="number"
-                    value={formData.asapPrice || ""}
-                    onChange={(e) => setFormData({ ...formData, asapPrice: Number.parseFloat(e.target.value) })}
-                    className="bg-white/10 border-white/20"
-                  />
-                </div>
-              </div>
-
-              {/* Timing */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="duration">Duration</Label>
-                  <Input
-                    id="duration"
-                    value={formData.duration || ""}
-                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    className="bg-white/10 border-white/20"
-                    placeholder="e.g., 30-60 seconds"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="deliveryTime">Delivery Time</Label>
-                  <Input
-                    id="deliveryTime"
-                    value={formData.deliveryTime || ""}
-                    onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
-                    className="bg-white/10 border-white/20"
-                    placeholder="e.g., 3-7 days"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="asapDeliveryTime">ASAP Delivery</Label>
-                  <Input
-                    id="asapDeliveryTime"
-                    value={formData.asapDeliveryTime || ""}
-                    onChange={(e) => setFormData({ ...formData, asapDeliveryTime: e.target.value })}
-                    className="bg-white/10 border-white/20"
-                    placeholder="e.g., 24-48 hours"
-                  />
-                </div>
-              </div>
-
-              {/* Features */}
-              <div>
-                <Label>Service Features</Label>
-                <div className="space-y-2 mt-2">
-                  {features.map((feature, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        value={feature}
-                        onChange={(e) => updateFeature(index, e.target.value)}
-                        className="bg-white/10 border-white/20"
-                        placeholder="Enter feature description"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeFeature(index)}
-                        className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addFeature}
-                    className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Feature
-                  </Button>
-                </div>
-              </div>
-
-              {/* Settings */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="popular"
-                    checked={formData.popular || false}
-                    onCheckedChange={(checked) => setFormData({ ...formData, popular: checked })}
-                  />
-                  <Label htmlFor="popular">Mark as Popular</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="isActive"
-                    checked={formData.isActive !== false}
-                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                  />
-                  <Label htmlFor="isActive">Active</Label>
-                </div>
-              </div>
-            </div>
+            <ServiceForm />
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+              <Button variant="outline" onClick={() => setShowCreateModal(false)}>
                 Cancel
               </Button>
-              <Button
-                onClick={handleCreateService}
-                className="bg-gradient-to-r from-yellow-500 to-purple-500 text-black"
-              >
+              <Button onClick={handleCreateService} className="bg-gradient-to-r from-purple-500 to-pink-500">
+                <Save className="w-4 h-4 mr-2" />
                 Create Service
               </Button>
             </DialogFooter>
@@ -479,8 +559,7 @@ export default function AdminServices() {
         </Dialog>
       </div>
 
-      {/* Services Grid */}
-      <div className="grid gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence>
           {services.map((service) => (
             <motion.div
@@ -488,125 +567,166 @@ export default function AdminServices() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="group"
+              layout
             >
               <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
                       <div
                         className={`w-12 h-12 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center`}
                       >
-                        {getIconComponent(service.icon)}
+                        <div className="text-white">{getIconComponent(service.icon)}</div>
                       </div>
                       <div>
-                        <CardTitle className="text-white flex items-center gap-2">
-                          {service.title}
+                        <CardTitle className="text-white text-lg">{service.title}</CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
                           {service.popular && (
-                            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs">
+                            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+                              <Star className="w-3 h-3 mr-1" />
                               Popular
                             </Badge>
                           )}
-                          {!service.isActive && (
-                            <Badge variant="secondary" className="text-xs">
-                              Inactive
-                            </Badge>
-                          )}
-                        </CardTitle>
-                        <p className="text-yellow-200 text-sm">
-                          Starting at ${service.startingPrice} • {service.deliveryTime}
-                        </p>
+                          <Badge
+                            className={
+                              service.isActive
+                                ? "bg-green-500/20 text-green-300 border-green-500/30"
+                                : "bg-red-500/20 text-red-300 border-red-500/30"
+                            }
+                          >
+                            {service.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleToggleActive(service)}
-                        className="text-white hover:bg-white/10"
-                      >
-                        {service.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditModal(service)}
-                        className="text-white hover:bg-white/10"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-red-400 hover:bg-red-500/20">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-black border-white/20">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-white">Delete Service</AlertDialogTitle>
-                            <AlertDialogDescription className="text-yellow-200">
-                              Are you sure you want to delete "{service.title}"? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteService(service.id)}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleServiceStatus(service.id, !service.isActive)}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      {service.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-yellow-200 mb-4">{service.description}</p>
-                      <div className="space-y-2">
-                        <h4 className="text-white font-semibold">Features:</h4>
-                        <ul className="space-y-1">
-                          {service.features.map((feature, index) => (
-                            <li key={index} className="text-yellow-200 text-sm flex items-center gap-2">
-                              <div className="w-1 h-1 bg-yellow-400 rounded-full"></div>
-                              {feature.text}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-300 text-sm">{service.shortDescription}</p>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 flex items-center gap-1">
+                        <DollarSign className="w-3 h-3" />
+                        Starting:
+                      </span>
+                      <span className="text-white font-semibold">${service.startingPrice}</span>
                     </div>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white/5 rounded-lg p-3">
-                          <div className="flex items-center gap-2 text-yellow-300 text-sm mb-1">
-                            <DollarSign className="w-4 h-4" />
-                            Starting Price
-                          </div>
-                          <div className="text-white font-semibold">${service.startingPrice}</div>
-                        </div>
-                        <div className="bg-white/5 rounded-lg p-3">
-                          <div className="flex items-center gap-2 text-orange-300 text-sm mb-1">
-                            <Zap className="w-4 h-4" />
-                            ASAP Price
-                          </div>
-                          <div className="text-white font-semibold">${service.asapPrice}</div>
-                        </div>
-                      </div>
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="flex items-center gap-2 text-yellow-300 text-sm mb-1">
-                          <Clock className="w-4 h-4" />
-                          Delivery Time
-                        </div>
-                        <div className="text-white text-sm">
-                          Standard: {service.deliveryTime} • ASAP: {service.asapDeliveryTime}
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 flex items-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        ASAP:
+                      </span>
+                      <span className="text-orange-300 font-semibold">${service.asapPrice}</span>
                     </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        Duration:
+                      </span>
+                      <span className="text-white">{service.duration}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 flex items-center gap-1">
+                        <Timer className="w-3 h-3" />
+                        Delivery:
+                      </span>
+                      <span className="text-white">{service.deliveryTime}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-white font-semibold text-sm mb-2">Features ({service.features.length})</h4>
+                    <div className="space-y-1">
+                      {service.features.slice(0, 3).map((feature) => (
+                        <div key={feature.id} className="text-xs text-gray-400 flex items-center gap-1">
+                          <div className="w-1 h-1 bg-purple-400 rounded-full" />
+                          {feature.text}
+                        </div>
+                      ))}
+                      {service.features.length > 3 && (
+                        <div className="text-xs text-gray-500">+{service.features.length - 3} more...</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Dialog
+                      open={editingService?.id === service.id}
+                      onOpenChange={(open) => !open && setEditingService(null)}
+                    >
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          onClick={() => handleEditService(service)}
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          Edit
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl bg-black border-purple-500/30">
+                        <DialogHeader>
+                          <DialogTitle className="text-white">Edit Service</DialogTitle>
+                          <DialogDescription className="text-gray-400">
+                            Update the service details and settings.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <ServiceForm />
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setEditingService(null)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleUpdateService}
+                            className="bg-gradient-to-r from-purple-500 to-pink-500"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            Update Service
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-black border-red-500/30">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-white">Delete Service</AlertDialogTitle>
+                          <AlertDialogDescription className="text-gray-400">
+                            Are you sure you want to delete "{service.title}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteService(service.id)}
+                            className="bg-red-500 hover:bg-red-600"
+                          >
+                            Delete Service
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>
@@ -615,205 +735,17 @@ export default function AdminServices() {
         </AnimatePresence>
       </div>
 
-      {/* Edit Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="bg-black border-white/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Service</DialogTitle>
-            <DialogDescription className="text-yellow-200">Update service information and settings</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {/* Same form fields as create modal */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="edit-title">Service Title</Label>
-                <Input
-                  id="edit-title"
-                  value={formData.title || ""}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="bg-white/10 border-white/20"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-icon">Icon</Label>
-                <Select
-                  value={formData.icon || ""}
-                  onValueChange={(value) => setFormData({ ...formData, icon: value })}
-                >
-                  <SelectTrigger className="bg-white/10 border-white/20">
-                    <SelectValue placeholder="Select icon" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black border-white/20">
-                    {iconOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
-                        <div className="flex items-center gap-2">
-                          {option.icon}
-                          {option.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="edit-color">Color Gradient</Label>
-              <Select
-                value={formData.color || ""}
-                onValueChange={(value) => setFormData({ ...formData, color: value })}
-              >
-                <SelectTrigger className="bg-white/10 border-white/20">
-                  <SelectValue placeholder="Select color" />
-                </SelectTrigger>
-                <SelectContent className="bg-black border-white/20">
-                  {colorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                value={formData.description || ""}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-white/10 border-white/20"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="edit-startingPrice">Starting Price ($)</Label>
-                <Input
-                  id="edit-startingPrice"
-                  type="number"
-                  value={formData.startingPrice || ""}
-                  onChange={(e) => setFormData({ ...formData, startingPrice: Number.parseFloat(e.target.value) })}
-                  className="bg-white/10 border-white/20"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-asapPrice">ASAP Price ($)</Label>
-                <Input
-                  id="edit-asapPrice"
-                  type="number"
-                  value={formData.asapPrice || ""}
-                  onChange={(e) => setFormData({ ...formData, asapPrice: Number.parseFloat(e.target.value) })}
-                  className="bg-white/10 border-white/20"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="edit-duration">Duration</Label>
-                <Input
-                  id="edit-duration"
-                  value={formData.duration || ""}
-                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                  className="bg-white/10 border-white/20"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-deliveryTime">Delivery Time</Label>
-                <Input
-                  id="edit-deliveryTime"
-                  value={formData.deliveryTime || ""}
-                  onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
-                  className="bg-white/10 border-white/20"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-asapDeliveryTime">ASAP Delivery</Label>
-                <Input
-                  id="edit-asapDeliveryTime"
-                  value={formData.asapDeliveryTime || ""}
-                  onChange={(e) => setFormData({ ...formData, asapDeliveryTime: e.target.value })}
-                  className="bg-white/10 border-white/20"
-                />
-              </div>
-            </div>
-
-            {/* Features */}
-            <div>
-              <Label>Service Features</Label>
-              <div className="space-y-2 mt-2">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={feature}
-                      onChange={(e) => updateFeature(index, e.target.value)}
-                      className="bg-white/10 border-white/20"
-                      placeholder="Enter feature description"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeFeature(index)}
-                      className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addFeature}
-                  className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Feature
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="edit-popular"
-                  checked={formData.popular || false}
-                  onCheckedChange={(checked) => setFormData({ ...formData, popular: checked })}
-                />
-                <Label htmlFor="edit-popular">Mark as Popular</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="edit-isActive"
-                  checked={formData.isActive !== false}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                />
-                <Label htmlFor="edit-isActive">Active</Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateService} className="bg-gradient-to-r from-yellow-500 to-purple-500 text-black">
-              Update Service
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {services.length === 0 && !loading && (
+      {services.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-yellow-200 mb-4">No services found</div>
+          <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">No Services Found</h3>
+          <p className="text-gray-400 mb-4">Get started by creating your first service.</p>
           <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-bold"
+            onClick={() => setShowCreateModal(true)}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Create Your First Service
+            Create First Service
           </Button>
         </div>
       )}
