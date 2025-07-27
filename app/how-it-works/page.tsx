@@ -28,18 +28,17 @@ const steps = [
     number: "01",
     icon: <Search className="w-8 h-8" />,
     title: "Browse & Discover",
-    description: "Explore our curated list of celebrities across entertainment, sports, business, and more.",
+    description: "Explore our list of celebrities across entertainment, sports, business, social media and more.",
     details: [
       "Filter by category, price, or rating",
       "View celebrity profiles and sample videos",
-      "Read reviews from other customers",
     ],
     color: "from-blue-500 to-cyan-500",
   },
   {
     number: "02",
     icon: <MessageSquare className="w-8 h-8" />,
-    title: "Personalize Your Request",
+    title: "Personalise Your Request",
     description: "Tell us exactly what you want your celebrity to say and who it's for.",
     details: [
       "Choose from birthday, motivation, business, or custom messages",
@@ -64,7 +63,7 @@ const steps = [
     number: "04",
     icon: <Video className="w-8 h-8" />,
     title: "Receive Your Video",
-    description: "Get your personalized video message within the promised timeframe.",
+    description: "Get your personalised video message within the promised timeframe.",
     details: [
       "High-quality video delivered to your email",
       "Download and share with friends and family",
@@ -93,7 +92,7 @@ const features = [
   {
     icon: <Heart className="w-6 h-6" />,
     title: "Personal Touch",
-    description: "Every message is personalized",
+    description: "Every message is personalised",
   },
 ]
 
@@ -201,15 +200,35 @@ export default function HowItWorksPage() {
 
         <div className="relative max-w-7xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
+            {/* <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
               <Sparkles className="w-4 h-4 mr-2" />
               How It Works
-            </Badge>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6">
+            </Badge> */}
+            <motion.h1
+                  className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-2"
+                  animate={{
+                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  }}
+                  style={{
+                    backgroundSize: "200% 200%",
+                    filter: "drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))",
+                  }}
+                >
+                  How It Works
+                </motion.h1>
+            {/* <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6">
+              How It Works
+            </h1> */}
+            {/* <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6">
               Simple Steps to Celebrity Magic
-            </h1>
+            </h1> */}
             <p className="text-xl sm:text-2xl text-purple-200 max-w-4xl mx-auto leading-relaxed">
-              Getting a personalized message from your favorite celebrity is easier than you think. Here's how it works.
+              Getting a personalised message from your favorite celebrity is easier than you think. Here's how it works.
             </p>
           </motion.div>
         </div>
@@ -268,7 +287,7 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5">
+      {/* <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -303,7 +322,7 @@ export default function HowItWorksPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -352,7 +371,7 @@ export default function HowItWorksPage() {
           <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Ready to Get Started?</h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              Join thousands of happy customers who have received amazing personalized messages from their favorite
+              Join thousands of happy customers who have received amazing personalised messages from their favorite
               celebrities.
             </p>
             <Button

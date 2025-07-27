@@ -35,7 +35,7 @@ export default function Navbar() {
   }, [])
 
   const navItems = [
-    { name: "About", href: "/about" },
+    { name: "Home", href: "/" },
     { name: "Celebrities", href: "/celebrities" },
     { name: "How It Works", href: "/how-it-works" },
     { name: "Become Talent", href: "/join-celebrity" },

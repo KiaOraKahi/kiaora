@@ -408,7 +408,7 @@ export default function JoinCelebrityPage() {
                   className="text-gray-300 text-lg mb-8"
                 >
                   Thank you for applying to become talent on Kia Ora Kahi! Our team will review your application within
-                  5-7 business days and get back to you via email.
+                  1-3 business days and get back to you via email.
                 </motion.p>
 
                 <motion.div
@@ -423,7 +423,6 @@ export default function JoinCelebrityPage() {
                       <li>• Our team reviews your application and documents</li>
                       <li>• We may contact you for additional information</li>
                       <li>• Upon approval, we'll help you set up your profile</li>
-                      <li>• You'll receive onboarding materials and guidelines</li>
                     </ul>
                   </div>
 
@@ -585,7 +584,7 @@ export default function JoinCelebrityPage() {
 
                         <div className="space-y-2 md:col-span-2">
                           <Label htmlFor="nationality" className="text-white">
-                            Nationality *
+                            Nationality
                           </Label>
                           <Input
                             id="nationality"

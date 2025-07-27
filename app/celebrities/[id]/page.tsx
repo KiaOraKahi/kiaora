@@ -329,20 +329,20 @@ export default function CelebrityDetailPage() {
                       </div>
                       <p className="text-purple-300 text-sm">Response Time</p>
                     </div>
-                    <div className="text-center">
+                    {/* <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <Users className="w-5 h-5 text-purple-400" />
                         <span className="text-2xl font-bold">{availability.totalOrders}</span>
                       </div>
                       <p className="text-purple-300 text-sm">Total Orders</p>
-                    </div>
-                    <div className="text-center">
+                    </div> */}
+                    {/* <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <Award className="w-5 h-5 text-purple-400" />
                         <span className="text-2xl font-bold">{availability.completionRate}%</span>
                       </div>
                       <p className="text-purple-300 text-sm">Completion Rate</p>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Pricing & Book Button */}
@@ -372,6 +372,13 @@ export default function CelebrityDetailPage() {
                       <MessageCircle className="w-5 h-5 mr-2" />
                       Book Now - ${pricing[selectedPricing]}
                     </Button>
+                    <Button
+                      onClick={() => setIsBookingOpen(true)}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      Special Request
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -382,18 +389,18 @@ export default function CelebrityDetailPage() {
         {/* Main Content */}
         <section className="px-4 sm:px-6 lg:px-8 py-16">
           <div className="max-w-7xl mx-auto">
-            <Tabs defaultValue="about" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-white/10 border-white/20">
-                <TabsTrigger value="about" className="data-[state=active]:bg-purple-500">
+            <Tabs defaultValue="about" className="w-full text-white">
+              <TabsList className="grid w-full grid-cols-4 bg-white/10 border-white/20 text-white">
+                <TabsTrigger value="about" className="data-[state=active]:bg-purple-500 text-white">
                   About
                 </TabsTrigger>
-                <TabsTrigger value="samples" className="data-[state=active]:bg-purple-500">
+                <TabsTrigger value="samples" className="data-[state=active]:bg-purple-500 text-white">
                   Samples
                 </TabsTrigger>
                 {/* <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500">
                   Reviews
                 </TabsTrigger> */}
-                <TabsTrigger value="availability" className="data-[state=active]:bg-purple-500">
+                <TabsTrigger value="availability" className="data-[state=active]:bg-purple-500 text-white">
                   Availability
                 </TabsTrigger>
               </TabsList>
@@ -420,7 +427,7 @@ export default function CelebrityDetailPage() {
                       </CardContent>
                     </Card>
                   </div>
-                  <div>
+                  {/* <div>
                     <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                       <CardHeader>
                         <CardTitle className="text-white text-xl">Achievements</CardTitle>
@@ -440,7 +447,7 @@ export default function CelebrityDetailPage() {
                         )}
                       </CardContent>
                     </Card>
-                  </div>
+                  </div> */}
                 </div>
               </TabsContent>
 
@@ -563,10 +570,10 @@ export default function CelebrityDetailPage() {
                         <span className="text-purple-200">Average Delivery:</span>
                         <span className="text-white font-semibold">{availability.averageDelivery}</span>
                       </div>
-                      <div className="flex justify-between items-center">
+                      {/* <div className="flex justify-between items-center">
                         <span className="text-purple-200">Completion Rate:</span>
                         <span className="text-green-400 font-semibold">{availability.completionRate}%</span>
-                      </div>
+                      </div> */}
                       <div className="flex justify-between items-center">
                         <span className="text-purple-200">Total Orders:</span>
                         <span className="text-white font-semibold">{availability.totalOrders}</span>

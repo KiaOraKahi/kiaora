@@ -7,15 +7,15 @@ import Link from "next/link"
 
 export default function Footer() {
   const footerSections = [
-    {
-      title: "Platform",
-      links: [
-        { name: "Browse Talent", href: "/celebrities" },
-        { name: "Categories", href: "/categories" },
-        { name: "How It Works", href: "/how-it-works" },
-        { name: "Pricing", href: "/pricing" },
-      ],
-    },
+    // {
+    //   title: "Platform",
+    //   links: [
+    //     { name: "Browse Talent", href: "/celebrities" },
+    //     { name: "Categories", href: "/categories" },
+    //     { name: "How It Works", href: "/how-it-works" },
+    //     { name: "Pricing", href: "/pricing" },
+    //   ],
+    // },
     {
       title: "Services",
       links: [
@@ -30,21 +30,21 @@ export default function Footer() {
     {
       title: "Support",
       links: [
-        { name: "Help Center", href: "/help" },
+        // { name: "Help Center", href: "/help" },
         { name: "Contact Us", href: "/contact" },
         { name: "FAQ", href: "/faq" },
         { name: "Safety Guidelines", href: "/safety" },
       ],
     },
-    {
-      title: "Company",
-      links: [
-        { name: "About Us", href: "/about" },
-        { name: "Become Talent", href: "/join-celebrity" },
-        { name: "Brand Partnerships", href: "/partnerships" },
-        { name: "Newsroom", href: "/newsroom" },
-      ],
-    },
+    // {
+    //   title: "Company",
+    //   links: [
+    //     { name: "About Us", href: "/about" },
+    //     { name: "Become Talent", href: "/join-celebrity" },
+    //     { name: "Brand Partnerships", href: "/partnerships" },
+    //     { name: "Newsroom", href: "/newsroom" },
+    //   ],
+    // },
   ]
 
   const socialLinks = [
@@ -108,7 +108,7 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-yellow-200 mb-6 leading-relaxed">
-                Connect with your favorite talent for personalized messages, birthday greetings, and exclusive
+                Connect with your favorite talent for personalised messages, birthday greetings, and exclusive
                 experiences. Making dreams come true, one message at a time.
               </p>
               <div className="space-y-3">
@@ -116,14 +116,14 @@ export default function Footer() {
                   <Mail className="w-5 h-5" />
                   <span>hello@kiaora.com</span>
                 </div>
-                <div className="flex items-center space-x-3 text-yellow-200">
+                {/* <div className="flex items-center space-x-3 text-yellow-200">
                   <Phone className="w-5 h-5" />
                   <span>+1 (555) 123-4567</span>
-                </div>
-                <div className="flex items-center space-x-3 text-yellow-200">
+                </div> */}
+                {/* <div className="flex items-center space-x-3 text-yellow-200">
                   <MapPin className="w-5 h-5" />
                   <span>Los Angeles, CA</span>
-                </div>
+                </div> */}
               </div>
             </motion.div>
 
@@ -165,9 +165,7 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0">
             {/* Copyright */}
             <div className="flex items-center space-x-2 text-yellow-200">
-              <span>© 2024 Kia Ora Kahi. Made with</span>
-              <Heart className="w-4 h-4 text-yellow-500" />
-              <span>in Los Angeles</span>
+              <span>© 2025 Kia Ora Kahi.</span>
             </div>
 
             {/* Legal Links */}
