@@ -17,7 +17,6 @@ import {
   ArrowLeft,
   User,
   Briefcase,
-  DollarSign,
   FileText,
   Crown,
   Zap,
@@ -25,10 +24,8 @@ import {
   TrendingUp,
   Camera,
   BadgeIcon as IdCard,
-  Award,
   Loader2,
   CheckCircle,
-  Sun,
 } from "lucide-react"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
@@ -50,29 +47,23 @@ interface FormData {
   phone: string
   dateOfBirth: string
   nationality: string
+
   // Professional Information
-  profession: string
   category: string
   experience: string
-  achievements: string
+
   // Social Media
   socialMedia: SocialMedia
-  followerCount: string
-  // Pricing
-  basePrice: number
-  rushPrice: number
+
   // Additional Info
   languages: string[]
-  availability: string
   specialRequests: string
-  motivation: string
+
   // Documents
   hasProfilePhoto: boolean
   hasIdDocument: boolean
-  hasVerificationDocument: boolean
   profilePhotoUrl?: string
   idDocumentUrl?: string
-  verificationDocumentUrl?: string
 }
 
 interface UploadedFile {
@@ -112,17 +103,14 @@ const SubtleLuxuryStarfield = () => {
       star.style.left = `${Math.random() * 100}%`
       star.style.top = `${Math.random() * 100}%`
       star.style.animationDelay = `${Math.random() * 5}s`
-
       return star
     }
 
     const starfield = document.createElement("div")
     starfield.className = "starfield"
-
     for (let i = 0; i < 60; i++) {
       starfield.appendChild(createStar())
     }
-
     document.body.appendChild(starfield)
 
     return () => {
@@ -138,9 +126,8 @@ const SubtleLuxuryStarfield = () => {
 
 const steps = [
   { id: 1, title: "Personal Info", icon: User },
-  { id: 2, title: "Professional", icon: Briefcase },
-  { id: 3, title: "Social & Pricing", icon: DollarSign },
-  { id: 4, title: "Documents", icon: FileText },
+  { id: 2, title: "About You", icon: Briefcase },
+  { id: 3, title: "Documents", icon: FileText },
 ]
 
 const categories = [
@@ -172,8 +159,6 @@ const languages = [
   "Other",
 ]
 
-const followerRanges = ["1K - 10K", "10K - 50K", "50K - 100K", "100K - 500K", "500K - 1M", "1M - 5M", "5M+"]
-
 export default function JoinCelebrityPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -186,10 +171,8 @@ export default function JoinCelebrityPage() {
     phone: "",
     dateOfBirth: "",
     nationality: "",
-    profession: "",
     category: "",
     experience: "",
-    achievements: "",
     socialMedia: {
       instagram: "",
       twitter: "",
@@ -197,32 +180,25 @@ export default function JoinCelebrityPage() {
       youtube: "",
       other: "",
     },
-    followerCount: "",
-    basePrice: 50,
-    rushPrice: 100,
     languages: [],
-    availability: "",
     specialRequests: "",
-    motivation: "",
     hasProfilePhoto: false,
     hasIdDocument: false,
-    hasVerificationDocument: false,
     profilePhotoUrl: undefined,
     idDocumentUrl: undefined,
-    verificationDocumentUrl: undefined,
   })
 
   const [isMobile, setIsMobile] = useState(false)
-      
-    useEffect(() => {
-      const checkMobile = () => {
-        setIsMobile(window.innerWidth < 1024)
-      }
-  
-      checkMobile()
-      window.addEventListener("resize", checkMobile)
-      return () => window.removeEventListener("resize", checkMobile)
-    }, [])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   const updateFormData = (field: string, value: any) => {
     if (field.includes(".")) {
@@ -255,17 +231,12 @@ export default function JoinCelebrityPage() {
 
       if (response.ok) {
         setUploadedFiles((prev) => ({ ...prev, [type]: result }))
-        updateFormData(
-          type === "profile" ? "hasProfilePhoto" : type === "id" ? "hasIdDocument" : "hasVerificationDocument",
-          true,
-        )
+        updateFormData(type === "profile" ? "hasProfilePhoto" : "hasIdDocument", true)
         // Store the actual URL
         if (type === "profile") {
           updateFormData("profilePhotoUrl", result.url)
         } else if (type === "id") {
           updateFormData("idDocumentUrl", result.url)
-        } else if (type === "verification") {
-          updateFormData("verificationDocumentUrl", result.url)
         }
         toast.success(`${type} uploaded successfully!`)
       } else {
@@ -281,25 +252,11 @@ export default function JoinCelebrityPage() {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!(formData.fullName && formData.email && formData.phone && formData.dateOfBirth && formData.nationality)
+        return !!(formData.fullName && formData.email && formData.phone && formData.dateOfBirth)
       case 2:
-        return !!(
-          formData.profession &&
-          formData.category &&
-          formData.experience.length >= 50 &&
-          formData.achievements.length >= 50
-        )
+        return !!(formData.category && formData.experience.length >= 50 && formData.languages.length > 0)
       case 3:
-        return !!(
-          formData.followerCount &&
-          formData.basePrice >= 10 &&
-          formData.rushPrice >= 10 &&
-          formData.languages.length > 0 &&
-          formData.availability &&
-          formData.motivation.length >= 50
-        )
-      case 4:
-        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasVerificationDocument
+        return formData.hasProfilePhoto && formData.hasIdDocument
       default:
         return false
     }
@@ -307,7 +264,7 @@ export default function JoinCelebrityPage() {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4))
+      setCurrentStep((prev) => Math.min(prev + 1, 3))
     } else {
       toast.error("Please complete all required fields before proceeding.")
     }
@@ -318,7 +275,7 @@ export default function JoinCelebrityPage() {
   }
 
   const handleSubmit = async () => {
-    if (!validateStep(4)) {
+    if (!validateStep(3)) {
       toast.error("Please complete all required fields.")
       return
     }
@@ -346,7 +303,7 @@ export default function JoinCelebrityPage() {
     }
   }
 
-  const progress = (currentStep / 4) * 100
+  const progress = (currentStep / 3) * 100
 
   if (isSubmitted) {
     return (
@@ -425,7 +382,6 @@ export default function JoinCelebrityPage() {
                       <li>• Upon approval, we'll help you set up your profile</li>
                     </ul>
                   </div>
-
                   <Button
                     onClick={() => (window.location.href = "/")}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3"
@@ -451,7 +407,11 @@ export default function JoinCelebrityPage() {
       <div className="relative z-10 pt-24 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center relative mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center relative mb-12"
+          >
             <div className="absolute inset-0 opacity-30">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.5),transparent)]" />
             </div>
@@ -475,6 +435,7 @@ export default function JoinCelebrityPage() {
                 const Icon = step.icon
                 const isActive = currentStep === step.id
                 const isCompleted = currentStep > step.id
+
                 return (
                   <div key={step.id} className="flex items-center">
                     <div
@@ -591,14 +552,14 @@ export default function JoinCelebrityPage() {
                             value={formData.nationality}
                             onChange={(e) => updateFormData("nationality", e.target.value)}
                             className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
-                            placeholder="Enter your nationality"
+                            placeholder="Enter your nationality (optional)"
                           />
                         </div>
                       </div>
                     </motion.div>
                   )}
 
-                  {/* Step 2: Professional Information */}
+                  {/* Step 2: About You */}
                   {currentStep === 2 && (
                     <motion.div
                       key="step2"
@@ -608,98 +569,92 @@ export default function JoinCelebrityPage() {
                       className="space-y-6"
                     >
                       <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">Professional Information</h2>
-                        <p className="text-gray-400">Share your professional background</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="profession" className="text-white">
-                            Profession *
-                          </Label>
-                          <Input
-                            id="profession"
-                            value={formData.profession}
-                            onChange={(e) => updateFormData("profession", e.target.value)}
-                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
-                            placeholder="e.g., Actor, Musician, Athlete"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="category" className="text-white">
-                            Category *
-                          </Label>
-                          <Select
-                            value={formData.category}
-                            onValueChange={(value) => updateFormData("category", value)}
-                          >
-                            <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
-                              <SelectValue placeholder="Select your category" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-gray-900 border-gray-700">
-                              {categories.map((category) => (
-                                <SelectItem key={category} value={category} className="text-white hover:bg-gray-800">
-                                  {category}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="experience" className="text-white">
-                            Professional Experience * (minimum 50 characters)
-                          </Label>
-                          <Textarea
-                            id="experience"
-                            value={formData.experience}
-                            onChange={(e) => updateFormData("experience", e.target.value)}
-                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
-                            placeholder="Describe your professional experience, career highlights, and background..."
-                          />
-                          <div className="text-right text-sm text-gray-400">
-                            {formData.experience.length}/50 characters
-                          </div>
-                        </div>
-
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="achievements" className="text-white">
-                            Notable Achievements * (minimum 50 characters)
-                          </Label>
-                          <Textarea
-                            id="achievements"
-                            value={formData.achievements}
-                            onChange={(e) => updateFormData("achievements", e.target.value)}
-                            className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
-                            placeholder="List your notable achievements, awards, recognitions, or career milestones..."
-                          />
-                          <div className="text-right text-sm text-gray-400">
-                            {formData.achievements.length}/50 characters
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Step 3: Social Media & Pricing */}
-                  {currentStep === 3 && (
-                    <motion.div
-                      key="step3"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      className="space-y-6"
-                    >
-                      <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">Social Media & Pricing</h2>
-                        <p className="text-gray-400">Connect your social presence and set your rates</p>
+                        <h2 className="text-2xl font-bold text-white mb-2">About You</h2>
+                        <p className="text-gray-400">Share your background and connect your social media</p>
                       </div>
 
                       <div className="space-y-8">
+                        {/* Professional Information */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-white">Professional Information</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="category" className="text-white">
+                                Category *
+                              </Label>
+                              <Select
+                                value={formData.category}
+                                onValueChange={(value) => updateFormData("category", value)}
+                              >
+                                <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
+                                  <SelectValue placeholder="Select your category" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-900 border-gray-700">
+                                  {categories.map((category) => (
+                                    <SelectItem
+                                      key={category}
+                                      value={category}
+                                      className="text-white hover:bg-gray-800"
+                                    >
+                                      {category}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label className="text-white">Languages Spoken *</Label>
+                              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                                {languages.map((language) => (
+                                  <label key={language} className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.languages.includes(language)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          updateFormData("languages", [...formData.languages, language])
+                                        } else {
+                                          updateFormData(
+                                            "languages",
+                                            formData.languages.filter((l) => l !== language),
+                                          )
+                                        }
+                                      }}
+                                      className="rounded border-gray-600 text-purple-600 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm text-white">{language}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="experience" className="text-white">
+                                Tell us about yourself * (minimum 50 characters)
+                              </Label>
+                              <Textarea
+                                id="experience"
+                                value={formData.experience}
+                                onChange={(e) => updateFormData("experience", e.target.value)}
+                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
+                                placeholder="Share your background, experience, what makes you unique, and why you'd like to create personalized videos for fans..."
+                              />
+                              <div className="text-right text-sm text-gray-400">
+                                {formData.experience.length}/50 characters
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator className="bg-gray-700" />
+
                         {/* Social Media */}
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-white">Social Media Handles</h3>
+                          <h3 className="text-lg font-semibold text-white">Social Media (Optional)</h3>
+                          <p className="text-gray-400 text-sm">
+                            Connect your social media to help us verify your identity
+                          </p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label htmlFor="instagram" className="text-white">
@@ -765,67 +720,6 @@ export default function JoinCelebrityPage() {
                                 placeholder="LinkedIn, Twitch, etc."
                               />
                             </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="followerCount" className="text-white">
-                                Total Follower Count *
-                              </Label>
-                              <Select
-                                value={formData.followerCount}
-                                onValueChange={(value) => updateFormData("followerCount", value)}
-                              >
-                                <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
-                                  <SelectValue placeholder="Select follower range" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-900 border-gray-700">
-                                  {followerRanges.map((range) => (
-                                    <SelectItem key={range} value={range} className="text-white hover:bg-gray-800">
-                                      {range}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Separator className="bg-gray-700" />
-
-                        {/* Pricing */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-white">Pricing</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="basePrice" className="text-white">
-                                Base Price (USD) *
-                              </Label>
-                              <Input
-                                id="basePrice"
-                                type="number"
-                                min="10"
-                                value={formData.basePrice}
-                                onChange={(e) => updateFormData("basePrice", Number.parseInt(e.target.value) || 0)}
-                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
-                                placeholder="50"
-                              />
-                              <p className="text-sm text-gray-400">Standard video message price</p>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="rushPrice" className="text-white">
-                                Rush Price (USD) *
-                              </Label>
-                              <Input
-                                id="rushPrice"
-                                type="number"
-                                min="10"
-                                value={formData.rushPrice}
-                                onChange={(e) => updateFormData("rushPrice", Number.parseInt(e.target.value) || 0)}
-                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
-                                placeholder="100"
-                              />
-                              <p className="text-sm text-gray-400">24-hour delivery price</p>
-                            </div>
                           </div>
                         </div>
 
@@ -834,99 +728,27 @@ export default function JoinCelebrityPage() {
                         {/* Additional Information */}
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold text-white">Additional Information</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label className="text-white">Languages Spoken *</Label>
-                              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-                                {languages.map((language) => (
-                                  <label key={language} className="flex items-center space-x-2 cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      checked={formData.languages.includes(language)}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          updateFormData("languages", [...formData.languages, language])
-                                        } else {
-                                          updateFormData(
-                                            "languages",
-                                            formData.languages.filter((l) => l !== language),
-                                          )
-                                        }
-                                      }}
-                                      className="rounded border-gray-600 text-purple-600 focus:ring-purple-500"
-                                    />
-                                    <span className="text-sm text-white">{language}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="availability" className="text-white">
-                                Availability *
-                              </Label>
-                              <Select
-                                value={formData.availability}
-                                onValueChange={(value) => updateFormData("availability", value)}
-                              >
-                                <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
-                                  <SelectValue placeholder="Select availability" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-900 border-gray-700">
-                                  <SelectItem value="1-3 days" className="text-white hover:bg-gray-800">
-                                    1-3 days
-                                  </SelectItem>
-                                  <SelectItem value="3-7 days" className="text-white hover:bg-gray-800">
-                                    3-7 days
-                                  </SelectItem>
-                                  <SelectItem value="1-2 weeks" className="text-white hover:bg-gray-800">
-                                    1-2 weeks
-                                  </SelectItem>
-                                  <SelectItem value="Flexible" className="text-white hover:bg-gray-800">
-                                    Flexible
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="specialRequests" className="text-white">
-                                Special Requests or Notes
-                              </Label>
-                              <Textarea
-                                id="specialRequests"
-                                value={formData.specialRequests}
-                                onChange={(e) => updateFormData("specialRequests", e.target.value)}
-                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
-                                placeholder="Any special requirements, limitations, or notes..."
-                              />
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="motivation" className="text-white">
-                                Why do you want to join Kia Ora Kahi? * (minimum 50 characters)
-                              </Label>
-                              <Textarea
-                                id="motivation"
-                                value={formData.motivation}
-                                onChange={(e) => updateFormData("motivation", e.target.value)}
-                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[100px]"
-                                placeholder="Share your motivation for joining our platform..."
-                              />
-                              <div className="text-right text-sm text-gray-400">
-                                {formData.motivation.length}/50 characters
-                              </div>
-                            </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="specialRequests" className="text-white">
+                              Special Requests or Notes
+                            </Label>
+                            <Textarea
+                              id="specialRequests"
+                              value={formData.specialRequests}
+                              onChange={(e) => updateFormData("specialRequests", e.target.value)}
+                              className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                              placeholder="Any special requirements, limitations, or notes..."
+                            />
                           </div>
                         </div>
                       </div>
                     </motion.div>
                   )}
 
-                  {/* Step 4: Documents */}
-                  {currentStep === 4 && (
+                  {/* Step 3: Documents */}
+                  {currentStep === 3 && (
                     <motion.div
-                      key="step4"
+                      key="step3"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
@@ -1024,50 +846,6 @@ export default function JoinCelebrityPage() {
                           </div>
                         </div>
 
-                        {/* Verification Document */}
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <Award className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Professional Verification *</h3>
-                            {formData.hasVerificationDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
-                          </div>
-                          <p className="text-gray-400 text-sm">
-                            Upload a document that verifies your professional status (press kit, agency contract, award
-                            certificate, etc.)
-                          </p>
-                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                            <input
-                              type="file"
-                              id="verification-document"
-                              accept="image/*,application/pdf"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "verification")
-                              }}
-                              className="hidden"
-                            />
-                            <label htmlFor="verification-document" className="cursor-pointer">
-                              {uploadingFiles.verification ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
-                                </div>
-                              ) : formData.hasVerificationDocument ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">Verification document uploaded</span>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload verification document</span>
-                                  <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
-                                </div>
-                              )}
-                            </label>
-                          </div>
-                        </div>
-
                         {/* Privacy Notice */}
                         <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
                           <div className="flex items-start gap-3">
@@ -1098,7 +876,7 @@ export default function JoinCelebrityPage() {
                     Previous
                   </Button>
 
-                  {currentStep < 4 ? (
+                  {currentStep < 3 ? (
                     <Button
                       onClick={nextStep}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
@@ -1109,7 +887,7 @@ export default function JoinCelebrityPage() {
                   ) : (
                     <Button
                       onClick={handleSubmit}
-                      disabled={isSubmitting || !validateStep(4)}
+                      disabled={isSubmitting || !validateStep(3)}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white disabled:opacity-50"
                     >
                       {isSubmitting ? (

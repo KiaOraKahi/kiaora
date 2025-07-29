@@ -67,11 +67,8 @@ model Celebrity {
   longBio      String?  @db.Text
   category     String?
 
-  // Pricing fields
+  // Pricing fields - REMOVED service-specific pricing, kept legacy field
   price            Float?  // Legacy field, keep for compatibility
-  pricePersonal    Float?  @default(299)
-  priceBusiness    Float?  @default(599)
-  priceCharity     Float?  @default(199)
 
   // Rating and performance
   rating           Float?   @default(4.5)
@@ -143,13 +140,11 @@ model CelebrityApplication {
   email        String    @unique
   phone        String
   dateOfBirth  String
-  nationality  String
+  nationality  String?   // Made optional
 
-  // Professional Information
-  profession   String
+  // Professional Information - REMOVED profession field
   category     String
-  experience   String    @db.Text
-  achievements String    @db.Text
+  experience   String    @db.Text  // Renamed from experience, now represents "Tell us about yourself"
 
   // Social Media
   instagramHandle   String?
@@ -157,25 +152,18 @@ model CelebrityApplication {
   tiktokHandle      String?
   youtubeHandle     String?
   otherSocialMedia  String?
-  followerCount     String
 
-  // Pricing
-  basePrice  Float
-  rushPrice  Float
-
-  // Additional Info
+  // Additional Info - REMOVED followerCount, basePrice, rushPrice, availability, motivation
   languages        String[]
-  availability     String
   specialRequests  String?   @db.Text
-  motivation       String    @db.Text
 
   // Documents
   hasProfilePhoto          Boolean @default(false)
   hasIdDocument           Boolean @default(false)
-  hasVerificationDocument Boolean @default(false)
+  hasVerificationDocument Boolean @default(false)  // Already optional
   profilePhotoUrl         String?
   idDocumentUrl          String?
-  verificationDocumentUrl String?
+  verificationDocumentUrl String?  // Already optional
 
   // Application Status
   status        ApplicationStatus @default(PENDING)
