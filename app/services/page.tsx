@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -160,6 +161,7 @@ export default function ServicesPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [services, setServices] = useState<EnhancedServiceData[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const checkMobile = () => {
@@ -381,8 +383,9 @@ export default function ServicesPage() {
                       <Button
                         className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleServiceSelect(service.id)
+                          // e.stopPropagation()
+                          // handleServiceSelect(service.id)
+                          router.push("/celebrities")
                         }}
                       >
                         Book Now

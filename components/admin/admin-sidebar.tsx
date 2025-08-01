@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,6 +20,7 @@ import {
   UserCheck,
   Edit3,
   Briefcase,
+  Home
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 
@@ -46,6 +48,7 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
     totalBookings: 0,
     totalServices: 0,
   })
+  const router = useRouter()
 
   useEffect(() => {
     fetchSidebarStats()
@@ -245,6 +248,14 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
 
           {/* Footer */}
           <div className="p-4 border-t border-purple-500/30">
+            <Button
+              onClick={() => router.push("/")}
+              variant="outline"
+              className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Go Home
+            </Button>
             <Button
               onClick={() => signOut()}
               variant="outline"
