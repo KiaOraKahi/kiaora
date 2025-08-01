@@ -484,7 +484,7 @@ export default function ServicesPage() {
                       <Button
                         size="lg"
                         className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold py-4 text-lg"
-                        onClick={() => handleServiceSelect(selectedService)}
+                        onClick={() => router.push('/celebrities')}
                       >
                         Book This Service
                         <ArrowRight className="w-5 h-5 ml-2" />
