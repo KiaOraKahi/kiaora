@@ -1,26 +1,27 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
+  Star,
   Clock,
   Play,
   Heart,
   Share2,
+  Calendar,
   MessageCircle,
   CheckCircle,
-  Users,
-  Award,
   Sparkles,
   ArrowLeft,
   Loader2,
-  Zap,
-  Camera,
+  Video,
+  MessageSquare,
   Music,
-  Gift,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -30,6 +31,18 @@ import Footer from "@/components/frontend/footer"
 import EnhancedBookingModal from "@/components/enhanced-booking-modal"
 import VideoPlayer from "@/components/frontend/video-player"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
+
+interface Service {
+  id: string
+  name: string
+  description: string
+  basePrice: number
+  rushPrice?: number
+  duration: string
+  deliveryTime: string
+  icon: string
+  features: string[]
+}
 
 interface Celebrity {
   id: string
@@ -77,19 +90,15 @@ interface Celebrity {
   }>
 }
 
-interface Service {
-  id: string
-  title: string
-  description: string
-  shortDescription: string
-  icon: string
-  color: string
-  startingPrice: number
-  asapPrice: number
-  duration: string
-  deliveryTime: string
-  asapDeliveryTime: string
-  popular: boolean
+// Icon mapping for services
+const getServiceIcon = (iconName: string) => {
+  const icons: { [key: string]: React.ReactNode } = {
+    video: <Video className="w-5 h-5" />,
+    message: <MessageSquare className="w-5 h-5" />,
+    star: <Star className="w-5 h-5" />,
+    music: <Music className="w-5 h-5" />,
+  }
+  return icons[iconName] || <Star className="w-5 h-5" />
 }
 
 // Subtle starfield component
@@ -122,14 +131,17 @@ const SubtleLuxuryStarfield = () => {
       star.style.left = `${Math.random() * 100}%`
       star.style.top = `${Math.random() * 100}%`
       star.style.animationDelay = `${Math.random() * 5}s`
+
       return star
     }
 
     const starfield = document.createElement("div")
     starfield.className = "starfield"
+
     for (let i = 0; i < 60; i++) {
       starfield.appendChild(createStar())
     }
+
     document.body.appendChild(starfield)
 
     return () => {
@@ -143,24 +155,13 @@ const SubtleLuxuryStarfield = () => {
   return null
 }
 
-// Icon mapping for services
-const getServiceIcon = (iconName: string) => {
-  const icons: Record<string, any> = {
-    MessageCircle,
-    Zap,
-    Camera,
-    Music,
-    Gift,
-  }
-  return icons[iconName] || MessageCircle
-}
-
 export default function CelebrityDetailPage() {
   const params = useParams()
   const celebrityId = params.id as string
   const [celebrity, setCelebrity] = useState<Celebrity | null>(null)
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
+  const [servicesLoading, setServicesLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [isBookingOpen, setIsBookingOpen] = useState(false)
@@ -180,35 +181,19 @@ export default function CelebrityDetailPage() {
   }, [])
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCelebrity = async () => {
       try {
         setLoading(true)
+        const response = await fetch(`/api/celebrities/${celebrityId}`)
+        const data = await response.json()
 
-        // Fetch celebrity data
-        const celebrityResponse = await fetch(`/api/celebrities/${celebrityId}`)
-        const celebrityData = await celebrityResponse.json()
-
-        if (celebrityResponse.ok) {
-          setCelebrity(celebrityData)
+        if (response.ok) {
+          setCelebrity(data)
         } else {
-          setError(celebrityData.error || "Celebrity not found")
-          return
-        }
-
-        // Fetch services data
-        const servicesResponse = await fetch("/api/services")
-        const servicesData = await servicesResponse.json()
-
-        if (servicesResponse.ok) {
-          setServices(servicesData.services || [])
-          // Set default service to the first one or most popular
-          const defaultService = servicesData.services?.find((s: Service) => s.popular) || servicesData.services?.[0]
-          if (defaultService) {
-            setSelectedService(defaultService)
-          }
+          setError(data.error || "Celebrity not found")
         }
       } catch (error) {
-        console.error("Error fetching data:", error)
+        console.error("Error fetching celebrity:", error)
         setError("Failed to load celebrity details")
       } finally {
         setLoading(false)
@@ -216,9 +201,43 @@ export default function CelebrityDetailPage() {
     }
 
     if (celebrityId) {
-      fetchData()
+      fetchCelebrity()
     }
   }, [celebrityId])
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setServicesLoading(true)
+        const response = await fetch("/api/services")
+        const data = await response.json()
+
+        if (response.ok) {
+          setServices(data.services || [])
+          // Auto-select the first service
+          if (data.services && data.services.length > 0) {
+            setSelectedService(data.services[0])
+          }
+        } else {
+          console.error("Failed to fetch services:", data.error)
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error)
+      } finally {
+        setServicesLoading(false)
+      }
+    }
+
+    fetchServices()
+  }, [])
+
+  const handleBookNow = () => {
+    if (!selectedService) {
+      alert("Please select a service first")
+      return
+    }
+    setIsBookingOpen(true)
+  }
 
   if (loading) {
     return (
@@ -281,6 +300,7 @@ export default function CelebrityDetailPage() {
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+
             {/* Back Button */}
             <div className="absolute top-8 left-8">
               <Link href="/celebrities">
@@ -290,6 +310,7 @@ export default function CelebrityDetailPage() {
                 </Button>
               </Link>
             </div>
+
             {/* Share & Favorite */}
             <div className="absolute top-8 right-8 flex gap-2">
               <Button
@@ -349,7 +370,7 @@ export default function CelebrityDetailPage() {
                   <p className="text-xl text-purple-200 mb-6 max-w-3xl">{celebrity.bio}</p>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <Clock className="w-5 h-5 text-purple-400" />
@@ -357,105 +378,83 @@ export default function CelebrityDetailPage() {
                       </div>
                       <p className="text-purple-300 text-sm">Response Time</p>
                     </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-2">
-                        <Users className="w-5 h-5 text-purple-400" />
-                        <span className="text-2xl font-bold">{availability.totalOrders}</span>
-                      </div>
-                      <p className="text-purple-300 text-sm">Total Orders</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-2">
-                        <Award className="w-5 h-5 text-purple-400" />
-                        <span className="text-2xl font-bold">{availability.completionRate}%</span>
-                      </div>
-                      <p className="text-purple-300 text-sm">Completion Rate</p>
-                    </div>
                   </div>
 
-                  {/* Service Selection & Pricing */}
+                  {/* Service Selection & Book Button */}
                   <div className="space-y-6">
-                    {/* Service Selector */}
-                    {services.length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-4">Choose a Service</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {services.slice(0, 6).map((service) => {
-                            const IconComponent = getServiceIcon(service.icon)
-                            const isSelected = selectedService?.id === service.id
-                            return (
+                    {servicesLoading ? (
+                      <div className="flex items-center gap-2 text-purple-200">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Loading services...</span>
+                      </div>
+                    ) : services.length > 0 ? (
+                      <>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-3">Select a Service</h3>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            {services.map((service) => (
                               <div
                                 key={service.id}
-                                onClick={() => setSelectedService(service)}
                                 className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                                  isSelected
+                                  selectedService?.id === service.id
                                     ? "border-purple-500 bg-purple-500/20"
                                     : "border-white/20 bg-white/10 hover:bg-white/20"
                                 }`}
+                                onClick={() => setSelectedService(service)}
                               >
-                                <div className="flex items-center gap-3 mb-2">
-                                  <div className={`p-2 rounded-lg ${service.color}`}>
-                                    <IconComponent className="w-4 h-4 text-white" />
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="text-purple-400">{getServiceIcon(service.icon)}</div>
+                                    <div>
+                                      <h4 className="text-white font-semibold">{service.name}</h4>
+                                      <p className="text-purple-200 text-sm">{service.description}</p>
+                                    </div>
                                   </div>
-                                  <div className="flex-1">
-                                    <h4 className="text-white font-semibold text-sm">{service.title}</h4>
-                                    {service.popular && (
-                                      <Badge className="bg-yellow-500/20 text-yellow-300 text-xs mt-1">Popular</Badge>
-                                    )}
+                                  <div className="text-right">
+                                    <div className="text-2xl font-bold text-purple-300">${service.basePrice}</div>
+                                    <div className="text-purple-400 text-sm">{service.duration}</div>
                                   </div>
                                 </div>
-                                <p className="text-purple-200 text-xs mb-3">{service.shortDescription}</p>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-purple-300 font-bold">${service.startingPrice}</span>
-                                  <span className="text-purple-400 text-xs">{service.duration}</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {service.features.slice(0, 3).map((feature, index) => (
+                                    <span
+                                      key={index}
+                                      className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded"
+                                    >
+                                      {feature}
+                                    </span>
+                                  ))}
+                                  {service.features.length > 3 && (
+                                    <span className="text-xs text-purple-300">+{service.features.length - 3} more</span>
+                                  )}
                                 </div>
                               </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Selected Service Details & Book Button */}
-                    {selectedService && (
-                      <div className="bg-white/10 rounded-lg p-6 border border-white/20">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <h4 className="text-xl font-bold text-white mb-2">{selectedService.title}</h4>
-                            <p className="text-purple-200 mb-4">{selectedService.description}</p>
-                            <div className="flex items-center gap-6 text-sm text-purple-300">
-                              <span>Duration: {selectedService.duration}</span>
-                              <span>Delivery: {selectedService.deliveryTime}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-3xl font-bold text-purple-300 mb-1">
-                              ${selectedService.startingPrice}
-                            </div>
-                            <div className="text-sm text-purple-400">Starting price</div>
+                            ))}
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                           <Button
-                            onClick={() => setIsBookingOpen(true)}
-                            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                            onClick={handleBookNow}
+                            disabled={!selectedService}
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <MessageCircle className="w-5 h-5 mr-2" />
-                            Book Now - ${selectedService.startingPrice}
+                            Book Now - ${selectedService?.basePrice || 0}
                           </Button>
-
-                          {selectedService.asapPrice > selectedService.startingPrice && (
-                            <Button
-                              onClick={() => setIsBookingOpen(true)}
-                              variant="outline"
-                              className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 py-3 text-lg"
-                            >
-                              <Zap className="w-5 h-5 mr-2" />
-                              Rush (${selectedService.asapPrice})
-                            </Button>
+                          {selectedService && (
+                            <div className="text-purple-200 text-sm">
+                              <p>• Duration: {selectedService.duration}</p>
+                              <p>• Delivery: {selectedService.deliveryTime}</p>
+                            </div>
                           )}
                         </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <MessageCircle className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">No Services Available</h3>
+                        <p className="text-purple-200">Services will be available soon.</p>
                       </div>
                     )}
                   </div>
@@ -469,15 +468,18 @@ export default function CelebrityDetailPage() {
         <section className="px-4 sm:px-6 lg:px-8 py-16">
           <div className="max-w-7xl mx-auto">
             <Tabs defaultValue="about" className="w-full text-white">
-              <TabsList className="grid w-full grid-cols-3 bg-white/10 border-white/20 text-white">
+              <TabsList className="grid w-full grid-cols-4 bg-white/10 border-white/20 text-white">
                 <TabsTrigger value="about" className="data-[state=active]:bg-purple-500 text-white">
                   About
+                </TabsTrigger>
+                <TabsTrigger value="services" className="data-[state=active]:bg-purple-500 text-white">
+                  Services
                 </TabsTrigger>
                 <TabsTrigger value="samples" className="data-[state=active]:bg-purple-500 text-white">
                   Samples
                 </TabsTrigger>
-                <TabsTrigger value="services" className="data-[state=active]:bg-purple-500 text-white">
-                  Services
+                <TabsTrigger value="availability" className="data-[state=active]:bg-purple-500 text-white">
+                  Availability
                 </TabsTrigger>
               </TabsList>
 
@@ -503,32 +505,74 @@ export default function CelebrityDetailPage() {
                       </CardContent>
                     </Card>
                   </div>
-                  <div>
-                    <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                      <CardHeader>
-                        <CardTitle className="text-white text-xl">Availability</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-purple-200">Next Available:</span>
-                          <span className="text-white font-semibold">{availability.nextAvailable}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-purple-200">Average Delivery:</span>
-                          <span className="text-white font-semibold">{availability.averageDelivery}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-purple-200">Completion Rate:</span>
-                          <span className="text-green-400 font-semibold">{availability.completionRate}%</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-purple-200">Total Orders:</span>
-                          <span className="text-white font-semibold">{availability.totalOrders}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
                 </div>
+              </TabsContent>
+
+              {/* Services Tab */}
+              <TabsContent value="services" className="mt-8">
+                {servicesLoading ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-purple-500 mx-auto mb-4" />
+                    <p className="text-purple-200">Loading services...</p>
+                  </div>
+                ) : services.length > 0 ? (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {services.map((service) => (
+                      <Card
+                        key={service.id}
+                        className={`bg-white/10 border-white/20 backdrop-blur-lg cursor-pointer transition-all duration-300 hover:bg-white/20 ${
+                          selectedService?.id === service.id ? "ring-2 ring-purple-500" : ""
+                        }`}
+                        onClick={() => setSelectedService(service)}
+                      >
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="text-purple-400">{getServiceIcon(service.icon)}</div>
+                              <div>
+                                <CardTitle className="text-white text-xl">{service.name}</CardTitle>
+                                <p className="text-purple-200 text-sm">{service.description}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-purple-300">${service.basePrice}</div>
+                              <div className="text-purple-400 text-sm">{service.duration}</div>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-purple-200 text-sm">
+                              <Clock className="w-4 h-4" />
+                              <span>Delivery: {service.deliveryTime}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {service.features.map((feature, index) => (
+                                <span
+                                  key={index}
+                                  className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded"
+                                >
+                                  {feature}
+                                </span>
+                              ))}
+                            </div>
+                            {service.rushPrice && (
+                              <div className="text-sm text-yellow-300">
+                                Rush delivery available: +${service.rushPrice}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <MessageCircle className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-white mb-2">No Services Available</h3>
+                    <p className="text-purple-200">Services will be available soon.</p>
+                  </div>
+                )}
               </TabsContent>
 
               {/* Samples Tab */}
@@ -575,62 +619,62 @@ export default function CelebrityDetailPage() {
                 )}
               </TabsContent>
 
-              {/* Services Tab */}
-              <TabsContent value="services" className="mt-8">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {services.map((service) => {
-                    const IconComponent = getServiceIcon(service.icon)
-                    return (
-                      <Card
-                        key={service.id}
-                        className={`bg-white/10 border-white/20 backdrop-blur-lg cursor-pointer transition-all duration-300 hover:bg-white/20 ${
-                          selectedService?.id === service.id ? "ring-2 ring-purple-500" : ""
-                        }`}
-                        onClick={() => setSelectedService(service)}
-                      >
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className={`p-3 rounded-lg ${service.color}`}>
-                              <IconComponent className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-white font-semibold">{service.title}</h3>
-                              {service.popular && (
-                                <Badge className="bg-yellow-500/20 text-yellow-300 text-xs mt-1">Popular</Badge>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-purple-200 text-sm mb-4">{service.description}</p>
-                          <div className="space-y-2 text-sm text-purple-300">
-                            <div className="flex justify-between">
-                              <span>Duration:</span>
-                              <span>{service.duration}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Delivery:</span>
-                              <span>{service.deliveryTime}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Rush Delivery:</span>
-                              <span>{service.asapDeliveryTime}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/20">
-                            <div>
-                              <div className="text-2xl font-bold text-purple-300">${service.startingPrice}</div>
-                              <div className="text-xs text-purple-400">Starting price</div>
-                            </div>
-                            {service.asapPrice > service.startingPrice && (
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-yellow-300">${service.asapPrice}</div>
-                                <div className="text-xs text-yellow-400">Rush price</div>
+              {/* Availability Tab */}
+              <TabsContent value="availability" className="mt-8">
+                <div className="grid lg:grid-cols-2 gap-8">
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                    <CardHeader>
+                      <CardTitle className="text-white text-xl flex items-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        Availability
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-purple-200">Next Available:</span>
+                        <span className="text-white font-semibold">{availability.nextAvailable}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-purple-200">Average Delivery:</span>
+                        <span className="text-white font-semibold">{availability.averageDelivery}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-purple-200">Total Orders:</span>
+                        <span className="text-white font-semibold">{availability.totalOrders}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+                    <CardHeader>
+                      <CardTitle className="text-white text-xl">Available Services</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {services.length > 0 ? (
+                        <div className="space-y-3">
+                          {services.map((service) => (
+                            <div
+                              key={service.id}
+                              className="flex justify-between items-center p-3 rounded-lg bg-white/5"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="text-purple-400">{getServiceIcon(service.icon)}</div>
+                                <div>
+                                  <span className="text-white font-semibold">{service.name}</span>
+                                  <p className="text-purple-300 text-sm">
+                                    {service.duration} • {service.deliveryTime}
+                                  </p>
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
+                              <span className="text-2xl font-bold text-purple-300">${service.basePrice}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-purple-200">No services available yet.</p>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
             </Tabs>
@@ -640,7 +684,7 @@ export default function CelebrityDetailPage() {
         {/* Enhanced Booking Modal */}
         <EnhancedBookingModal
           celebrity={celebrity}
-          selectedService={selectedService}
+          selectedService={selectedService || undefined}
           isOpen={isBookingOpen}
           onClose={() => setIsBookingOpen(false)}
         />

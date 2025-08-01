@@ -20,8 +20,9 @@ import {
   FileText,
   Star,
   Zap,
-  Camera,
   Music,
+  Video,
+  MessageSquare,
 } from "lucide-react"
 import { format } from "date-fns"
 import { useSession } from "next-auth/react"
@@ -29,8 +30,21 @@ import { useRouter } from "next/navigation"
 import StripeProvider from "./stripe-provider"
 import PaymentForm from "./payment-form"
 
+interface Service {
+  id: string
+  name: string
+  description: string
+  basePrice: number
+  rushPrice?: number
+  duration: string
+  deliveryTime: string
+  icon: string
+  features: string[]
+}
+
 interface BookingModalProps {
   celebrity: any
+  selectedService?: Service
   isOpen: boolean
   onClose: () => void
 }
@@ -54,10 +68,21 @@ const addOns = [
     id: "extended",
     icon: <Clock className="w-5 h-5" />,
     title: "Extended Length",
-    description: "Up to 10 minutes instead of standard",
+    description: "Double the standard duration",
     price: 199,
   },
 ]
+
+// Icon mapping for services
+const getServiceIcon = (iconName: string) => {
+  const icons: { [key: string]: React.ReactNode } = {
+    video: <Video className="w-5 h-5" />,
+    message: <MessageSquare className="w-5 h-5" />,
+    star: <Star className="w-5 h-5" />,
+    music: <Music className="w-5 h-5" />,
+  }
+  return icons[iconName] || <Star className="w-5 h-5" />
+}
 
 // Mock availability data
 const getAvailabilityData = (date: Date) => {
@@ -79,13 +104,12 @@ const getAvailabilityData = (date: Date) => {
   }
 }
 
-export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: BookingModalProps) {
+export default function EnhancedBookingModal({ celebrity, selectedService, isOpen, onClose }: BookingModalProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedSlot, setSelectedSlot] = useState<string>()
-  const [selectedPricing, setSelectedPricing] = useState<"personal" | "business" | "charity">("personal")
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([])
   const [availability, setAvailability] = useState<any>(null)
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
@@ -128,7 +152,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
   // Calculate total price
   const calculateTotal = () => {
-    const basePrice = celebrity.pricing[selectedPricing]
+    if (!selectedService) return 0
+
+    const basePrice = selectedService.basePrice
     const addOnTotal = selectedAddOns.reduce((total, addOnId) => {
       const addOn = addOns.find((a) => a.id === addOnId)
       return total + (addOn ? addOn.price : 0)
@@ -157,6 +183,11 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
       return
     }
 
+    if (!selectedService) {
+      setPaymentError("Please select a service to continue")
+      return
+    }
+
     setIsCreatingPayment(true)
     setPaymentError("")
 
@@ -168,13 +199,17 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
       // Prepare order items
       const orderItems = [
         {
-          type: "base",
-          name: `${celebrity.name} - ${selectedPricing} message`,
-          description: `Personalized video message for ${formData.recipientName}`,
+          type: "service",
+          name: `${celebrity.name} - ${selectedService.name}`,
+          description: `${selectedService.description} for ${formData.recipientName}`,
           quantity: 1,
-          unitPrice: celebrity.pricing[selectedPricing],
-          totalPrice: celebrity.pricing[selectedPricing],
-          metadata: { messageType: selectedPricing },
+          unitPrice: selectedService.basePrice,
+          totalPrice: selectedService.basePrice,
+          metadata: {
+            serviceId: selectedService.id,
+            duration: selectedService.duration,
+            deliveryTime: selectedService.deliveryTime,
+          },
         },
       ]
 
@@ -211,6 +246,7 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
         ...formData,
         scheduledDate: selectedDate?.toISOString(),
         scheduledTime: selectedSlot,
+        serviceId: selectedService.id,
       }
 
       console.log("📝 Sending payment request:", {
@@ -336,6 +372,43 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
     )
   }
 
+  // Check if service is selected
+  if (!selectedService) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={handleClose}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-900 border border-white/20 rounded-2xl max-w-md w-full p-8 text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Service Required</h3>
+              <p className="text-purple-200 mb-6">Please select a service first to continue with your booking.</p>
+              <Button
+                onClick={handleClose}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                Go Back
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
+  }
+
   if (!isOpen) return null
 
   return (
@@ -358,12 +431,14 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
           <div className="flex items-center justify-between p-6 border-b border-white/20">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <Star className="w-6 h-6 text-white" />
+                {getServiceIcon(selectedService.icon)}
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-white">Book {celebrity.name}</h3>
                 <p className="text-purple-200">
-                  {orderConfirmed ? "Booking Confirmed!" : `Step ${currentStep} of ${currentStep === 5 ? 5 : 4}`}
+                  {orderConfirmed
+                    ? "Booking Confirmed!"
+                    : `${selectedService.name} - Step ${currentStep} of ${currentStep === 5 ? 5 : 4}`}
                 </p>
               </div>
             </div>
@@ -425,7 +500,29 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
             {/* Step 1: Basic Details */}
             {currentStep === 1 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h4 className="text-xl font-bold text-white">Message Details</h4>
+                <div>
+                  <h4 className="text-xl font-bold text-white mb-2">Service Details</h4>
+                  <div className="bg-white/10 rounded-lg p-4 mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="text-purple-400">{getServiceIcon(selectedService.icon)}</div>
+                      <div>
+                        <h5 className="text-white font-semibold">{selectedService.name}</h5>
+                        <p className="text-purple-200 text-sm">{selectedService.description}</p>
+                      </div>
+                      <div className="ml-auto text-right">
+                        <div className="text-2xl font-bold text-purple-300">${selectedService.basePrice}</div>
+                        <div className="text-purple-400 text-sm">{selectedService.duration}</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedService.features.map((feature, index) => (
+                        <span key={index} className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded">
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -457,20 +554,6 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                <div>
-                  <Label className="text-white mb-2 block">Message Type</Label>
-                  <Select value={selectedPricing} onValueChange={(value: any) => setSelectedPricing(value)}>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-white/20">
-                      <SelectItem value="personal">Personal - ${celebrity.pricing.personal}</SelectItem>
-                      <SelectItem value="business">Business - ${celebrity.pricing.business}</SelectItem>
-                      <SelectItem value="charity">Charity - ${celebrity.pricing.charity}</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <div>
@@ -508,7 +591,14 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
             {/* Step 2: Scheduling & Availability */}
             {currentStep === 2 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h4 className="text-xl font-bold text-white">Schedule Your Message</h4>
+                <h4 className="text-xl font-bold text-white">Schedule Your {selectedService.name}</h4>
+
+                <div className="bg-white/10 rounded-lg p-4 mb-6">
+                  <div className="flex items-center gap-2 text-purple-200 mb-2">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm">Expected delivery: {selectedService.deliveryTime}</span>
+                  </div>
+                </div>
 
                 <div className="grid lg:grid-cols-2 gap-8">
                   <div>
@@ -747,9 +837,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                     <div className="bg-white/10 rounded-lg p-6 space-y-3">
                       <div className="flex justify-between text-purple-200">
                         <span>
-                          {celebrity.name} - {selectedPricing} message
+                          {celebrity.name} - {selectedService.name}
                         </span>
-                        <span>${celebrity.pricing[selectedPricing]}</span>
+                        <span>${selectedService.basePrice}</span>
                       </div>
 
                       {selectedAddOns.map((addOnId) => {
@@ -780,7 +870,8 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                         <p>
                           • Scheduled for {selectedDate && format(selectedDate, "MMMM d, yyyy")} at {selectedSlot}
                         </p>
-                        <p>• Delivery within 7 days</p>
+                        <p>• Delivery: {selectedService.deliveryTime}</p>
+                        <p>• Duration: {selectedService.duration}</p>
                         <p>• 100% satisfaction guarantee</p>
                       </div>
                     </div>
@@ -825,9 +916,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                   <h5 className="text-white font-semibold mb-4">Order Summary</h5>
                   <div className="flex justify-between text-purple-200 mb-2">
                     <span>
-                      {celebrity.name} - {selectedPricing} message
+                      {celebrity.name} - {selectedService.name}
                     </span>
-                    <span>${celebrity.pricing[selectedPricing]}</span>
+                    <span>${selectedService.basePrice}</span>
                   </div>
                   {selectedAddOns.map((addOnId) => {
                     const addOn = addOns.find((a) => a.id === addOnId)
@@ -895,6 +986,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                       <strong>Celebrity:</strong> {celebrity.name}
                     </p>
                     <p>
+                      <strong>Service:</strong> {selectedService.name}
+                    </p>
+                    <p>
                       <strong>Recipient:</strong> {formData.recipientName}
                     </p>
                     <p>
@@ -908,7 +1002,7 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                       <strong>Total Paid:</strong> ${calculateTotal()}
                     </p>
                     <p>
-                      <strong>Expected Delivery:</strong> Within 7 days
+                      <strong>Expected Delivery:</strong> {selectedService.deliveryTime}
                     </p>
                   </div>
                 </div>
