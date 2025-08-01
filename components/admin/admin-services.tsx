@@ -344,7 +344,7 @@ export function AdminServices() {
   }
 
   const ServiceForm = () => (
-    <div className="space-y-6 max-h-[70vh] overflow-y-auto">
+    <div className="space-y-6 max-h-[70vh] text-gray-400 overflow-y-auto">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="title">Service Title</Label>
