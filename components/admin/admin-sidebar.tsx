@@ -251,7 +251,7 @@ export function AdminSidebar({ activeSection, setActiveSection, sidebarOpen, set
             <Button
               onClick={() => router.push("/")}
               variant="outline"
-              className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+              className="w-full mb-3 border-red-500/30 text-red-400 bg-red-500/10 hover:text-white"
             >
               <Home className="w-4 h-4 mr-2" />
               Go Home
