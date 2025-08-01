@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, Search, Users, HelpCircle, LogOut, Crown, LayoutDashboard, ShoppingCart } from "lucide-react"
+import { Menu, X, Star, User, Search, Users, HelpCircle, LogOut, Crown, LayoutDashboard, ShoppingCart, Home } from "lucide-react"
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { AuthModal } from "@/components/auth/auth-modal"
@@ -31,7 +31,7 @@ export default function MobileNavbar() {
   }, [])
 
   const navItems = [
-    { name: "About", href: "/about", icon: <Star className="w-5 h-5" /> },
+    { name: "Home", href: "/", icon: <Home className="w-5 h-5" /> },
     { name: "Celebrities", href: "/celebrities", icon: <Users className="w-5 h-5" /> },
     { name: "How It Works", href: "/how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
     { name: "Become Talent", href: "/join-celebrity", icon: <Star className="w-5 h-5" /> },
