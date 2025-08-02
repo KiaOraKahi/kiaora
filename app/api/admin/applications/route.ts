@@ -38,11 +38,6 @@ export async function GET(request: NextRequest) {
     })
 
     const totalApplications = await prisma.celebrityApplication.count()
-    const averagePrice = await prisma.celebrityApplication.aggregate({
-      _avg: {
-        basePrice: true,
-      },
-    })
 
     const formattedStats = {
       total: totalApplications,
@@ -50,7 +45,6 @@ export async function GET(request: NextRequest) {
       underReview: stats.find((s) => s.status === "UNDER_REVIEW")?._count.status || 0,
       approved: stats.find((s) => s.status === "APPROVED")?._count.status || 0,
       rejected: stats.find((s) => s.status === "REJECTED")?._count.status || 0,
-      averagePrice: Math.round(averagePrice._avg.basePrice || 0),
     }
 
     return NextResponse.json({

@@ -71,11 +71,11 @@ export default function AdminApplications() {
       if (response.ok) {
         setApplications(data.applications || [])
       } else {
-        toast.error("Failed to fetch applications")
+        toast.error("1 Failed to fetch applications")
       }
     } catch (error) {
       console.error("Error fetching applications:", error)
-      toast.error("Failed to fetch applications")
+      toast.error("2 Failed to fetch applications")
     } finally {
       setLoading(false)
     }

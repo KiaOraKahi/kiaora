@@ -21,7 +21,6 @@ import {
   Clock,
   User,
   Briefcase,
-  DollarSign,
   Share2,
   FileText,
   ExternalLink,
@@ -35,22 +34,15 @@ interface Application {
   phone: string
   dateOfBirth: string
   nationality: string
-  profession: string
   category: string
   experience: string
-  achievements: string
   instagramHandle?: string
   twitterHandle?: string
   tiktokHandle?: string
   youtubeHandle?: string
   otherSocialMedia?: string
-  followerCount: string
-  basePrice: number
-  rushPrice: number
   languages: string[]
-  availability: string
   specialRequests?: string
-  motivation: string
   hasProfilePhoto: boolean
   hasIdDocument: boolean
   hasVerificationDocument: boolean
@@ -353,10 +345,6 @@ export function AdminApplications() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-right mr-4">
-                      <p className="text-white font-medium">${application.basePrice}</p>
-                      <p className="text-gray-400 text-sm">Base price</p>
-                    </div>
                     <Button
                       onClick={() => handleViewApplication(application)}
                       variant="outline"
@@ -443,10 +431,6 @@ export function AdminApplications() {
                   <TabsTrigger value="experience" className="data-[state=active]:bg-purple-500">
                     <Briefcase className="w-4 h-4 mr-2" />
                     Experience
-                  </TabsTrigger>
-                  <TabsTrigger value="pricing" className="data-[state=active]:bg-purple-500">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Pricing
                   </TabsTrigger>
                   <TabsTrigger value="social" className="data-[state=active]:bg-purple-500">
                     <Share2 className="w-4 h-4 mr-2" />
@@ -594,55 +578,19 @@ export function AdminApplications() {
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <label className="text-sm text-gray-400">Profession</label>
-                          <p className="text-white font-medium">{selectedApplication.profession}</p>
-                        </div>
-                        <div>
                           <label className="text-sm text-gray-400">Experience</label>
                           <p className="text-white leading-relaxed whitespace-pre-wrap">
                             {selectedApplication.experience}
                           </p>
                         </div>
-                        <div>
-                          <label className="text-sm text-gray-400">Notable Achievements</label>
-                          <p className="text-white leading-relaxed whitespace-pre-wrap">
-                            {selectedApplication.achievements}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm text-gray-400">Motivation</label>
-                          <p className="text-white leading-relaxed whitespace-pre-wrap">
-                            {selectedApplication.motivation}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Pricing Tab */}
-                <TabsContent value="pricing" className="space-y-6">
-                  <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                    <CardHeader>
-                      <CardTitle className="text-white">Pricing Structure</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="text-center p-6 bg-white/5 rounded-lg">
-                          <h3 className="text-white font-semibold mb-2">Base Price</h3>
-                          <p className="text-3xl font-bold text-purple-300 mb-2">${selectedApplication.basePrice}</p>
-                          <p className="text-gray-400 text-sm">Standard delivery time</p>
-                        </div>
-                        <div className="text-center p-6 bg-white/5 rounded-lg">
-                          <h3 className="text-white font-semibold mb-2">Rush Price</h3>
-                          <p className="text-3xl font-bold text-purple-300 mb-2">${selectedApplication.rushPrice}</p>
-                          <p className="text-gray-400 text-sm">24-hour delivery</p>
-                        </div>
-                        <div className="text-center p-6 bg-white/5 rounded-lg">
-                          <h3 className="text-white font-semibold mb-2">Availability</h3>
-                          <p className="text-xl font-bold text-green-400 mb-2">{selectedApplication.availability}</p>
-                          <p className="text-gray-400 text-sm">Response time</p>
-                        </div>
+                        {selectedApplication.specialRequests && (
+                          <div>
+                            <label className="text-sm text-gray-400">Special Requests</label>
+                            <p className="text-white leading-relaxed whitespace-pre-wrap">
+                              {selectedApplication.specialRequests}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -689,10 +637,28 @@ export function AdminApplications() {
                             </div>
                           </div>
                         )}
-                      </div>
-                      <div className="mt-6 p-4 bg-white/5 rounded-lg">
-                        <label className="text-sm text-gray-400">Follower Count</label>
-                        <p className="text-white font-medium text-lg">{selectedApplication.followerCount}</p>
+                        {selectedApplication.tiktokHandle && (
+                          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+                              <Share2 className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-white font-medium">TikTok</p>
+                              <p className="text-gray-400 text-sm">{selectedApplication.tiktokHandle}</p>
+                            </div>
+                          </div>
+                        )}
+                        {selectedApplication.otherSocialMedia && (
+                          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                            <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
+                              <Share2 className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-white font-medium">Other Social</p>
+                              <p className="text-gray-400 text-sm">{selectedApplication.otherSocialMedia}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
