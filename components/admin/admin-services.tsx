@@ -5,10 +5,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
@@ -18,7 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +30,6 @@ import {
   Edit,
   Trash2,
   Save,
-  X,
   Briefcase,
   MessageCircle,
   Video,
@@ -49,8 +43,10 @@ import {
   Star,
   Eye,
   EyeOff,
+  Loader2,
 } from "lucide-react"
 import { toast } from "sonner"
+import ServiceForm from "@/components/admin/ServiceForm"
 
 interface Service {
   id: string
@@ -92,6 +88,13 @@ interface ServiceFormData {
   popular: boolean
   isActive: boolean
   features: string[]
+}
+
+interface LoadingStates {
+  creating: boolean
+  updating: boolean
+  deleting: string | null
+  toggling: string | null
 }
 
 const iconOptions = [
@@ -137,6 +140,12 @@ const getIconComponent = (iconName: string) => {
 export function AdminServices() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingStates, setLoadingStates] = useState<LoadingStates>({
+    creating: false,
+    updating: false,
+    deleting: null,
+    toggling: null,
+  })
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [formData, setFormData] = useState<ServiceFormData>({
@@ -212,6 +221,8 @@ export function AdminServices() {
 
   const handleCreateService = async () => {
     try {
+      setLoadingStates(prev => ({ ...prev, creating: true }))
+      
       const response = await fetch("/api/admin/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -233,6 +244,8 @@ export function AdminServices() {
     } catch (error) {
       console.error("Error creating service:", error)
       toast.error("Error creating service")
+    } finally {
+      setLoadingStates(prev => ({ ...prev, creating: false }))
     }
   }
 
@@ -259,6 +272,8 @@ export function AdminServices() {
     if (!editingService) return
 
     try {
+      setLoadingStates(prev => ({ ...prev, updating: true }))
+      
       const response = await fetch(`/api/admin/services/${editingService.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -280,11 +295,15 @@ export function AdminServices() {
     } catch (error) {
       console.error("Error updating service:", error)
       toast.error("Error updating service")
+    } finally {
+      setLoadingStates(prev => ({ ...prev, updating: false }))
     }
   }
 
   const handleDeleteService = async (serviceId: string) => {
     try {
+      setLoadingStates(prev => ({ ...prev, deleting: serviceId }))
+      
       const response = await fetch(`/api/admin/services/${serviceId}`, {
         method: "DELETE",
       })
@@ -299,11 +318,15 @@ export function AdminServices() {
     } catch (error) {
       console.error("Error deleting service:", error)
       toast.error("Error deleting service")
+    } finally {
+      setLoadingStates(prev => ({ ...prev, deleting: null }))
     }
   }
 
   const toggleServiceStatus = async (serviceId: string, isActive: boolean) => {
     try {
+      setLoadingStates(prev => ({ ...prev, toggling: serviceId }))
+      
       const response = await fetch(`/api/admin/services/${serviceId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -319,6 +342,8 @@ export function AdminServices() {
     } catch (error) {
       console.error("Error updating service status:", error)
       toast.error("Error updating service status")
+    } finally {
+      setLoadingStates(prev => ({ ...prev, toggling: null }))
     }
   }
 
@@ -343,178 +368,178 @@ export function AdminServices() {
     }))
   }
 
-  const ServiceForm = () => (
-    <div className="space-y-6 max-h-[70vh] text-gray-400 overflow-y-auto">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="title">Service Title</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-            placeholder="e.g., Quick Shout-outs"
-          />
-        </div>
-        <div>
-          <Label htmlFor="icon">Icon</Label>
-          <Select value={formData.icon} onValueChange={(value) => setFormData((prev) => ({ ...prev, icon: value }))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {iconOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center gap-2">
-                    {option.icon}
-                    {option.label}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+  // const ServiceForm = () => (
+  //   <div className="space-y-6 max-h-[70vh] text-gray-400 overflow-y-auto">
+  //     <div className="grid grid-cols-2 gap-4">
+  //       <div>
+  //         <Label htmlFor="title">Service Title</Label>
+  //         <Input
+  //           id="title"
+  //           value={formData.title}
+  //           onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+  //           placeholder="e.g., Quick Shout-outs"
+  //         />
+  //       </div>
+  //       <div>
+  //         <Label htmlFor="icon">Icon</Label>
+  //         <Select value={formData.icon} onValueChange={(value) => setFormData((prev) => ({ ...prev, icon: value }))}>
+  //           <SelectTrigger>
+  //             <SelectValue />
+  //           </SelectTrigger>
+  //           <SelectContent>
+  //             {iconOptions.map((option) => (
+  //               <SelectItem key={option.value} value={option.value}>
+  //                 <div className="flex items-center gap-2">
+  //                   {option.icon}
+  //                   {option.label}
+  //                 </div>
+  //               </SelectItem>
+  //             ))}
+  //           </SelectContent>
+  //         </Select>
+  //       </div>
+  //     </div>
 
-      <div>
-        <Label htmlFor="color">Color Gradient</Label>
-        <Select value={formData.color} onValueChange={(value) => setFormData((prev) => ({ ...prev, color: value }))}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {colorOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                <div className="flex items-center gap-2">
-                  <div className={`w-4 h-4 rounded bg-gradient-to-r ${option.value}`} />
-                  {option.label}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+  //     <div>
+  //       <Label htmlFor="color">Color Gradient</Label>
+  //       <Select value={formData.color} onValueChange={(value) => setFormData((prev) => ({ ...prev, color: value }))}>
+  //         <SelectTrigger>
+  //           <SelectValue />
+  //         </SelectTrigger>
+  //         <SelectContent>
+  //           {colorOptions.map((option) => (
+  //             <SelectItem key={option.value} value={option.value}>
+  //               <div className="flex items-center gap-2">
+  //                 <div className={`w-4 h-4 rounded bg-gradient-to-r ${option.value}`} />
+  //                 {option.label}
+  //               </div>
+  //             </SelectItem>
+  //           ))}
+  //         </SelectContent>
+  //       </Select>
+  //     </div>
 
-      <div>
-        <Label htmlFor="shortDescription">Short Description</Label>
-        <Textarea
-          id="shortDescription"
-          value={formData.shortDescription}
-          onChange={(e) => setFormData((prev) => ({ ...prev, shortDescription: e.target.value }))}
-          placeholder="Brief description for cards..."
-          rows={2}
-        />
-      </div>
+  //     <div>
+  //       <Label htmlFor="shortDescription">Short Description</Label>
+  //       <Textarea
+  //         id="shortDescription"
+  //         value={formData.shortDescription}
+  //         onChange={(e) => setFormData((prev) => ({ ...prev, shortDescription: e.target.value }))}
+  //         placeholder="Brief description for cards..."
+  //         rows={2}
+  //       />
+  //     </div>
 
-      <div>
-        <Label htmlFor="fullDescription">Full Description</Label>
-        <Textarea
-          id="fullDescription"
-          value={formData.fullDescription}
-          onChange={(e) => setFormData((prev) => ({ ...prev, fullDescription: e.target.value }))}
-          placeholder="Detailed description for service page..."
-          rows={3}
-        />
-      </div>
+  //     <div>
+  //       <Label htmlFor="fullDescription">Full Description</Label>
+  //       <Textarea
+  //         id="fullDescription"
+  //         value={formData.fullDescription}
+  //         onChange={(e) => setFormData((prev) => ({ ...prev, fullDescription: e.target.value }))}
+  //         placeholder="Detailed description for service page..."
+  //         rows={3}
+  //       />
+  //     </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="startingPrice">Starting Price ($)</Label>
-          <Input
-            id="startingPrice"
-            type="number"
-            value={formData.startingPrice}
-            onChange={(e) => setFormData((prev) => ({ ...prev, startingPrice: Number(e.target.value) }))}
-          />
-        </div>
-        <div>
-          <Label htmlFor="asapPrice">ASAP Price ($)</Label>
-          <Input
-            id="asapPrice"
-            type="number"
-            value={formData.asapPrice}
-            onChange={(e) => setFormData((prev) => ({ ...prev, asapPrice: Number(e.target.value) }))}
-          />
-        </div>
-      </div>
+  //     <div className="grid grid-cols-2 gap-4">
+  //       <div>
+  //         <Label htmlFor="startingPrice">Starting Price ($)</Label>
+  //         <Input
+  //           id="startingPrice"
+  //           type="number"
+  //           value={formData.startingPrice}
+  //           onChange={(e) => setFormData((prev) => ({ ...prev, startingPrice: Number(e.target.value) }))}
+  //         />
+  //       </div>
+  //       <div>
+  //         <Label htmlFor="asapPrice">ASAP Price ($)</Label>
+  //         <Input
+  //           id="asapPrice"
+  //           type="number"
+  //           value={formData.asapPrice}
+  //           onChange={(e) => setFormData((prev) => ({ ...prev, asapPrice: Number(e.target.value) }))}
+  //         />
+  //       </div>
+  //     </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="duration">Duration</Label>
-          <Input
-            id="duration"
-            value={formData.duration}
-            onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
-            placeholder="30-60 seconds"
-          />
-        </div>
-        <div>
-          <Label htmlFor="deliveryTime">Delivery Time</Label>
-          <Input
-            id="deliveryTime"
-            value={formData.deliveryTime}
-            onChange={(e) => setFormData((prev) => ({ ...prev, deliveryTime: e.target.value }))}
-            placeholder="3-7 days"
-          />
-        </div>
-        <div>
-          <Label htmlFor="asapDeliveryTime">ASAP Delivery</Label>
-          <Input
-            id="asapDeliveryTime"
-            value={formData.asapDeliveryTime}
-            onChange={(e) => setFormData((prev) => ({ ...prev, asapDeliveryTime: e.target.value }))}
-            placeholder="24-48 hours"
-          />
-        </div>
-      </div>
+  //     <div className="grid grid-cols-3 gap-4">
+  //       <div>
+  //         <Label htmlFor="duration">Duration</Label>
+  //         <Input
+  //           id="duration"
+  //           value={formData.duration}
+  //           onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
+  //           placeholder="30-60 seconds"
+  //         />
+  //       </div>
+  //       <div>
+  //         <Label htmlFor="deliveryTime">Delivery Time</Label>
+  //         <Input
+  //           id="deliveryTime"
+  //           value={formData.deliveryTime}
+  //           onChange={(e) => setFormData((prev) => ({ ...prev, deliveryTime: e.target.value }))}
+  //           placeholder="3-7 days"
+  //         />
+  //       </div>
+  //       <div>
+  //         <Label htmlFor="asapDeliveryTime">ASAP Delivery</Label>
+  //         <Input
+  //           id="asapDeliveryTime"
+  //           value={formData.asapDeliveryTime}
+  //           onChange={(e) => setFormData((prev) => ({ ...prev, asapDeliveryTime: e.target.value }))}
+  //           placeholder="24-48 hours"
+  //         />
+  //       </div>
+  //     </div>
 
-      <div>
-        <Label>Features</Label>
-        <div className="space-y-2">
-          {formData.features.map((feature, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                value={feature}
-                onChange={(e) => updateFeature(index, e.target.value)}
-                placeholder="Enter feature..."
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => removeFeature(index)}
-                disabled={formData.features.length === 1}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
-          <Button type="button" variant="outline" size="sm" onClick={addFeature}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Feature
-          </Button>
-        </div>
-      </div>
+  //     <div>
+  //       <Label>Features</Label>
+  //       <div className="space-y-2">
+  //         {formData.features.map((feature, index) => (
+  //           <div key={index} className="flex items-center gap-2">
+  //             <Input
+  //               value={feature}
+  //               onChange={(e) => updateFeature(index, e.target.value)}
+  //               placeholder="Enter feature..."
+  //             />
+  //             <Button
+  //               type="button"
+  //               variant="outline"
+  //               size="sm"
+  //               onClick={() => removeFeature(index)}
+  //               disabled={formData.features.length === 1}
+  //             >
+  //               <X className="w-4 h-4" />
+  //             </Button>
+  //           </div>
+  //         ))}
+  //         <Button type="button" variant="outline" size="sm" onClick={addFeature}>
+  //           <Plus className="w-4 h-4 mr-2" />
+  //           Add Feature
+  //         </Button>
+  //       </div>
+  //     </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="popular"
-            checked={formData.popular}
-            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, popular: checked }))}
-          />
-          <Label htmlFor="popular">Mark as Popular</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="isActive"
-            checked={formData.isActive}
-            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isActive: checked }))}
-          />
-          <Label htmlFor="isActive">Active</Label>
-        </div>
-      </div>
-    </div>
-  )
+  //     <div className="flex items-center justify-between">
+  //       <div className="flex items-center space-x-2">
+  //         <Switch
+  //           id="popular"
+  //           checked={formData.popular}
+  //           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, popular: checked }))}
+  //         />
+  //         <Label htmlFor="popular">Mark as Popular</Label>
+  //       </div>
+  //       <div className="flex items-center space-x-2">
+  //         <Switch
+  //           id="isActive"
+  //           checked={formData.isActive}
+  //           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isActive: checked }))}
+  //         />
+  //         <Label htmlFor="isActive">Active</Label>
+  //       </div>
+  //     </div>
+  //   </div>
+  // )
 
   if (loading) {
     return (
@@ -545,14 +570,36 @@ export function AdminServices() {
                 Add a new service to your platform offerings.
               </DialogDescription>
             </DialogHeader>
-            <ServiceForm />
+            <ServiceForm
+              formData={formData}
+              setFormData={setFormData}
+              iconOptions={iconOptions}
+              colorOptions={colorOptions}
+            />
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCreateModal(false)}
+                disabled={loadingStates.creating}
+              >
                 Cancel
               </Button>
-              <Button onClick={handleCreateService} className="bg-gradient-to-r from-purple-500 to-pink-500">
-                <Save className="w-4 h-4 mr-2" />
-                Create Service
+              <Button 
+                onClick={handleCreateService} 
+                className="bg-gradient-to-r from-purple-500 to-pink-500"
+                disabled={loadingStates.creating}
+              >
+                {loadingStates.creating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Create Service
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -604,8 +651,15 @@ export function AdminServices() {
                       size="sm"
                       onClick={() => toggleServiceStatus(service.id, !service.isActive)}
                       className="text-gray-400 hover:text-white"
+                      disabled={loadingStates.toggling === service.id}
                     >
-                      {service.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {loadingStates.toggling === service.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : service.isActive ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </CardHeader>
@@ -669,6 +723,7 @@ export function AdminServices() {
                           size="sm"
                           className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
                           onClick={() => handleEditService(service)}
+                          disabled={loadingStates.updating || loadingStates.deleting === service.id}
                         >
                           <Edit className="w-3 h-3 mr-1" />
                           Edit
@@ -681,17 +736,36 @@ export function AdminServices() {
                             Update the service details and settings.
                           </DialogDescription>
                         </DialogHeader>
-                        <ServiceForm />
+                        <ServiceForm
+                          formData={formData}
+                          setFormData={setFormData}
+                          iconOptions={iconOptions}
+                          colorOptions={colorOptions}
+                        />
                         <DialogFooter>
-                          <Button variant="outline" onClick={() => setEditingService(null)}>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setEditingService(null)}
+                            disabled={loadingStates.updating}
+                          >
                             Cancel
                           </Button>
                           <Button
                             onClick={handleUpdateService}
                             className="bg-gradient-to-r from-purple-500 to-pink-500"
+                            disabled={loadingStates.updating}
                           >
-                            <Save className="w-4 h-4 mr-2" />
-                            Update Service
+                            {loadingStates.updating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Updating...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4 mr-2" />
+                                Update Service
+                              </>
+                            )}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -703,8 +777,13 @@ export function AdminServices() {
                           variant="outline"
                           size="sm"
                           className="border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent"
+                          disabled={loadingStates.deleting === service.id || loadingStates.updating}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          {loadingStates.deleting === service.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3 h-3" />
+                          )}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-black border-red-500/30">
@@ -715,14 +794,25 @@ export function AdminServices() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                          <AlertDialogCancel 
+                            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            disabled={loadingStates.deleting === service.id}
+                          >
                             Cancel
                           </AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => handleDeleteService(service.id)}
                             className="bg-red-500 hover:bg-red-600"
+                            disabled={loadingStates.deleting === service.id}
                           >
-                            Delete Service
+                            {loadingStates.deleting === service.id ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Deleting...
+                              </>
+                            ) : (
+                              "Delete Service"
+                            )}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

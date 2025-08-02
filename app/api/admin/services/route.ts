@@ -45,7 +45,6 @@ export async function POST(request: Request) {
     const body = await request.json()
     const {
       title,
-      description,
       shortDescription,
       fullDescription,
       icon,
@@ -64,11 +63,25 @@ export async function POST(request: Request) {
       talents = [],
     } = body
 
+    // Validate required fields
+    if (!title || !shortDescription || !fullDescription) {
+      return NextResponse.json({ 
+        error: "Missing required fields: title, shortDescription, fullDescription" 
+      }, { status: 400 })
+    }
+
+    // Get the next numericId manually to avoid conflicts
+    const lastService = await prisma.service.findFirst({
+      orderBy: { numericId: 'desc' },
+      select: { numericId: true }
+    })
+    
+    const nextNumericId = (lastService?.numericId || 0) + 1
+
     // Create service with features
     const service = await prisma.service.create({
       data: {
         title,
-        description,
         shortDescription,
         fullDescription,
         icon,
@@ -82,6 +95,7 @@ export async function POST(request: Request) {
         isActive,
         popular,
         order: Number.parseInt(order),
+        numericId: nextNumericId,
         samples: JSON.stringify(samples),
         talents: JSON.stringify(talents),
         updatedBy: session.user.id,

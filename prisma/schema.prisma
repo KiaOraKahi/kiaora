@@ -384,7 +384,6 @@ model Service {
   id               String    @id @default(cuid())
   numericId        Int       @unique @default(autoincrement()) // For backward compatibility
   title            String
-  description      String    @db.Text // Main description field
   shortDescription String    @db.Text
   fullDescription  String    @db.Text
   icon             String    // Icon name (e.g., "Zap", "MessageCircle")
@@ -405,7 +404,6 @@ model Service {
   talents          Json      @default("[]") // Array of featured talents
   
   // Organization
-  category         String    // e.g., "entertainment", "business"
   order            Int       @default(0)
   popular          Boolean   @default(false)
   isActive         Boolean   @default(true)
