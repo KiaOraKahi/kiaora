@@ -27,24 +27,23 @@ export default function Footer() {
         { name: "Motivational video messages", href: "/services?service=motivation" },
       ],
     },
+        {
+      title: "Company",
+      links: [
+        { name: "Terms and Conditions", href: "/terms" },
+        { name: "Privacy Policy", href: "/privacy" },
+        { name: "Community Guidelines", href: "/safety" },
+      ],
+    },
     {
       title: "Support",
       links: [
         // { name: "Help Center", href: "/help" },
         { name: "Contact Us", href: "/contact" },
         { name: "FAQ", href: "/faq" },
-        { name: "Safety Guidelines", href: "/safety" },
+        // { name: "Safety Guidelines", href: "/safety" },
       ],
     },
-    // {
-    //   title: "Company",
-    //   links: [
-    //     { name: "About Us", href: "/about" },
-    //     { name: "Become Talent", href: "/join-celebrity" },
-    //     { name: "Brand Partnerships", href: "/partnerships" },
-    //     { name: "Newsroom", href: "/newsroom" },
-    //   ],
-    // },
   ]
 
   const socialLinks = [
