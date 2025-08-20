@@ -211,3 +211,81 @@ html {
     transform: scale(0.6) rotate(180deg);
   }
 }
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Enhanced filter panel animations */
+.filter-panel-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.filter-panel-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms, transform 200ms;
+}
+
+.filter-panel-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.filter-panel-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 200ms, transform 200ms;
+}
+
+/* Price range slider custom styling */
+.price-slider .slider-track {
+  background: linear-gradient(to right, #fbbf24, #a855f7);
+}
+
+.price-slider .slider-thumb {
+  background: #fbbf24;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced search input styling */
+.search-input-enhanced:focus {
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3);
+  border-color: #fbbf24;
+}
+
+/* Filter badge animations */
+.filter-badge {
+  transition: all 0.2s ease-in-out;
+}
+
+.filter-badge:hover {
+  transform: scale(1.05);
+}
+
+/* Results summary styling */
+.results-summary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}

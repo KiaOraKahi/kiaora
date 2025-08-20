@@ -22,6 +22,7 @@ import {
   Video,
   MessageSquare,
   Music,
+  Award,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -37,6 +38,8 @@ interface Service {
   name: string
   description: string
   basePrice: number
+  title?: string
+  startingPrice?: number
   rushPrice?: number
   duration: string
   deliveryTime: string
@@ -88,6 +91,7 @@ interface Celebrity {
     verified: boolean
     occasion: string
   }>
+  useMockData?: boolean
 }
 
 // Icon mapping for services
@@ -169,6 +173,7 @@ export default function CelebrityDetailPage() {
   const [selectedSampleVideo, setSelectedSampleVideo] = useState<any>(null)
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [useMockData, setUseMockData] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -199,6 +204,7 @@ export default function CelebrityDetailPage() {
 
         if (response.ok) {
           setCelebrity(data)
+          setUseMockData(data.useMockData || false)
           console.log("✅ Celebrity loaded successfully:", data.name)
         } else {
           console.error("❌ API Error:", data.error)
@@ -318,6 +324,16 @@ export default function CelebrityDetailPage() {
       <div className="relative z-10">
         {isMobile ? <MobileNavbar /> : <Navbar />}
 
+        {/* Mock Data Indicator */}
+        {useMockData && (
+          <div className="fixed top-20 right-4 z-50">
+            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-xs px-3 py-2 shadow-lg">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Demo Mode
+            </Badge>
+          </div>
+        )}
+
         {/* Hero Section */}
         <section className="relative pt-20">
           {/* Cover Image */}
@@ -402,10 +418,31 @@ export default function CelebrityDetailPage() {
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
+                        <Star className="w-5 h-5 text-yellow-400" />
+                        <span className="text-2xl font-bold">{celebrity.rating}</span>
+                      </div>
+                      <p className="text-purple-300 text-sm">Rating</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1 mb-2">
+                        <MessageSquare className="w-5 h-5 text-purple-400" />
+                        <span className="text-2xl font-bold">{celebrity.reviewCount}</span>
+                      </div>
+                      <p className="text-purple-300 text-sm">Reviews</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1 mb-2">
                         <Clock className="w-5 h-5 text-purple-400" />
                         <span className="text-2xl font-bold">{celebrity.responseTime}</span>
                       </div>
                       <p className="text-purple-300 text-sm">Response Time</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1 mb-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span className="text-2xl font-bold">{availability.completionRate}%</span>
+                      </div>
+                      <p className="text-purple-300 text-sm">Completion Rate</p>
                     </div>
                   </div>
 
@@ -497,7 +534,7 @@ export default function CelebrityDetailPage() {
         <section className="px-4 sm:px-6 lg:px-8 py-16">
           <div className="max-w-7xl mx-auto">
             <Tabs defaultValue="about" className="w-full text-white">
-              <TabsList className="grid w-full grid-cols-4 bg-white/10 border-white/20 text-white">
+              <TabsList className="grid w-full grid-cols-5 bg-white/10 border-white/20 text-white">
                 <TabsTrigger value="about" className="data-[state=active]:bg-purple-500 text-white">
                   About
                 </TabsTrigger>
@@ -505,10 +542,13 @@ export default function CelebrityDetailPage() {
                   Services
                 </TabsTrigger>
                 <TabsTrigger value="samples" className="data-[state=active]:bg-purple-500 text-white">
-                  Samples
+                  Gallery
+                </TabsTrigger>
+                <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 text-white">
+                  Reviews
                 </TabsTrigger>
                 <TabsTrigger value="availability" className="data-[state=active]:bg-purple-500 text-white">
-                  Availability
+                  Calendar
                 </TabsTrigger>
               </TabsList>
 
@@ -523,14 +563,56 @@ export default function CelebrityDetailPage() {
                       <CardContent className="text-purple-200 space-y-4">
                         <p className="text-lg leading-relaxed">{celebrity.longBio || celebrity.bio}</p>
                         {celebrity.tags && celebrity.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-6">
-                            {celebrity.tags.map((tag) => (
-                              <Badge key={tag} variant="outline" className="border-purple-500/30 text-purple-300">
-                                {tag}
-                              </Badge>
-                            ))}
+                          <div className="mt-6">
+                            <h4 className="text-white font-semibold mb-3">Tags & Specialties</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {celebrity.tags.map((tag) => (
+                                <Badge key={tag} variant="outline" className="border-purple-500/30 text-purple-300">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
                         )}
+                        {celebrity.achievements && celebrity.achievements.length > 0 && (
+                          <div className="mt-6">
+                            <h4 className="text-white font-semibold mb-3">Achievements & Awards</h4>
+                            <div className="space-y-2">
+                              {celebrity.achievements.map((achievement, index) => (
+                                <div key={index} className="flex items-center gap-2 text-purple-200">
+                                  <Award className="w-4 h-4 text-yellow-400" />
+                                  <span>{achievement}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Rate Card */}
+                  <div>
+                    <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/30 backdrop-blur-lg">
+                      <CardHeader>
+                        <CardTitle className="text-white text-xl">Rate Card</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="text-center p-4 bg-white/10 rounded-lg">
+                          <div className="text-3xl font-bold text-white">${celebrity.pricing?.personal || celebrity.price}</div>
+                          <div className="text-purple-200 text-sm">Personal Message</div>
+                        </div>
+                        <div className="text-center p-4 bg-white/10 rounded-lg">
+                          <div className="text-3xl font-bold text-white">${celebrity.pricing?.business || celebrity.price}</div>
+                          <div className="text-purple-200 text-sm">Business Message</div>
+                        </div>
+                        <div className="text-center p-4 bg-white/10 rounded-lg">
+                          <div className="text-3xl font-bold text-white">${celebrity.pricing?.charity || celebrity.price}</div>
+                          <div className="text-purple-200 text-sm">Charity Message</div>
+                        </div>
+                        <div className="text-center text-yellow-300 text-sm">
+                          * Prices may vary based on message length and urgency
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
@@ -604,7 +686,7 @@ export default function CelebrityDetailPage() {
                 )}
               </TabsContent>
 
-              {/* Samples Tab */}
+              {/* Gallery Tab */}
               <TabsContent value="samples" className="mt-8">
                 {celebrity.sampleVideos && celebrity.sampleVideos.length > 0 ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -648,14 +730,65 @@ export default function CelebrityDetailPage() {
                 )}
               </TabsContent>
 
-              {/* Availability Tab */}
+              {/* Reviews Tab */}
+              <TabsContent value="reviews" className="mt-8">
+                {celebrity.reviews && celebrity.reviews.length > 0 ? (
+                  <div className="space-y-6">
+                    {celebrity.reviews.map((review) => (
+                      <Card key={review.id} className="bg-white/10 border-white/20 backdrop-blur-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <span className="text-white font-semibold">{review.user.charAt(0)}</span>
+                              </div>
+                              <div>
+                                <div className="text-white font-semibold">{review.user}</div>
+                                <div className="text-purple-300 text-sm">{review.occasion}</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center gap-1 mb-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-4 h-4 ${
+                                      i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-400"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <div className="text-purple-300 text-sm">{review.date}</div>
+                            </div>
+                          </div>
+                          <p className="text-purple-200 leading-relaxed">{review.comment}</p>
+                          {review.verified && (
+                            <div className="flex items-center gap-2 mt-3">
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                              <span className="text-green-400 text-sm">Verified Purchase</span>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Star className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-white mb-2">No Reviews Yet</h3>
+                    <p className="text-purple-200">Be the first to leave a review!</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Calendar Tab */}
               <TabsContent value="availability" className="mt-8">
                 <div className="grid lg:grid-cols-2 gap-8">
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardHeader>
                       <CardTitle className="text-white text-xl flex items-center gap-2">
                         <Calendar className="w-5 h-5" />
-                        Availability
+                        Availability & Calendar
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -668,8 +801,18 @@ export default function CelebrityDetailPage() {
                         <span className="text-white font-semibold">{availability.averageDelivery}</span>
                       </div>
                       <div className="flex justify-between items-center">
+                        <span className="text-purple-200">Completion Rate:</span>
+                        <span className="text-white font-semibold">{availability.completionRate}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
                         <span className="text-purple-200">Total Orders:</span>
                         <span className="text-white font-semibold">{availability.totalOrders}</span>
+                      </div>
+                      <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg">
+                        <div className="text-center text-white font-semibold mb-2">Quick Booking</div>
+                        <div className="text-center text-purple-200 text-sm">
+                          Book now to secure your preferred date and time
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

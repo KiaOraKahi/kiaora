@@ -73,6 +73,14 @@ const steps = [
   },
 ]
 
+// Use existing public images to avoid 404s
+const stepImages = [
+  "/talents/1.jpeg",
+  "/talents/2.jpg",
+  "/talents/3.jpg",
+  "/talents/4.jpg",
+]
+
 const features = [
   {
     icon: <Clock className="w-6 h-6" />,
@@ -271,11 +279,11 @@ export default function HowItWorksPage() {
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg overflow-hidden">
                     <CardContent className="p-0">
                       <Image
-                        src={`/placeholder.svg?height=400&width=600&text=Step ${step.number}`}
+                        src={stepImages[index]}
                         alt={step.title}
                         width={600}
                         height={400}
-                        className="w-full h-auto"
+                        className="w-full h-auto object-cover"
                       />
                     </CardContent>
                   </Card>

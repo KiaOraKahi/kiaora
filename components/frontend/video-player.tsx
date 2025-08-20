@@ -63,8 +63,8 @@ export default function VideoPlayer({
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Convert YouTube URL to embed URL
-  const getYouTubeEmbedUrl = (url: string) => {
-    if (!url) return null
+  const getYouTubeEmbedUrl = (url: unknown) => {
+    if (typeof url !== "string" || url.trim().length === 0) return null
 
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
     const match = url.match(regExp)
@@ -76,7 +76,9 @@ export default function VideoPlayer({
     return null
   }
 
-  const embedUrl = videoUrl ? getYouTubeEmbedUrl(videoUrl) : null
+  const embedUrl = typeof videoUrl === "string" && videoUrl
+    ? getYouTubeEmbedUrl(videoUrl)
+    : null
 
   useEffect(() => {
     if (!embedUrl) {

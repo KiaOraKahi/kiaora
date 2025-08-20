@@ -3,7 +3,8 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift, Clock, DollarSign } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift, Clock, DollarSign, Search, CreditCard, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
@@ -208,6 +209,65 @@ const SubtleLuxuryStarfield = () => {
   return null
 }
 
+// Hero Carousel Data
+const heroSlides = [
+  {
+    id: 1,
+    title: "Personalised Celebrity Messages",
+    subtitle: "Get a custom video from your favorite stars",
+    description: "Birthday wishes, congratulations, or just a special hello - make any moment unforgettable",
+    image: "/celeb1.jpg",
+    cta: "Browse Celebrities",
+    color: "from-blue-500 to-purple-500"
+  },
+  {
+    id: 2,
+    title: "Perfect Gift for Any Occasion",
+    subtitle: "Surprise someone special with a celebrity shoutout",
+    description: "Weddings, anniversaries, graduations - create memories that last forever",
+    image: "/celeb2.jpg",
+    cta: "Find the Perfect Gift",
+    color: "from-pink-500 to-red-500"
+  },
+  {
+    id: 3,
+    title: "Business & Motivation",
+    subtitle: "Inspire your team with celebrity motivation",
+    description: "Corporate events, team building, or personal motivation from the stars you admire",
+    image: "/celeb3.jpg",
+    cta: "Explore Business Services",
+    color: "from-green-500 to-blue-500"
+  }
+]
+
+// How It Works Steps
+const howItWorksSteps = [
+  {
+    icon: <Search className="w-8 h-8" />,
+    title: "Browse & Discover",
+    description: "Explore our verified celebrities across entertainment, sports, and more",
+    color: "from-blue-500 to-cyan-500"
+  },
+  {
+    icon: <MessageCircle className="w-8 h-8" />,
+    title: "Personalise Your Request",
+    description: "Tell us exactly what you want and who it's for",
+    color: "from-purple-500 to-indigo-500"
+  },
+  {
+    icon: <CreditCard className="w-8 h-8" />,
+    title: "Secure Payment",
+    description: "Complete your booking with our secure payment system",
+    color: "from-green-500 to-emerald-500"
+  },
+  {
+    icon: <Video className="w-8 h-8" />,
+    title: "Receive Your Video",
+    description: "Get your personalised video within the promised timeframe",
+    color: "from-pink-500 to-rose-500"
+  }
+]
+
 export default function KiaOraHomepage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState("All")
@@ -285,6 +345,15 @@ export default function KiaOraHomepage() {
     return () => clearInterval(interval)
   }, [])
 
+  // Hero carousel auto-rotation
+  useEffect(() => {
+    const carouselInterval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    }, 5000)
+
+    return () => clearInterval(carouselInterval)
+  }, [])
+
   const filteredTalents =
     selectedCategory === "All" ? talents : talents.filter((talent) => talent.category === selectedCategory.slice(0, -1))
 
@@ -294,6 +363,14 @@ export default function KiaOraHomepage() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + Math.ceil(talents.length / 3)) % Math.ceil(talents.length / 3))
+  }
+
+  const nextHeroSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+  }
+
+  const prevHeroSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
   }
 
   const handleBookNow = (talent: any) => {
@@ -326,152 +403,257 @@ export default function KiaOraHomepage() {
       {isMobile ? <MobileNavbar /> : <Navbar />}
 
       <div className="overflow-hidden relative">
-        {/* Hero Section */}
+        {/* Hero Carousel Section */}
         <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 lg:pt-20">
-          {/* Luxury Glow Around Title */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <motion.div
-              className="w-96 h-96 rounded-full bg-gradient-to-r from-yellow-400/10 via-purple-500/10 to-blue-500/10 blur-3xl"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.6, 0.3],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-              }}
-            />
-          </div>
-
-          <div className="max-w-7xl mx-auto text-center relative z-10">
-            {/* Animated Logo/Title */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 50 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="mb-8 relative"
-            >
-              {/* Animated Hero Title */}
-              <AnimatedHeroTitle />
-
-              {/* Personalised Videos Stamp - Directly under the text */}
+          {/* Carousel Container */}
+          <div className="relative w-full max-w-7xl mx-auto">
+            {/* Carousel Slides */}
+            {heroSlides.map((slide, index) => (
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotate: -8 }}
-                animate={{ opacity: 1, scale: 1, rotate: -8 }}
-                transition={{ delay: 1.5, duration: 0.8, type: "spring", stiffness: 200 }}
-                className="flex justify-center mb-4"
+                key={slide.id}
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: index === currentSlide ? 1 : 0,
+                  scale: index === currentSlide ? 1 : 0.95
+                }}
+                transition={{ duration: 0.5 }}
+                className={`absolute inset-0 flex items-center ${index === currentSlide ? 'z-10' : 'z-0'}`}
               >
-                <div className="relative">
-                  {/* Stamp background with border */}
-                  <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 rounded-lg border-2 border-white/30 shadow-lg transform">
-                    <div className="text-sm sm:text-base lg:text-lg font-bold tracking-wider uppercase leading-tight text-center">
-                      PERSONALISED VIDEOS
-                    </div>
-                  </div>
-                  {/* Stamp glow effect */}
+                <div className="grid lg:grid-cols-2 gap-12 items-center">
+                  {/* Content */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-red-500/30 to-pink-500/30 rounded-lg blur-md -z-10"
-                    animate={{
-                      scale: [1, 1.1, 1],
-                      opacity: [0.5, 0.8, 0.5],
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ 
+                      opacity: index === currentSlide ? 1 : 0, 
+                      x: index === currentSlide ? 0 : -50 
                     }}
-                    transition={{
-                      duration: 2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "easeInOut",
+                    transition={{ duration: 0.7, delay: 0.2 }}
+                    className="text-left"
+                  >
+                    <Badge className={`mb-4 bg-gradient-to-r ${slide.color} text-white border-0`}>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Featured
+                    </Badge>
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+                      {slide.title}
+                    </h1>
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-yellow-200 mb-4">
+                      {slide.subtitle}
+                    </h2>
+                    <p className="text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
+                      {slide.description}
+                    </p>
+                    <Button
+                      size="lg"
+                      className={`bg-gradient-to-r ${slide.color} hover:scale-105 transition-transform text-white px-8 py-4 text-lg`}
+                      onClick={() => router.push('/celebrities')}
+                    >
+                      {slide.cta}
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </motion.div>
+
+                  {/* Image */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ 
+                      opacity: index === currentSlide ? 1 : 0, 
+                      x: index === currentSlide ? 0 : 50 
                     }}
-                  />
+                    transition={{ duration: 0.7, delay: 0.4 }}
+                    className="relative"
+                  >
+                    <div className="relative w-full h-96 lg:h-[500px] rounded-2xl overflow-hidden">
+                      <Image
+                        src={slide.image}
+                        alt={slide.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        priority={index === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    </div>
+                  </motion.div>
                 </div>
               </motion.div>
+            ))}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 1 }}
-                className="flex items-center justify-center gap-2 text-lg sm:text-xl lg:text-2xl text-yellow-200"
+            {/* Carousel Navigation */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+              {heroSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentSlide ? 'bg-yellow-400 w-8' : 'bg-white/30 hover:bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Carousel Arrows */}
+            <button
+              onClick={prevHeroSlide}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={nextHeroSlide}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+        </section>
+
+        {/* Brief How It Works Section */}
+        <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black to-gray-900">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+                How It Works
+              </h2>
+              <p className="text-xl text-yellow-200 max-w-3xl mx-auto">
+                Getting a personalised message from your favorite celebrity is easier than you think
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {howItWorksSteps.map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="text-center group"
+                >
+                  <div className="relative mb-6">
+                    <div
+                      className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <div className="text-white">{step.icon}</div>
+                    </div>
+                    <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-yellow-400/20 to-purple-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-gray-300 leading-relaxed">{step.description}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="text-center mt-12"
+            >
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-8 py-4 text-lg"
+                onClick={() => router.push('/how-it-works')}
               >
-                <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
-                <span>
-                  Connect with your favourite celebrity or social media personality to receive a bespoke video message
-                  especially for you or as a special gift for someone else
-                </span>
-                <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
-              </motion.div>
+                Learn More
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Featured Celebrities Section */}
+        <section className="relative py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+                Featured Celebrities
+              </h2>
+              <p className="text-xl text-yellow-200 max-w-3xl mx-auto">
+                Connect with verified celebrities and influencers for personalised video messages
+              </p>
             </motion.div>
 
             {/* Premium Services Circles */}
-<motion.div
-  initial={{ opacity: 0, scale: 0.8 }}
-  animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.8 }}
-  transition={{ duration: 1, delay: 0.4 }}
-  className="relative mb-12"
->
-  <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
-    <h2 className="text-2xl font-bold text-white mb-8">Featured Talents</h2>
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
-      {services
-        .filter(service => hasTalentWithImage(service)) // Only services with image talents
-        .slice(0, 6) // Limit to first 6 that meet criteria
-        .map((service, index) => {
-          // Show different talents for variety - cycle through all 3 talents per service
-          const talentIndex = (currentTalentIndex + index) % service.talents.length;
-          const currentTalent = service.talents[talentIndex];
-
-          return (
             <motion.div
-              key={service.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex flex-col items-center group cursor-pointer"
-              onClick={() => router.push(`/services?service=${service.id}`)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.8 }}
+              transition={{ duration: 1, delay: 0.4 }}
+              className="relative mb-12"
             >
-              {/* Service Circle with Rotating Talent */}
-              <div className="relative mb-4">
-                <div
-                  className={`w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
-                >
-                  <div className="absolute inset-1 rounded-full overflow-hidden">
-                    <Image
-                      src={currentTalent?.image || "/placeholder.svg"}
-                      alt={currentTalent?.name || "Talent"}
-                      fill
-                      className="object-cover rounded-full"
-                      sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
-                      priority={index < 3}
-                    />
-                  </div>
-                  {/* Service Icon Overlay */}
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="text-white">{getIconComponent(service.icon)}</div>
-                  </div>
+              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+                  {services
+                    .filter(service => hasTalentWithImage(service))
+                    .slice(0, 6)
+                    .map((service, index) => {
+                      const talentIndex = (currentTalentIndex + index) % service.talents.length;
+                      const currentTalent = service.talents[talentIndex];
+
+                      return (
+                        <motion.div
+                          key={service.title}
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex flex-col items-center group cursor-pointer"
+                          onClick={() => router.push(`/services?service=${service.id}`)}
+                        >
+                          <div className="relative mb-4">
+                            <div
+                              className={`w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
+                            >
+                              <div className="absolute inset-1 rounded-full overflow-hidden">
+                                <Image
+                                  src={currentTalent?.image || "/placeholder.svg"}
+                                  alt={currentTalent?.name || "Talent"}
+                                  fill
+                                  className="object-cover rounded-full"
+                                  sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
+                                  priority={index < 3}
+                                />
+                              </div>
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="text-white">{getIconComponent(service.icon)}</div>
+                              </div>
+                            </div>
+                            <motion.div
+                              className="absolute -inset-2 rounded-full"
+                              animate={{
+                                boxShadow: [
+                                  "0 0 0 0 rgba(255, 215, 0, 0)",
+                                  "0 0 0 4px rgba(255, 215, 0, 0.3)",
+                                  "0 0 0 0 rgba(255, 215, 0, 0)",
+                                ],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Number.POSITIVE_INFINITY,
+                                delay: index * 0.3,
+                              }}
+                            />
+                          </div>
+                          <p className="text-yellow-200 text-xs mt-1 opacity-75">{currentTalent?.name}</p>
+                        </motion.div>
+                      );
+                    })}
                 </div>
-                {/* Sparkle Effect */}
-                <motion.div
-                  className="absolute -inset-2 rounded-full"
-                  animate={{
-                    boxShadow: [
-                      "0 0 0 0 rgba(255, 215, 0, 0)",
-                      "0 0 0 4px rgba(255, 215, 0, 0.3)",
-                      "0 0 0 0 rgba(255, 215, 0, 0)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Number.POSITIVE_INFINITY,
-                    delay: index * 0.3,
-                  }}
-                />
               </div>
-              {/* Current Talent Name */}
-              <p className="text-yellow-200 text-xs mt-1 opacity-75">{currentTalent?.name}</p>
             </motion.div>
-          );
-        })}
-    </div>
-  </div>
-</motion.div>
           </div>
         </section>
 
@@ -587,6 +769,44 @@ export default function KiaOraHomepage() {
               ))}
             </div>
           </div>
+        </section>
+
+        {/* Final CTA Section */}
+        <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-t from-black to-gray-900">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <div className="bg-gradient-to-r from-yellow-500/20 to-purple-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
+              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+                Ready to Get Started?
+              </h2>
+              <p className="text-xl text-yellow-200 mb-8 max-w-2xl mx-auto">
+                Join thousands of happy customers who have received amazing personalised messages from their favorite celebrities.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold px-8 py-4 text-lg"
+                  onClick={() => router.push('/celebrities')}
+                >
+                  Browse Celebrities
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg"
+                  onClick={() => router.push('/how-it-works')}
+                >
+                  Learn More
+                </Button>
+              </div>
+            </div>
+          </motion.div>
         </section>
       </div>
 

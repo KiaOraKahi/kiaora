@@ -3,9 +3,8 @@
 import { loadStripe } from "@stripe/stripe-js"
 import { Elements } from "@stripe/react-stripe-js"
 import type { ReactNode } from "react"
+import { useMemo } from "react"
 import type { StripeElementsOptions } from "@stripe/stripe-js"
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 interface StripeProviderProps {
   children: ReactNode
@@ -14,7 +13,9 @@ interface StripeProviderProps {
 }
 
 export default function StripeProvider({ children, clientSecret, theme = "night" }: StripeProviderProps) {
-  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+  const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+  if (!pk) {
     console.error("Missing NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY environment variable")
     return (
       <div className="p-4 text-red-500 bg-red-50 rounded-lg">
@@ -26,6 +27,8 @@ export default function StripeProvider({ children, clientSecret, theme = "night"
   if (!clientSecret) {
     return <div className="p-4 text-gray-500 bg-gray-50 rounded-lg">Loading payment form...</div>
   }
+
+  const stripePromise = useMemo(() => loadStripe(pk), [pk])
 
   const options: StripeElementsOptions = {
     clientSecret,
