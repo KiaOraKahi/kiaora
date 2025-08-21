@@ -699,7 +699,69 @@ export default function ContactPage() {
         </div>
       </section>
 
+      {/* Office Locations */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Our Global Offices</h2>
+            <p className="text-xl text-purple-200 max-w-3xl mx-auto">
+              We have offices around the world to better serve our global community of fans and celebrities.
+            </p>
+          </motion.div>
 
+          <div className="grid md:grid-cols-3 gap-8">
+            {officeLocations.map((office, index) => (
+              <motion.div
+                key={office.city}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Card className="bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full">
+                  <CardContent className="p-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-bold text-white">{office.city}</h3>
+                      {office.isHeadquarters && (
+                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">Headquarters</Badge>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 text-purple-200">
+                        <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div>{office.address}</div>
+                          <div>{office.zipCode}</div>
+                        </div>
+                      </div>
+                      <div
+                        className="flex items-center gap-3 text-purple-200 cursor-pointer hover:text-purple-100 transition-colors"
+                        onClick={() => window.open(`tel:${office.phone}`)}
+                      >
+                        <Phone className="w-5 h-5" />
+                        <span>{office.phone}</span>
+                      </div>
+                      <div
+                        className="flex items-center gap-3 text-purple-200 cursor-pointer hover:text-purple-100 transition-colors"
+                        onClick={() => window.open(`mailto:${office.email}`)}
+                      >
+                        <Mail className="w-5 h-5" />
+                        <span>{office.email}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Response Time Guarantee */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
