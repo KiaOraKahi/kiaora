@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Star, Search, Filter, Sparkles, Loader2 } from "lucide-react"
+import { Slider } from "@/components/ui/slider"
+import { Star, Search, Filter, Sparkles, Loader2, X, Calendar, DollarSign, Clock, Users, Award } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
@@ -14,7 +15,7 @@ import Footer from "@/components/frontend/footer"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 // Subtle starfield component
-const SubtleLuxuryStarfield = () => {
+const SubtleLuxuryStarfield = (): null => {
   useEffect(() => {
     const existingStarfield = document.querySelector(".starfield")
     if (existingStarfield) {
@@ -78,8 +79,10 @@ interface Celebrity {
   bio: string
   responseTime: string
   completedVideos: number
-  featured: boolean
   verified: boolean
+  featured: boolean
+  nextAvailable: string
+  tags: string[]
 }
 
 interface CelebritiesResponse {
@@ -94,8 +97,9 @@ interface CelebritiesResponse {
   }
 }
 
-const categories = ["All", "Actor", "Musician", "Motivator", "Influencer", "Athlete", "Comedian"]
-const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Response Time"]
+const categories = ["All", "Actor", "Musician", "Motivator", "Influencer", "Athlete", "Comedian", "Business", "Sports", "Entertainment"]
+const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Rating", "Response Time", "Most Popular"]
+const availabilityOptions = ["All", "Available Now", "Available This Week", "Available Next Week"]
 
 export default function TalentsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
@@ -106,19 +110,34 @@ export default function TalentsPage() {
   const [pagination, setPagination] = useState<CelebritiesResponse["pagination"] | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
- 
-  // Check if mobile
-    useEffect(() => {
-      const checkMobile = () => {
-        setIsMobile(window.innerWidth < 1024)
-      }
   
-      checkMobile()
-      window.addEventListener("resize", checkMobile)
-      return () => window.removeEventListener("resize", checkMobile)
-    }, [])
+  // Enhanced filters
+  const [priceRange, setPriceRange] = useState([0, 2000])
+  const [selectedAvailability, setSelectedAvailability] = useState("All")
+  const [showFilters, setShowFilters] = useState(false)
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
 
-  const fetchCelebrities = async (page = 1, category = "All", search = "", sort = "Featured") => {
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const fetchCelebrities = useCallback(async (page = 1, category = "All", search = "", sort = "Featured", priceRange = [0, 2000], availability = "All") => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -127,6 +146,9 @@ export default function TalentsPage() {
         ...(category !== "All" && { category }),
         ...(search && { search }),
         ...(sort !== "Featured" && { sortBy: sort }),
+        ...(priceRange[0] > 0 && { minPrice: priceRange[0].toString() }),
+        ...(priceRange[1] < 2000 && { maxPrice: priceRange[1].toString() }),
+        ...(availability !== "All" && { availability }),
       })
 
       const response = await fetch(`/api/celebrities?${params}`)
@@ -144,15 +166,15 @@ export default function TalentsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    fetchCelebrities(currentPage, selectedCategory, searchQuery, sortBy)
-  }, [currentPage, selectedCategory, sortBy])
+    fetchCelebrities(currentPage, selectedCategory, debouncedSearchQuery, sortBy, priceRange, selectedAvailability)
+  }, [currentPage, selectedCategory, debouncedSearchQuery, sortBy, priceRange, selectedAvailability, fetchCelebrities])
 
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchCelebrities(1, selectedCategory, searchQuery, sortBy)
+    fetchCelebrities(1, selectedCategory, searchQuery, sortBy, priceRange, selectedAvailability)
   }
 
   const handleCategoryChange = (category: string) => {
@@ -165,8 +187,46 @@ export default function TalentsPage() {
     setCurrentPage(1)
   }
 
+  const handlePriceRangeChange = (range: number[]) => {
+    setPriceRange(range)
+    setCurrentPage(1)
+  }
+
+  const handleAvailabilityChange = (availability: string) => {
+    setSelectedAvailability(availability)
+    setCurrentPage(1)
+  }
+
+  const clearAllFilters = () => {
+    setSelectedCategory("All")
+    setSortBy("Featured")
+    setSearchQuery("")
+    setPriceRange([0, 2000])
+    setSelectedAvailability("All")
+    setCurrentPage(1)
+  }
+
   const handleBookNow = (celebrity: Celebrity) => {
     window.location.href = `/celebrities/${celebrity.id}`
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price)
+  }
+
+  const getActiveFiltersCount = () => {
+    let count = 0
+    if (selectedCategory !== "All") count++
+    if (sortBy !== "Featured") count++
+    if (searchQuery) count++
+    if (priceRange[0] > 0 || priceRange[1] < 2000) count++
+    if (selectedAvailability !== "All") count++
+    return count
   }
 
   return (
@@ -198,22 +258,33 @@ export default function TalentsPage() {
         </div>
       </section>
 
-      {/* Search and Filters */}
+      {/* Enhanced Search and Filters */}
       <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white/5">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
+          {/* Search Bar */}
+          <div className="mb-6">
+            <div className="relative max-w-2xl mx-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-300 w-5 h-5" />
               <Input
-                placeholder="Search talent..."
+                placeholder="Search by name, category, or bio..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-yellow-300"
+                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-yellow-300 h-12 text-lg"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-300 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
+          </div>
 
+          {/* Filter Controls */}
+          <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
             {/* Category Filters */}
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
@@ -233,24 +304,120 @@ export default function TalentsPage() {
               ))}
             </div>
 
-            {/* Sort */}
-            <div className="flex items-center gap-2">
-              <Filter className="text-yellow-300 w-5 h-5" />
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2"
+            {/* Filter Toggle and Sort */}
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
-                {sortOptions.map((option) => (
-                  <option key={option} value={option} className="bg-black">
-                    {option}
-                  </option>
-                ))}
-              </select>
+                <Filter className="w-4 h-4 mr-2" />
+                Filters {getActiveFiltersCount() > 0 && `(${getActiveFiltersCount()})`}
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <Filter className="text-yellow-300 w-4 h-4" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2"
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option} value={option} className="bg-black">
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
+
+          {/* Advanced Filters Panel */}
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-6 p-6 bg-white/5 border border-white/10 rounded-lg"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Price Range Filter */}
+                <div>
+                  <label className="block text-white font-semibold mb-3">Price Range</label>
+                  <div className="space-y-3">
+                    <Slider
+                      value={priceRange}
+                      onValueChange={handlePriceRangeChange}
+                      max={2000}
+                      min={0}
+                      step={50}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-sm text-yellow-200">
+                      <span>{formatPrice(priceRange[0])}</span>
+                      <span>{formatPrice(priceRange[1])}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Availability Filter */}
+                <div>
+                  <label className="block text-white font-semibold mb-3">Availability</label>
+                  <div className="space-y-2">
+                    {availabilityOptions.map((option) => (
+                      <Button
+                        key={option}
+                        variant={selectedAvailability === option ? "default" : "outline"}
+                        onClick={() => handleAvailabilityChange(option)}
+                        size="sm"
+                        className={
+                          selectedAvailability === option
+                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                            : "bg-white/10 border-white/20 text-white hover:bg-white/20 w-full justify-start"
+                        }
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {option}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Clear Filters */}
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    onClick={clearAllFilters}
+                    className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 w-full"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear All Filters
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </section>
+
+      {/* Results Summary */}
+      {!loading && (
+        <section className="py-4 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-yellow-200">
+              <span>
+                Showing {celebrities.length} of {pagination?.total || 0} results
+                {getActiveFiltersCount() > 0 && ` (${getActiveFiltersCount()} active filters)`}
+              </span>
+              {pagination && (
+                <span>
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Talents Grid */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -261,8 +428,18 @@ export default function TalentsPage() {
             </div>
           ) : celebrities.length === 0 ? (
             <div className="text-center py-20">
+              <div className="w-24 h-24 mx-auto mb-6 bg-white/10 rounded-full flex items-center justify-center">
+                <Search className="w-12 h-12 text-yellow-300" />
+              </div>
               <h3 className="text-2xl font-bold text-white mb-4">No talent found</h3>
-              <p className="text-yellow-200">Try adjusting your search or filters</p>
+              <p className="text-yellow-200 mb-6">Try adjusting your search or filters</p>
+              <Button
+                variant="outline"
+                onClick={clearAllFilters}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                Clear All Filters
+              </Button>
             </div>
           ) : (
             <>
@@ -287,38 +464,75 @@ export default function TalentsPage() {
                             height={300}
                             className="w-full h-48 object-cover rounded-lg"
                           />
-                          {celebrity.featured && (
-                            <Badge className="absolute top-2 right-2 bg-yellow-500/80 text-black font-bold">
-                              Featured
-                            </Badge>
-                          )}
-                          {celebrity.verified && (
-                            <Badge className="absolute top-2 left-2 bg-blue-500/80 text-white">Verified</Badge>
-                          )}
+                          <div className="absolute top-2 right-2 flex flex-col gap-2">
+                            {celebrity.featured && (
+                              <Badge className="bg-yellow-500/80 text-black font-bold">
+                                <Award className="w-3 h-3 mr-1" />
+                                Featured
+                              </Badge>
+                            )}
+                            {celebrity.verified && (
+                              <Badge className="bg-blue-500/80 text-white">
+                                <Star className="w-3 h-3 mr-1" />
+                                Verified
+                              </Badge>
+                            )}
+                          </div>
                         </div>
 
                         <h3 className="text-xl font-bold text-white mb-2">{celebrity.name}</h3>
-                        <p className="text-yellow-200 text-sm mb-3">{celebrity.bio}</p>
+                        <p className="text-yellow-200 text-sm mb-3 line-clamp-2">{celebrity.bio}</p>
 
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            {/* <span className="text-white text-sm">{celebrity.rating}</span>
-                            <span className="text-purple-300 text-xs">({celebrity.reviewCount})</span> */}
+                            <span className="text-white text-sm">{celebrity.rating}</span>
+                            <span className="text-purple-300 text-xs">({celebrity.reviewCount})</span>
                           </div>
-                          <span className="text-2xl font-bold text-yellow-300">${celebrity.price}</span>
+                          <span className="text-2xl font-bold text-yellow-300">{formatPrice(celebrity.price)}</span>
                         </div>
 
                         <div className="space-y-2 mb-4 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-yellow-300">Response Time:</span>
+                            <span className="text-yellow-300 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              Response:
+                            </span>
                             <span className="text-white">{celebrity.responseTime}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-yellow-300">Videos Completed:</span>
+                            <span className="text-yellow-300 flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              Completed:
+                            </span>
                             <span className="text-white">{celebrity.completedVideos}</span>
                           </div>
+                          <div className="flex justify-between">
+                            <span className="text-yellow-300 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              Available:
+                            </span>
+                            <span className="text-white">{celebrity.nextAvailable}</span>
+                          </div>
                         </div>
+
+                        {/* Tags */}
+                        {celebrity.tags && celebrity.tags.length > 0 && (
+                          <div className="mb-4">
+                            <div className="flex flex-wrap gap-1">
+                              {celebrity.tags.slice(0, 3).map((tag, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs bg-white/5 border-white/20 text-yellow-200">
+                                  {tag}
+                                </Badge>
+                              ))}
+                              {celebrity.tags.length > 3 && (
+                                <Badge variant="outline" className="text-xs bg-white/5 border-white/20 text-yellow-200">
+                                  +{celebrity.tags.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
                         <Button
                           className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold"
@@ -332,45 +546,86 @@ export default function TalentsPage() {
                 ))}
               </div>
 
-              {/* Pagination */}
+              {/* Enhanced Pagination */}
               {pagination && pagination.totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-12">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={!pagination.hasPrev}
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  >
-                    Previous
-                  </Button>
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-12">
                   <div className="flex items-center gap-2">
-                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                      const page = i + 1
-                      return (
-                        <Button
-                          key={page}
-                          variant={page === currentPage ? "default" : "outline"}
-                          onClick={() => setCurrentPage(page)}
-                          className={
-                            page === currentPage
-                              ? "bg-purple-600 hover:bg-purple-700"
-                              : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                          }
-                          size="sm"
-                        >
-                          {page}
-                        </Button>
-                      )
-                    })}
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={!pagination.hasPrev}
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    >
+                      Previous
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {/* First page */}
+                      {pagination.page > 3 && (
+                        <>
+                          <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(1)}
+                            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            size="sm"
+                          >
+                            1
+                          </Button>
+                          <span className="text-white px-2">...</span>
+                        </>
+                      )}
+                      
+                      {/* Page numbers around current page */}
+                      {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                        const page = Math.max(1, Math.min(pagination.totalPages, pagination.page - 2 + i))
+                        if (page < 1 || page > pagination.totalPages) return null
+                        
+                        return (
+                          <Button
+                            key={page}
+                            variant={page === currentPage ? "default" : "outline"}
+                            onClick={() => setCurrentPage(page)}
+                            className={
+                              page === currentPage
+                                ? "bg-purple-600 hover:bg-purple-700"
+                                : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            }
+                            size="sm"
+                          >
+                            {page}
+                          </Button>
+                        )
+                      }).filter(Boolean)}
+                      
+                      {/* Last page */}
+                      {pagination.page < pagination.totalPages - 2 && (
+                        <>
+                          <span className="text-white px-2">...</span>
+                          <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(pagination.totalPages)}
+                            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            size="sm"
+                          >
+                            {pagination.totalPages}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={!pagination.hasNext}
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    >
+                      Next
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={!pagination.hasNext}
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  >
-                    Next
-                  </Button>
+                  
+                  <div className="text-sm text-yellow-200">
+                    Showing {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
+                  </div>
                 </div>
               )}
             </>

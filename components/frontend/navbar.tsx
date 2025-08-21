@@ -144,6 +144,10 @@ export default function Navbar() {
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         <Link href="/orders">My Orders</Link>
                       </DropdownMenuItem>
+                    <DropdownMenuItem className="text-white hover:bg-white/10">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <Link href="/dashboard">Dashboard</Link>
+                    </DropdownMenuItem>
                     {session.user?.role === "CELEBRITY" && (
                       <DropdownMenuItem className="text-white hover:bg-white/10">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -229,6 +233,34 @@ export default function Navbar() {
                         <p className="text-xs text-white/60 truncate">{session.user?.email}</p>
                       </div>
                       {session.user?.role === "CELEBRITY" && <Crown className="w-4 h-4 text-yellow-400" />}
+                    </div>
+                    <div className="space-y-2">
+                      <Link
+                        href="/dashboard"
+                        className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <LayoutDashboard className="w-4 h-4 mr-2 inline" />
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/orders"
+                        className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <ShoppingCart className="w-4 h-4 mr-2 inline" />
+                        My Orders
+                      </Link>
+                      {session.user?.role === "CELEBRITY" && (
+                        <Link
+                          href="/celebrity-dashboard"
+                          className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <Crown className="w-4 h-4 mr-2 inline" />
+                          Celebrity Dashboard
+                        </Link>
+                      )}
                     </div>
                     <Button
                       variant="outline"

@@ -73,6 +73,9 @@ const addOns = [
   },
 ]
 
+// Tip amounts for celebrity appreciation
+const TIP_AMOUNTS = [5, 10, 20, 50, 100]
+
 // Icon mapping for services
 const getServiceIcon = (iconName: string) => {
   const icons: { [key: string]: React.ReactNode } = {
@@ -127,12 +130,14 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
     specialInstructions: "",
     email: session?.user?.email || "",
     phone: "",
+    tipAmount: 0,
+    tipMessage: "",
   })
 
   // Update email when session changes
   useEffect(() => {
     if (session?.user?.email) {
-      setFormData((prev) => ({ ...prev, email: session.user.email }))
+      setFormData((prev) => ({ ...prev, email: session.user.email || "" }))
     }
   }, [session])
 
@@ -160,8 +165,9 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
       return total + (addOn ? addOn.price : 0)
     }, 0)
     const availabilityPremium = availability?.price || 0
+    const tipAmount = formData.tipAmount || 0
 
-    return basePrice + addOnTotal + availabilityPremium
+    return basePrice + addOnTotal + availabilityPremium + tipAmount
   }
 
   const handleAddOnToggle = (addOnId: string) => {
@@ -233,7 +239,12 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
             quantity: 1,
             unitPrice: addOn.price,
             totalPrice: addOn.price,
-            metadata: { addOnId },
+            metadata: { 
+              addOnId,
+              serviceId: selectedService.id,
+              duration: selectedService.duration,
+              deliveryTime: selectedService.deliveryTime,
+            } as any,
           })
         }
       })
@@ -247,7 +258,29 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
           quantity: 1,
           unitPrice: availability.price,
           totalPrice: availability.price,
-          metadata: { premiumType: "weekend" },
+          metadata: { 
+            premiumType: "weekend",
+            serviceId: selectedService.id,
+            duration: selectedService.duration,
+            deliveryTime: selectedService.deliveryTime,
+          } as any,
+        })
+      }
+
+      // Add tip if selected
+      if (formData.tipAmount > 0) {
+        orderItems.push({
+          type: "tip",
+          name: "Tip for Celebrity",
+          description: formData.tipMessage || "Appreciation tip",
+          quantity: 1,
+          unitPrice: formData.tipAmount,
+          totalPrice: formData.tipAmount,
+          metadata: { 
+            tipType: "appreciation",
+            tipMessage: formData.tipMessage,
+            serviceId: selectedService.id,
+          } as any,
         })
       }
 
@@ -256,6 +289,8 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
         scheduledDate: selectedDate?.toISOString(),
         scheduledTime: selectedSlot,
         serviceId: selectedService.id,
+        tipAmount: formData.tipAmount,
+        tipMessage: formData.tipMessage,
       }
 
       console.log("📝 Sending payment request:", {
@@ -325,6 +360,8 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
       specialInstructions: "",
       email: session?.user?.email || "",
       phone: "",
+      tipAmount: 0,
+      tipMessage: "",
     })
   }
 
@@ -447,7 +484,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                 <p className="text-purple-200">
                   {orderConfirmed
                     ? "Booking Confirmed!"
-                    : `${selectedService.name} - Step ${currentStep} of ${currentStep === 5 ? 5 : 4}`}
+                    : `${selectedService.name} - Step ${currentStep} of ${currentStep === 6 ? 6 : 6}`}
                 </p>
               </div>
             </div>
@@ -477,10 +514,10 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
           )}
 
           {/* Progress Bar */}
-          {!orderConfirmed && currentStep <= 5 && (
+          {!orderConfirmed && currentStep <= 6 && (
             <div className="px-6 py-4">
               <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((step) => (
+                {[1, 2, 3, 4, 5, 6].map((step) => (
                   <div key={step} className="flex items-center flex-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
@@ -489,7 +526,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     >
                       {currentStep > step ? <CheckCircle className="w-5 h-5" /> : step}
                     </div>
-                    {step < 5 && (
+                    {step < 6 && (
                       <div className={`flex-1 h-1 mx-2 ${currentStep > step ? "bg-purple-500" : "bg-white/20"}`} />
                     )}
                   </div>
@@ -499,8 +536,9 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                 <span className={currentStep >= 1 ? "text-white" : "text-purple-300"}>Details</span>
                 <span className={currentStep >= 2 ? "text-white" : "text-purple-300"}>Schedule</span>
                 <span className={currentStep >= 3 ? "text-white" : "text-purple-300"}>Add-ons</span>
-                <span className={currentStep >= 4 ? "text-white" : "text-purple-300"}>Review</span>
-                <span className={currentStep >= 5 ? "text-white" : "text-purple-300"}>Payment</span>
+                <span className={currentStep >= 4 ? "text-white" : "text-purple-300"}>Tips</span>
+                <span className={currentStep >= 5 ? "text-white" : "text-purple-300"}>Review</span>
+                <span className={currentStep >= 6 ? "text-white" : "text-purple-300"}>Payment</span>
               </div>
             </div>
           )}
@@ -803,14 +841,115 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     onClick={() => setCurrentStep(4)}
                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
+                    Continue to Tips
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Tip Selection */}
+            {currentStep === 4 && (
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                <h4 className="text-xl font-bold text-white">Show Your Appreciation</h4>
+                <p className="text-purple-200 text-center">
+                  Tips are a great way to show appreciation for the celebrity's work. 100% goes directly to them!
+                </p>
+
+                {/* Tip Amount Selection */}
+                <div>
+                  <Label className="text-white mb-4 block">Select Tip Amount</Label>
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {TIP_AMOUNTS.map((amount) => (
+                      <button
+                        key={amount}
+                        onClick={() => setFormData({ ...formData, tipAmount: amount })}
+                        className={`p-4 rounded-lg border transition-all duration-200 ${
+                          formData.tipAmount === amount
+                            ? "border-purple-500 bg-purple-500/20 text-white"
+                            : "border-white/20 bg-white/10 text-purple-200 hover:bg-white/20"
+                        }`}
+                      >
+                        <div className="text-2xl font-bold">${amount}</div>
+                        <div className="text-sm opacity-80">Tip</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom Tip Amount */}
+                  <div className="relative">
+                    <Label className="text-white mb-2 block">Custom Amount (Optional)</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300">$</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        step="1"
+                        value={formData.tipAmount === 0 ? "" : formData.tipAmount}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0
+                          setFormData({ ...formData, tipAmount: value })
+                        }}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 pl-8"
+                        placeholder="Enter custom amount"
+                      />
+                    </div>
+                    <p className="text-purple-300 text-xs mt-1">Maximum tip: $1,000</p>
+                  </div>
+                </div>
+
+                {/* Tip Message */}
+                <div>
+                  <Label className="text-white mb-2 block">Tip Message (Optional)</Label>
+                  <Textarea
+                    value={formData.tipMessage}
+                    onChange={(e) => setFormData({ ...formData, tipMessage: e.target.value })}
+                    rows={3}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 resize-none"
+                    placeholder="Add a personal message to go with your tip..."
+                    maxLength={200}
+                  />
+                  <p className="text-purple-300 text-xs mt-1 text-right">{formData.tipMessage.length}/200</p>
+                </div>
+
+                {/* Tip Summary */}
+                {formData.tipAmount > 0 && (
+                  <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-white font-semibold">Tip Summary</div>
+                        <div className="text-purple-200 text-sm">
+                          {formData.tipMessage ? `"${formData.tipMessage}"` : "No message"}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-purple-300">${formData.tipAmount}</div>
+                        <div className="text-purple-400 text-sm">100% to celebrity</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(3)}
+                    className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep(5)}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  >
                     Continue to Review
                   </Button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 4: Review & Contact Info */}
-            {currentStep === 4 && (
+            {/* Step 5: Review & Contact Info */}
+            {currentStep === 5 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 <h4 className="text-xl font-bold text-white">Review Your Booking</h4>
 
@@ -868,6 +1007,13 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                         </div>
                       )}
 
+                      {formData.tipAmount > 0 && (
+                        <div className="flex justify-between text-purple-200">
+                          <span>Tip for Celebrity</span>
+                          <span>+${formData.tipAmount}</span>
+                        </div>
+                      )}
+
                       <div className="border-t border-white/20 pt-3 mt-4">
                         <div className="flex justify-between text-white font-bold text-xl">
                           <span>Total</span>
@@ -881,6 +1027,9 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                         </p>
                         <p>• Delivery: {selectedService.deliveryTime}</p>
                         <p>• Duration: {selectedService.duration}</p>
+                        {formData.tipAmount > 0 && (
+                          <p>• Tip: ${formData.tipAmount} {formData.tipMessage && `- "${formData.tipMessage}"`}</p>
+                        )}
                         <p>• 100% satisfaction guarantee</p>
                       </div>
                     </div>
@@ -890,7 +1039,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                 <div className="flex gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() => setCurrentStep(4)}
                     className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
                   >
                     Back
@@ -916,8 +1065,8 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
               </motion.div>
             )}
 
-            {/* Step 5: Payment */}
-            {currentStep === 5 && clientSecret && (
+            {/* Step 6: Payment */}
+            {currentStep === 6 && clientSecret && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 <h4 className="text-xl font-bold text-white">Complete Your Payment</h4>
 
@@ -944,6 +1093,12 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                       <span>+${availability.price}</span>
                     </div>
                   )}
+                  {formData.tipAmount > 0 && (
+                    <div className="flex justify-between text-purple-200 mb-2">
+                      <span>Tip for Celebrity</span>
+                      <span>+${formData.tipAmount}</span>
+                    </div>
+                  )}
                   <div className="border-t border-white/20 pt-3 mt-4">
                     <div className="flex justify-between text-white font-bold text-xl">
                       <span>Total</span>
@@ -963,7 +1118,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
 
                 <Button
                   variant="outline"
-                  onClick={() => setCurrentStep(4)}
+                  onClick={() => setCurrentStep(5)}
                   className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
                   Back to Review
@@ -971,8 +1126,8 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
               </motion.div>
             )}
 
-            {/* Step 6: Order Confirmation */}
-            {currentStep === 6 && orderConfirmed && (
+            {/* Step 7: Order Confirmation */}
+            {currentStep === 7 && orderConfirmed && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1013,6 +1168,12 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     <p>
                       <strong>Expected Delivery:</strong> {selectedService.deliveryTime}
                     </p>
+                    {formData.tipAmount > 0 && (
+                      <p>
+                        <strong>Tip Amount:</strong> ${formData.tipAmount}
+                        {formData.tipMessage && ` - "${formData.tipMessage}"`}
+                      </p>
+                    )}
                   </div>
                 </div>
 

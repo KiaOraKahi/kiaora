@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
@@ -22,8 +22,7 @@ import { loadStripe } from "@stripe/stripe-js"
 import { Loader2, Heart, AlertCircle, CheckCircle, Clock, Lock } from "lucide-react"
 import { toast } from "sonner"
 
-// Initialize Stripe outside of component to avoid recreating it on each render
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "")
+// Stripe will be initialized lazily inside the component to avoid issues when the key is missing
 
 // Tip amounts in dollars
 const TIP_AMOUNTS = [5, 10, 20, 50, 100]
@@ -45,6 +44,9 @@ export function TipModal({ children, orderNumber, celebrityName, celebrityImage,
     isApproved: boolean
   } | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  const stripePromise = useMemo(() => (pk ? loadStripe(pk) : null), [pk])
 
   // Check order approval status when modal opens
   useEffect(() => {
@@ -72,23 +74,39 @@ export function TipModal({ children, orderNumber, celebrityName, celebrityImage,
     }
   }
 
+  if (!pk) {
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>{children}</DialogTrigger>
+        <DialogTitle></DialogTitle>
+        <DialogContent className="sm:max-w-md">
+          <div className="p-4 text-red-500 bg-red-50 rounded-lg">
+            Stripe is not configured. Please set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogTitle></DialogTitle>
-      <Elements stripe={stripePromise}>
-        <TipModalContent
-          orderNumber={orderNumber}
-          celebrityName={celebrityName}
-          celebrityImage={celebrityImage}
-          orderStatus={orderStatus}
-          loading={loading}
-          onTipSuccess={() => {
-            setOpen(false)
-            onTipSuccess?.()
-          }}
-        />
-      </Elements>
+      {stripePromise && (
+        <Elements stripe={stripePromise}>
+          <TipModalContent
+            orderNumber={orderNumber}
+            celebrityName={celebrityName}
+            celebrityImage={celebrityImage}
+            orderStatus={orderStatus}
+            loading={loading}
+            onTipSuccess={() => {
+              setOpen(false)
+              onTipSuccess?.()
+            }}
+          />
+        </Elements>
+      )}
     </Dialog>
   )
 }
