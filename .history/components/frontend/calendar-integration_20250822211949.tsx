@@ -53,7 +53,7 @@ const sampleEvents: CalendarEvent[] = [
     duration: 15,
     type: "call",
     celebrity: {
-              name: "Sarah",
+      name: "John Legend",
       image: "/placeholder.svg?height=40&width=40",
     },
     status: "confirmed",

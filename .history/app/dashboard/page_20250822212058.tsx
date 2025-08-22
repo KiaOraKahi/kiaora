@@ -186,8 +186,8 @@ const mockPayments: Payment[] = [
     status: "completed",
     date: "2024-01-16T14:30:00Z",
     type: "booking",
-    description: "Sarah - Personal Video Message",
-    celebrityName: "Sarah",
+    description: "John Legend - Personal Video Message",
+    celebrityName: "John Legend",
   },
 ]
 
