@@ -357,9 +357,34 @@ export async function GET(request: NextRequest) {
         prisma.celebrity.count({ where }),
       ])
 
-      // Always use mock data for now to show all celebrities
-      console.log("Using mock data to show all celebrities")
-      throw new Error("Using mock data")
+      if (dbCelebrities.length > 0) {
+        // Use database results
+        celebrities = dbCelebrities.map((celebrity) => ({
+          id: celebrity.id,
+          name: celebrity.user.name || "Celebrity",
+          image: celebrity.user.image || "/placeholder.svg?height=400&width=400",
+          category: celebrity.category || "Entertainment",
+          bio: celebrity.bio || "Professional celebrity",
+          price: celebrity.price || 299,
+          pricePersonal: celebrity.price || 299,
+          priceBusiness: celebrity.price || 599,
+          priceCharity: celebrity.price || 199,
+          rating: celebrity.averageRating || celebrity.rating || 4.5,
+          reviewCount: celebrity._count.reviews || 0,
+          responseTime: celebrity.responseTime || "24 hours",
+          completedVideos: celebrity.completionRate || 95,
+          verified: celebrity.verified || false,
+          featured: celebrity.featured || false,
+          nextAvailable: celebrity.nextAvailable || "2024-01-15",
+          tags: celebrity.tags || [],
+        }))
+        total = dbTotal
+        console.log(`Using database results: ${celebrities.length} celebrities`)
+      } else {
+        // If no database results, use mock data
+        console.log("No database results, using mock data")
+        throw new Error("No database results")
+      }
     } catch (dbError: unknown) {
       console.log("Database error, using mock data:", dbError instanceof Error ? dbError.message : String(dbError))
       useMockData = true
