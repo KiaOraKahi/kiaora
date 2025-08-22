@@ -119,7 +119,7 @@ const mockOrders: Order[] = [
     celebrityImage: "/celeb1.jpg",
     celebrityCategory: "Actor",
     approvalStatus: "approved",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
     tipAmount: 50,
   },
   {
@@ -138,7 +138,7 @@ const mockOrders: Order[] = [
     celebrityImage: "/celeb2.jpg",
     celebrityCategory: "Musician",
     approvalStatus: "pending_approval",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
   },
   {
     id: "3",
@@ -166,8 +166,8 @@ const mockPayments: Payment[] = [
     status: "completed",
     date: "2024-01-15T10:00:00Z",
     type: "booking",
-    description: "Sarah - Personal Video Message",
-    celebrityName: "Sarah",
+    description: "Emma Stone - Personal Video Message",
+    celebrityName: "Emma Stone",
   },
   {
     id: "2",
@@ -176,8 +176,8 @@ const mockPayments: Payment[] = [
     status: "completed",
     date: "2024-01-22T16:00:00Z",
     type: "tip",
-    description: "Tip for Sarah",
-    celebrityName: "Sarah",
+    description: "Tip for Emma Stone",
+    celebrityName: "Emma Stone",
   },
   {
     id: "3",

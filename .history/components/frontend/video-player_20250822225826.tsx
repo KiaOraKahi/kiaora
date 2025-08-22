@@ -66,17 +66,6 @@ export default function VideoPlayer({
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
 
-  // Toggle play/pause
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
-      } else {
-        videoRef.current.play()
-      }
-    }
-  }
-
   // Convert YouTube URL to embed URL
   const getYouTubeEmbedUrl = (url: unknown) => {
     if (typeof url !== "string" || url.trim().length === 0) return null

@@ -138,7 +138,7 @@ const mockOrders: Order[] = [
     celebrityImage: "/celeb2.jpg",
     celebrityCategory: "Musician",
     approvalStatus: "pending_approval",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
   },
   {
     id: "3",
