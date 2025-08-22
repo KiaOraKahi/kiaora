@@ -148,7 +148,6 @@ export async function POST(request: NextRequest) {
 
     console.log("📤 Uploading video to Vercel Blob...")
     console.log("🔍 Environment check - BLOB_READ_WRITE_TOKEN:", process.env.BLOB_READ_WRITE_TOKEN ? "✅ SET" : "❌ NOT SET")
-    console.log("🔍 Environment check - NEXTAUTH_URL:", process.env.NEXTAUTH_URL || "❌ NOT SET")
     
     // Upload video to Vercel Blob
     const blob = await put(filename, file, {
