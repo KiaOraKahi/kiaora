@@ -378,13 +378,11 @@ export default function UserDashboard() {
     setIsEditingProfile(false)
   }
 
-  const handleWatchVideo = (videoUrl: string, celebrityName: string, isReview: boolean = false, orderNumber?: string) => {
+  const handleWatchVideo = (videoUrl: string, celebrityName: string) => {
     setVideoModal({
       isOpen: true,
       videoUrl,
-      celebrityName,
-      isReview,
-      orderNumber
+      celebrityName
     })
   }
 
@@ -392,9 +390,7 @@ export default function UserDashboard() {
     setVideoModal({
       isOpen: false,
       videoUrl: undefined,
-      celebrityName: undefined,
-      isReview: false,
-      orderNumber: undefined
+      celebrityName: undefined
     })
   }
 
@@ -658,7 +654,7 @@ export default function UserDashboard() {
                                     variant="ghost"
                                     size="sm"
                                     className="text-green-300 hover:text-white hover:bg-green-500/20"
-                                    onClick={() => handleWatchVideo(order.videoUrl!, order.celebrityName, false, order.orderNumber)}
+                                    onClick={() => handleWatchVideo(order.videoUrl!, order.celebrityName)}
                                   >
                                     <Play className="w-4 h-4 mr-1" />
                                     Watch
@@ -671,7 +667,7 @@ export default function UserDashboard() {
                                     variant="ghost"
                                     size="sm"
                                     className="text-orange-300 hover:text-white hover:bg-orange-500/20"
-                                    onClick={() => handleWatchVideo(order.videoUrl!, order.celebrityName, true, order.orderNumber)}
+                                    onClick={() => handleWatchVideo(order.videoUrl!, order.celebrityName)}
                                   >
                                     <Eye className="w-4 h-4 mr-1" />
                                     Review & Approve
@@ -1010,12 +1006,10 @@ export default function UserDashboard() {
         isOpen={videoModal.isOpen}
         onClose={handleCloseVideo}
         videoUrl={videoModal.videoUrl}
-        title={videoModal.isReview ? `Review Video from ${videoModal.celebrityName}` : `Video from ${videoModal.celebrityName}`}
+        title={`Video from ${videoModal.celebrityName}`}
         celebrity={videoModal.celebrityName}
-        description={videoModal.isReview ? "Please review this video and approve or request changes" : "Your personalized video message"}
+        description="Your personalized video message"
         autoPlay={true}
-        isReview={videoModal.isReview}
-        orderNumber={videoModal.orderNumber}
       />
     </div>
   )

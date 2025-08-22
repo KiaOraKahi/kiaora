@@ -1014,8 +1014,6 @@ export default function UserDashboard() {
         celebrity={videoModal.celebrityName}
         description={videoModal.isReview ? "Please review this video and approve or request changes" : "Your personalized video message"}
         autoPlay={true}
-        isReview={videoModal.isReview}
-        orderNumber={videoModal.orderNumber}
       />
     </div>
   )

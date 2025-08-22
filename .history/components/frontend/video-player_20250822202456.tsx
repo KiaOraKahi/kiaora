@@ -49,8 +49,6 @@ export default function VideoPlayer({
   onClose,
   autoPlay = false,
   videoUrl,
-  isReview = false,
-  orderNumber,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -445,43 +443,6 @@ export default function VideoPlayer({
             <Card className="mt-4 bg-white/10 border-white/20 backdrop-blur-lg">
               <CardContent className="p-4">
                 <p className="text-purple-200">{description}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Review Action Buttons */}
-          {isReview && orderNumber && (
-            <Card className="mt-4 bg-white/10 border-white/20 backdrop-blur-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-white font-semibold mb-2">Review Video</h4>
-                    <p className="text-purple-200 text-sm">Order: {orderNumber}</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30"
-                      onClick={() => {
-                        // TODO: Implement decline functionality
-                        console.log("Decline video for order:", orderNumber)
-                        onClose()
-                      }}
-                    >
-                      Decline & Request Changes
-                    </Button>
-                    <Button
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => {
-                        // TODO: Implement approve functionality
-                        console.log("Approve video for order:", orderNumber)
-                        onClose()
-                      }}
-                    >
-                      Approve Video
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           )}
