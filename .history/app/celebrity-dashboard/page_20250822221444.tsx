@@ -1497,18 +1497,7 @@ export default function CelebrityDashboard() {
                            className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
                            onClick={() => setActiveTab("requests")}
                          >
-                           <div className="flex items-center gap-2">
-                             <span>View All Pending Requests ({bookingRequests.length})</span>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={fetchBookingRequests}
-                               disabled={requestsLoading}
-                               className="p-1 h-auto text-purple-200 hover:text-white"
-                             >
-                               <RefreshCw className={`w-3 h-3 ${requestsLoading ? 'animate-spin' : ''}`} />
-                             </Button>
-                           </div>
+                           View All Pending Requests ({bookingRequests.length})
                          </Button>
                       </>
                     ) : (
