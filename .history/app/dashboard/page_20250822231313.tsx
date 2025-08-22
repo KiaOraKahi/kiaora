@@ -251,32 +251,6 @@ export default function UserDashboard() {
     }
   }, [session?.user?.id])
 
-  // Fetch user orders and payments when session is available
-  useEffect(() => {
-    if (session?.user?.id) {
-      const fetchUserData = async () => {
-        try {
-          // Fetch orders
-          const ordersResponse = await fetch("/api/user/orders")
-          if (ordersResponse.ok) {
-            const userOrders = await ordersResponse.json()
-            setOrders(userOrders)
-          }
-          
-          // Fetch payments
-          const paymentsResponse = await fetch("/api/user/payments")
-          if (paymentsResponse.ok) {
-            const userPayments = await paymentsResponse.json()
-            setPayments(userPayments)
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error)
-        }
-      }
-      fetchUserData()
-    }
-  }, [session?.user?.id])
-
   const filteredOrders = orders.filter((order) => {
     const matchesSearch = searchTerm === "" || 
       order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -374,6 +348,13 @@ export default function UserDashboard() {
         <div className="container mx-auto px-4 py-8 pt-24">
           {/* Header */}
           <div className="mb-8">
+            {/* Demo Data Indicator */}
+            <div className="mb-4">
+              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-xs px-3 py-2 shadow-lg">
+                <Star className="w-3 h-3 mr-1" />
+                Demo Dashboard - Sample Data
+              </Badge>
+            </div>
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">

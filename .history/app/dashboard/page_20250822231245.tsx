@@ -102,9 +102,94 @@ interface UserProfile {
 }
 
 // Mock data for demonstration
-const mockOrders: Order[] = []
+const mockOrders: Order[] = [
+  {
+    id: "1",
+    orderNumber: "KO-1234567890-ABC123",
+    status: "completed",
+    paymentStatus: "paid",
+    totalAmount: 299,
+    createdAt: "2024-01-15T10:00:00Z",
+    recipientName: "Sarah Johnson",
+    occasion: "birthday",
+    scheduledDate: "2024-01-20T00:00:00Z",
+    scheduledTime: "2:00 PM",
+    bookingStatus: "confirmed",
+    celebrityName: "Sarah",
+    celebrityImage: "/celeb1.jpg",
+    celebrityCategory: "Actor",
+    approvalStatus: "approved",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    tipAmount: 50,
+  },
+  {
+    id: "2",
+    orderNumber: "KO-1234567891-DEF456",
+    status: "pending_approval",
+    paymentStatus: "paid",
+    totalAmount: 599,
+    createdAt: "2024-01-16T14:30:00Z",
+    recipientName: "Michael Chen",
+    occasion: "anniversary",
+    scheduledDate: "2024-01-25T00:00:00Z",
+    scheduledTime: "6:00 PM",
+    bookingStatus: "confirmed",
+    celebrityName: "Sarah",
+    celebrityImage: "/celeb2.jpg",
+    celebrityCategory: "Musician",
+    approvalStatus: "pending_approval",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+  },
+  {
+    id: "3",
+    orderNumber: "KO-1234567892-GHI789",
+    status: "pending",
+    paymentStatus: "paid",
+    totalAmount: 899,
+    createdAt: "2024-01-17T09:15:00Z",
+    recipientName: "Lisa Rodriguez",
+    occasion: "graduation",
+    scheduledDate: "2024-01-30T00:00:00Z",
+    scheduledTime: "12:00 PM",
+    bookingStatus: "confirmed",
+    celebrityName: "Sarah",
+    celebrityImage: "/celeb1.jpg",
+    celebrityCategory: "Actor",
+  },
+]
 
-const mockPayments: Payment[] = []
+const mockPayments: Payment[] = [
+  {
+    id: "1",
+    orderNumber: "KO-1234567890-ABC123",
+    amount: 299,
+    status: "completed",
+    date: "2024-01-15T10:00:00Z",
+    type: "booking",
+    description: "Sarah - Personal Video Message",
+    celebrityName: "Sarah",
+  },
+  {
+    id: "2",
+    orderNumber: "KO-1234567890-ABC123",
+    amount: 50,
+    status: "completed",
+    date: "2024-01-22T16:00:00Z",
+    type: "tip",
+    description: "Tip for Sarah",
+    celebrityName: "Sarah",
+  },
+  {
+    id: "3",
+    orderNumber: "KO-1234567891-DEF456",
+    amount: 599,
+    status: "completed",
+    date: "2024-01-16T14:30:00Z",
+    type: "booking",
+    description: "Sarah - Personal Video Message",
+    celebrityName: "Sarah",
+  },
+]
 
 const mockProfile: UserProfile = {
   id: "1",
@@ -251,32 +336,6 @@ export default function UserDashboard() {
     }
   }, [session?.user?.id])
 
-  // Fetch user orders and payments when session is available
-  useEffect(() => {
-    if (session?.user?.id) {
-      const fetchUserData = async () => {
-        try {
-          // Fetch orders
-          const ordersResponse = await fetch("/api/user/orders")
-          if (ordersResponse.ok) {
-            const userOrders = await ordersResponse.json()
-            setOrders(userOrders)
-          }
-          
-          // Fetch payments
-          const paymentsResponse = await fetch("/api/user/payments")
-          if (paymentsResponse.ok) {
-            const userPayments = await paymentsResponse.json()
-            setPayments(userPayments)
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error)
-        }
-      }
-      fetchUserData()
-    }
-  }, [session?.user?.id])
-
   const filteredOrders = orders.filter((order) => {
     const matchesSearch = searchTerm === "" || 
       order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -374,6 +433,13 @@ export default function UserDashboard() {
         <div className="container mx-auto px-4 py-8 pt-24">
           {/* Header */}
           <div className="mb-8">
+            {/* Demo Data Indicator */}
+            <div className="mb-4">
+              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-xs px-3 py-2 shadow-lg">
+                <Star className="w-3 h-3 mr-1" />
+                Demo Dashboard - Sample Data
+              </Badge>
+            </div>
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
