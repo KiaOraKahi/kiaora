@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js"
 import { Button } from "@/components/ui/button"
-import { CreditCard, Loader2, Shield, AlertCircle, CheckCircle } from "lucide-react"
+import { CreditCard, Loader2, Shield, AlertCircle } from "lucide-react"
 
 interface PaymentFormProps {
   onSuccess: (paymentIntent: any) => void

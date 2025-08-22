@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js"
 import { Button } from "@/components/ui/button"
-import { CreditCard, Loader2, Shield, AlertCircle, CheckCircle } from "lucide-react"
+import { CreditCard, Loader2, Shield, AlertCircle } from "lucide-react"
 
 interface PaymentFormProps {
   onSuccess: (paymentIntent: any) => void
@@ -43,11 +43,6 @@ export default function PaymentForm({
       return
     }
 
-    // Prevent multiple submissions
-    if (isLoading || isPaymentCompleted) {
-      return
-    }
-
     setIsLoading(true)
     setPaymentError("")
 
@@ -72,7 +67,6 @@ export default function PaymentForm({
         console.log("✅ Payment successful:", paymentIntent.status)
 
         if (paymentIntent.status === "succeeded") {
-          setIsPaymentCompleted(true)
           onSuccess(paymentIntent)
         } else if (paymentIntent.status === "requires_action") {
           // Handle 3D Secure or other authentication
@@ -157,18 +151,13 @@ export default function PaymentForm({
 
         <Button
           type="submit"
-          disabled={!stripe || !elements || isLoading || isPaymentCompleted}
+          disabled={!stripe || !elements || isLoading}
           className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Processing...
-            </>
-          ) : isPaymentCompleted ? (
-            <>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Payment Complete
             </>
           ) : (
             <>
