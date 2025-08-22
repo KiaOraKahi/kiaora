@@ -976,17 +976,6 @@ export default function UserDashboard() {
 
         <Footer />
       </div>
-
-      {/* Video Player Modal */}
-      <VideoPlayer
-        isOpen={videoModal.isOpen}
-        onClose={handleCloseVideo}
-        videoUrl={videoModal.videoUrl}
-        title={`Video from ${videoModal.celebrityName}`}
-        celebrity={videoModal.celebrityName}
-        description="Your personalized video message"
-        autoPlay={true}
-      />
     </div>
   )
 } 
