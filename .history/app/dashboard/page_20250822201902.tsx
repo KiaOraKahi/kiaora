@@ -292,11 +292,6 @@ export default function UserDashboard() {
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [editedProfile, setEditedProfile] = useState<UserProfile>(mockProfile)
   const [isMobile, setIsMobile] = useState(false)
-  const [videoModal, setVideoModal] = useState<{ isOpen: boolean; videoUrl?: string; celebrityName?: string }>({
-    isOpen: false,
-    videoUrl: undefined,
-    celebrityName: undefined
-  })
 
   useEffect(() => {
     const checkMobile = () => {
@@ -367,22 +362,6 @@ export default function UserDashboard() {
   const handleProfileCancel = () => {
     setEditedProfile(profile)
     setIsEditingProfile(false)
-  }
-
-  const handleWatchVideo = (videoUrl: string, celebrityName: string) => {
-    setVideoModal({
-      isOpen: true,
-      videoUrl,
-      celebrityName
-    })
-  }
-
-  const handleCloseVideo = () => {
-    setVideoModal({
-      isOpen: false,
-      videoUrl: undefined,
-      celebrityName: undefined
-    })
   }
 
   if (status === "loading") {
@@ -644,7 +623,6 @@ export default function UserDashboard() {
                                     variant="ghost"
                                     size="sm"
                                     className="text-green-300 hover:text-white hover:bg-green-500/20"
-                                    onClick={() => handleWatchVideo(order.videoUrl!, order.celebrityName)}
                                   >
                                     <Play className="w-4 h-4 mr-1" />
                                     Watch
@@ -976,17 +954,6 @@ export default function UserDashboard() {
 
         <Footer />
       </div>
-
-      {/* Video Player Modal */}
-      <VideoPlayer
-        isOpen={videoModal.isOpen}
-        onClose={handleCloseVideo}
-        videoUrl={videoModal.videoUrl}
-        title={`Video from ${videoModal.celebrityName}`}
-        celebrity={videoModal.celebrityName}
-        description="Your personalized video message"
-        autoPlay={true}
-      />
     </div>
   )
 } 
