@@ -51,7 +51,6 @@ import {
   RefreshCw,
   Download,
   FileText,
-  LogOut,
 } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
@@ -1066,24 +1065,14 @@ export default function CelebrityDashboard() {
         <div className="container mx-auto px-4 pt-8 pb-12">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-full flex items-center justify-center">
-                  <Star className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold text-white">Celebrity Dashboard</h1>
-                  <p className="text-purple-200">Welcome back, {session.user?.name}!</p>
-                </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-full flex items-center justify-center">
+                <Star className="w-6 h-6 text-white" />
               </div>
-              <Button
-                variant="outline"
-                className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                onClick={() => signOut({ callbackUrl: "/" })}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Celebrity Dashboard</h1>
+                <p className="text-purple-200">Welcome back, {session.user?.name}!</p>
+              </div>
             </div>
           </div>
 

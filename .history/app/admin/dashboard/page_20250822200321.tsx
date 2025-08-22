@@ -592,7 +592,6 @@ export default function AdminDashboard() {
                    onClick={() => signOut({ callbackUrl: "/admin/login" })}
                    className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30"
                  >
-                   <LogOut className="w-4 h-4 mr-2" />
                    Sign Out
                  </Button>
                </div>
