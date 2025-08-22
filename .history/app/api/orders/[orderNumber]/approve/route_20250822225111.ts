@@ -98,7 +98,7 @@ export async function POST(
       },
     })
 
-    // Create payout record - status will be updated by webhook when transfer completes
+    // Optionally create payout record (though no manual transfer is made)
     await prisma.payout.create({
       data: {
         celebrityId: order.celebrityId,
@@ -106,9 +106,9 @@ export async function POST(
         amount: celebrityAmount / 100,
         platformFee: platformFee / 100,
         currency: "nzd",
-        stripeTransferId: null, // Will be set by webhook when transfer is created
-        status: "PENDING", // Pending until webhook confirms transfer
-        paidAt: null, // Will be set when transfer completes
+        stripeTransferId: order.celebrity.stripeConnectAccountId,
+        status: "PAID", // Marked as paid since funds are routed automatically
+        paidAt: new Date(),
       },
     })
 
