@@ -1010,12 +1010,10 @@ export default function UserDashboard() {
         isOpen={videoModal.isOpen}
         onClose={handleCloseVideo}
         videoUrl={videoModal.videoUrl}
-        title={videoModal.isReview ? `Review Video from ${videoModal.celebrityName}` : `Video from ${videoModal.celebrityName}`}
+        title={`Video from ${videoModal.celebrityName}`}
         celebrity={videoModal.celebrityName}
-        description={videoModal.isReview ? "Please review this video and approve or request changes" : "Your personalized video message"}
+        description="Your personalized video message"
         autoPlay={true}
-        isReview={videoModal.isReview}
-        orderNumber={videoModal.orderNumber}
       />
     </div>
   )
