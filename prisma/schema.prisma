@@ -13,15 +13,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -31,392 +30,299 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          Role      @default(FAN)
-  isVerified    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts Account[]
-  sessions Session[]
-
-  // Celebrity specific fields
+  id               String     @id @default(cuid())
+  name             String?
+  email            String     @unique
+  emailVerified    DateTime?
+  image            String?
+  password         String?
+  role             Role       @default(FAN)
+  isVerified       Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  accounts         Account[]
+  bookings         Booking[]
   celebrityProfile Celebrity?
-
-  // Fan specific fields
-  bookings Booking[]
-  reviews  Review[]
-  orders   Order[]
-  tips     Tip[]
+  orders           Order[]
+  reviews          Review[]
+  sessions         Session[]
+  tips             Tip[]
 }
 
 model Celebrity {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  bio          String?
-  longBio      String?  @db.Text
-  category     String?
-
-  // Pricing fields - REMOVED service-specific pricing, kept legacy field
-  price            Float?  // Legacy field, keep for compatibility
-
-  // Rating and performance
-  rating           Float?   @default(4.5)
-  averageRating    Float?   @default(4.5)
-  totalReviews     Int      @default(0)
-  completionRate   Int      @default(95)
-  responseTime     String   @default("24 hours")
-
-  // Status and features
-  isActive         Boolean  @default(true)
-  verified         Boolean  @default(false)
-  featured         Boolean  @default(false)
-
-  // Additional profile fields
-  coverImage       String?
-  tags             String[] @default([])
-  achievements     String[] @default([])
-  nextAvailable    String?  @default("2024-01-15")
-
-  // Stripe Connect Integration
-  stripeConnectAccountId    String?  @unique
-  stripeAccountStatus       StripeAccountStatus @default(PENDING)
-  stripeOnboardingComplete  Boolean  @default(false)
-  stripeChargesEnabled      Boolean  @default(false)
-  stripePayoutsEnabled      Boolean  @default(false)
-  preferredCurrency         String   @default("nzd")
+  id                       String              @id @default(cuid())
+  userId                   String              @unique
+  bio                      String?
+  category                 String?
+  price                    Float?
+  isActive                 Boolean             @default(true)
+  rating                   Float?              @default(4.5)
+  totalReviews             Int                 @default(0)
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+  achievements             String[]            @default([])
+  averageRating            Float?              @default(4.5)
+  completionRate           Int                 @default(95)
+  coverImage               String?
+  featured                 Boolean             @default(false)
+  longBio                  String?
+  nextAvailable            String?             @default("2024-01-15")
+  responseTime             String              @default("24 hours")
+  tags                     String[]            @default([])
+  verified                 Boolean             @default(false)
   bankCountry              String?
-  payoutSchedule           PayoutSchedule @default(WEEKLY)
-
-  // Earnings tracking
-  totalEarnings            Float    @default(0)
-  totalTips               Float    @default(0)
-  pendingEarnings         Float    @default(0)
-  lastPayoutAt            DateTime?
-
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookings     Booking[]
-  reviews      Review[]
-  orders       Order[]
-  sampleVideos SampleVideo[]
-  transfers    Transfer[]
-  tipsReceived Tip[]
-  payouts      Payout[]
+  lastPayoutAt             DateTime?
+  payoutSchedule           PayoutSchedule      @default(WEEKLY)
+  pendingEarnings          Float               @default(0)
+  preferredCurrency        String              @default("nzd")
+  stripeAccountStatus      StripeAccountStatus @default(PENDING)
+  stripeChargesEnabled     Boolean             @default(false)
+  stripeConnectAccountId   String?             @unique
+  stripeOnboardingComplete Boolean             @default(false)
+  stripePayoutsEnabled     Boolean             @default(false)
+  totalEarnings            Float               @default(0)
+  totalTips                Float               @default(0)
+  bookings                 Booking[]
+  user                     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders                   Order[]
+  payouts                  Payout[]
+  reviews                  Review[]
+  sampleVideos             SampleVideo[]
+  tipsReceived             Tip[]
+  transfers                Transfer[]
 }
 
 model SampleVideo {
-  id          String @id @default(cuid())
+  id          String    @id @default(cuid())
   celebrityId String
   title       String
   thumbnail   String?
   duration    String
   videoUrl    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  celebrity   Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
 }
 
 model CelebrityApplication {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Personal Information
-  fullName     String
-  email        String    @unique
-  phone        String
-  dateOfBirth  String
-  nationality  String?   // Made optional
-
-  // Professional Information - REMOVED profession field
-  category     String
-  experience   String    @db.Text  // Renamed from experience, now represents "Tell us about yourself"
-
-  // Social Media
-  instagramHandle   String?
-  twitterHandle     String?
-  tiktokHandle      String?
-  youtubeHandle     String?
-  otherSocialMedia  String?
-
-  // Additional Info - REMOVED followerCount, basePrice, rushPrice, availability, motivation
-  languages        String[]
-  specialRequests  String?   @db.Text
-
-  // Documents
-  hasProfilePhoto          Boolean @default(false)
-  hasIdDocument           Boolean @default(false)
-  hasVerificationDocument Boolean @default(false)  // Already optional
+  id                      String            @id @default(cuid())
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  fullName                String
+  email                   String            @unique
+  phone                   String
+  dateOfBirth             String
+  nationality             String?
+  category                String
+  experience              String
+  instagramHandle         String?
+  twitterHandle           String?
+  tiktokHandle            String?
+  youtubeHandle           String?
+  otherSocialMedia        String?
+  languages               String[]
+  specialRequests         String?
+  hasProfilePhoto         Boolean           @default(false)
+  hasIdDocument           Boolean           @default(false)
+  hasVerificationDocument Boolean           @default(false)
   profilePhotoUrl         String?
-  idDocumentUrl          String?
-  verificationDocumentUrl String?  // Already optional
-
-  // Application Status
-  status        ApplicationStatus @default(PENDING)
-  reviewNotes   String?          @db.Text
-  reviewedAt    DateTime?
-  reviewedBy    String?
+  idDocumentUrl           String?
+  verificationDocumentUrl String?
+  status                  ApplicationStatus @default(PENDING)
+  reviewNotes             String?
+  reviewedAt              DateTime?
+  reviewedBy              String?
 
   @@map("celebrity_applications")
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
-  userId          String
-  celebrityId     String
-  status          OrderStatus @default(PENDING)
-  totalAmount     Float
-  currency        String      @default("nzd")
-
-  // Payment Information - Make this unique for webhook lookups
-  paymentIntentId String?     @unique
-  paymentStatus   PaymentStatus @default(PENDING)
-  paidAt          DateTime?
-
-  // Platform fee tracking (20% of totalAmount)
-  platformFee     Float?
-  celebrityAmount Float?      // 80% of totalAmount
-
-  // Transfer tracking
-  transferId      String?     // Stripe transfer ID
-  transferStatus  TransferStatus @default(PENDING)
-  transferredAt   DateTime?
-
-  // Payout tracking - NEW FIELD
-  payoutStatus    TransferStatus @default(PENDING)
-
-  // Video Approval System - NEW FIELDS
-  approvalStatus  ApprovalStatus @default(PENDING_APPROVAL)
-  approvedAt      DateTime?
-  declinedAt      DateTime?
-  declineReason   String?      @db.Text
-  revisionCount   Int          @default(0)
-  maxRevisions    Int          @default(2)
-
-  // Booking Details
+  id                  String         @id @default(cuid())
+  orderNumber         String         @unique
+  userId              String
+  celebrityId         String
+  status              OrderStatus    @default(PENDING)
+  totalAmount         Float
+  currency            String         @default("nzd")
+  paymentIntentId     String?        @unique
+  paymentStatus       PaymentStatus  @default(PENDING)
+  paidAt              DateTime?
   recipientName       String
-  occasion           String
-  personalMessage    String    @db.Text
-  specialInstructions String?  @db.Text
-  messageType        String    // personal, business, charity
-
-  // Contact Information
-  email              String
-  phone              String?
-
-  // Scheduling
-  scheduledDate      DateTime?
-  scheduledTime      String?
-
-  // Delivery
-  deliveredAt        DateTime?
-  videoUrl           String?
-
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  celebrity Celebrity  @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
-  items     OrderItem[]
-  booking   Booking?    // IMPORTANT: Every order should have a corresponding booking record
-  tips      Tip[]
-  transfers Transfer[]
-  payouts   Payout[]
+  occasion            String
+  personalMessage     String
+  specialInstructions String?
+  messageType         String
+  email               String
+  phone               String?
+  scheduledDate       DateTime?
+  scheduledTime       String?
+  deliveredAt         DateTime?
+  videoUrl            String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  celebrityAmount     Float?
+  platformFee         Float?
+  transferId          String?
+  transferStatus      TransferStatus @default(PENDING)
+  transferredAt       DateTime?
+  payoutStatus        TransferStatus @default(PENDING)
+  approvalStatus      ApprovalStatus @default(PENDING_APPROVAL)
+  approvedAt          DateTime?
+  declineReason       String?
+  declinedAt          DateTime?
+  maxRevisions        Int            @default(2)
+  revisionCount       Int            @default(0)
+  booking             Booking?
+  celebrity           Celebrity      @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items               OrderItem[]
+  payouts             Payout[]
+  tips                Tip[]
+  transfers           Transfer[]
 }
 
 model OrderItem {
   id          String  @id @default(cuid())
   orderId     String
-  type        String  // base, addon, premium
+  type        String
   name        String
   description String?
   quantity    Int     @default(1)
   unitPrice   Float
   totalPrice  Float
-  metadata    Json?   // Store additional data like addOnId, premiumType, etc.
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  metadata    Json?
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
-  id          String        @id @default(cuid())
-  orderId     String        @unique
-  orderNumber String        @unique
-  userId      String
-  celebrityId String
-
-  // Booking details
-  message             String        @db.Text
-  recipientName       String
+  id                  String        @id @default(cuid())
+  celebrityId         String
+  message             String
   occasion            String?
-  instructions        String?       @db.Text
-  specialInstructions String?       @db.Text
-
-  // Status and pricing
-  status      BookingStatus @default(PENDING)
-  price       Float
-  totalAmount Float
-
-  // Scheduling
-  scheduledDate DateTime?
-  deadline      DateTime?
-
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
-  reviews   Review[]
+  status              BookingStatus @default(PENDING)
+  price               Float
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  userId              String
+  orderId             String        @unique
+  deadline            DateTime?
+  instructions        String?
+  orderNumber         String        @unique
+  recipientName       String
+  scheduledDate       DateTime?
+  specialInstructions String?
+  totalAmount         Float
+  celebrity           Celebrity     @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  order               Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews             Review[]
 }
 
 model Review {
-  id          String   @id @default(cuid())
-  userId      String
-  celebrityId String
+  id          String    @id @default(cuid())
   bookingId   String?
+  celebrityId String
   rating      Int
   comment     String?
-  verified    Boolean  @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
   occasion    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  celebrity Celebrity  @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
-  booking   Booking?   @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  verified    Boolean   @default(false)
+  booking     Booking?  @relation(fields: [bookingId], references: [id])
+  celebrity   Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// New Tip Model
 model Tip {
-  id              String    @id @default(cuid())
+  id              String         @id @default(cuid())
   orderId         String
-  userId          String    // Fan giving the tip
-  celebrityId     String    // Celebrity receiving the tip
+  userId          String
+  celebrityId     String
   amount          Float
-  currency        String    @default("nzd")
-  message         String?   @db.Text
-
-  // Payment tracking
-  paymentIntentId String?   @unique
-  paymentStatus   PaymentStatus @default(PENDING)
+  currency        String         @default("nzd")
+  message         String?
+  paymentIntentId String?        @unique
+  paymentStatus   PaymentStatus  @default(PENDING)
   paidAt          DateTime?
-
-  // Transfer tracking (100% goes to celebrity)
-  transferId      String?   // Stripe transfer ID
+  transferId      String?
   transferStatus  TransferStatus @default(PENDING)
   transferredAt   DateTime?
-
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
-  transfers Transfer[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  celebrity       Celebrity      @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transfers       Transfer[]
 }
 
-// Transfer tracking model
 model Transfer {
-  id                String        @id @default(cuid())
-  stripeTransferId  String        @unique
-  celebrityId       String
-  orderId           String?       // For booking transfers
-  tipId             String?       // For tip transfers
-
-  amount            Float
-  currency          String        @default("nzd")
-  type              TransferType  // BOOKING_PAYMENT, TIP
-  status            TransferStatus @default(PENDING)
-
-  // Metadata
-  description       String?
-  failureReason     String?
-
-  // Timestamps
-  initiatedAt       DateTime      @default(now())
-  completedAt       DateTime?
-  failedAt          DateTime?
-
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
-  order     Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  tip       Tip?      @relation(fields: [tipId], references: [id], onDelete: SetNull)
+  id               String         @id @default(cuid())
+  stripeTransferId String         @unique
+  celebrityId      String
+  orderId          String?
+  tipId            String?
+  amount           Float
+  currency         String         @default("nzd")
+  type             TransferType
+  status           TransferStatus @default(PENDING)
+  description      String?
+  failureReason    String?
+  initiatedAt      DateTime       @default(now())
+  completedAt      DateTime?
+  failedAt         DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  celebrity        Celebrity      @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  order            Order?         @relation(fields: [orderId], references: [id])
+  tip              Tip?           @relation(fields: [tipId], references: [id])
 }
 
-// NEW Payout Model
 model Payout {
-  id                String        @id @default(cuid())
-  celebrityId       String
-  orderId           String
-  amount            Float
-  platformFee       Float
-  currency          String        @default("nzd")
-  stripeTransferId  String?       
-  status            TransferStatus @default(PENDING)
-  paidAt            DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  celebrity Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
-  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id               String         @id @default(cuid())
+  celebrityId      String
+  orderId          String
+  amount           Float
+  platformFee      Float
+  currency         String         @default("nzd")
+  stripeTransferId String?
+  status           TransferStatus @default(PENDING)
+  paidAt           DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  celebrity        Celebrity      @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
-// NEW: Service Management Models
 model Service {
-  id               String    @id @default(cuid())
-  numericId        Int       @unique @default(autoincrement()) // For backward compatibility
+  id               String           @id @default(cuid())
   title            String
-  shortDescription String    @db.Text
-  fullDescription  String    @db.Text
-  icon             String    // Icon name (e.g., "Zap", "MessageCircle")
-  color            String    // Tailwind gradient classes
-  
-  // Pricing
+  shortDescription String
+  fullDescription  String
+  icon             String
+  color            String
   startingPrice    Float
-  currency         String    @default("nzd")
   asapPrice        Float
-  
-  // Timing
-  duration         String    // e.g., "Up to 60 seconds"
-  deliveryTime     String    // e.g., "3-7 days"
-  asapDeliveryTime String    // e.g., "24-48 hours"
-  
-  // JSON fields for complex data
-  samples          Json      @default("[]") // Array of sample videos
-  talents          Json      @default("[]") // Array of featured talents
-  
-  // Organization
-  order            Int       @default(0)
-  popular          Boolean   @default(false)
-  isActive         Boolean   @default(true)
-  
-  // Audit fields
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  createdBy        String?   // User ID
-  updatedBy        String?   // User ID
-  
-  // Relations
+  duration         String
+  deliveryTime     String
+  asapDeliveryTime String
+  popular          Boolean          @default(false)
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  updatedBy        String?
+  createdBy        String?
+  order            Int              @default(0)
+  currency         String           @default("nzd")
+  numericId        Int              @unique @default(autoincrement())
+  samples          Json             @default("[]")
+  talents          Json             @default("[]")
   features         ServiceFeature[]
-  
+
   @@map("services")
 }
 
@@ -427,35 +333,76 @@ model ServiceFeature {
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
   service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  
+
   @@map("service_features")
 }
 
-// NEW: Site Content Management Model
 model SiteContent {
   id          String      @id @default(cuid())
-  key         String      @unique  // e.g., "homepage.hero.title"
-  value       String      @db.Text
+  key         String      @unique
+  value       String
   type        ContentType @default(TEXT)
-  category    String      // homepage, about, services, faq, etc.
-  description String?     // Human-readable description for admin
+  category    String
+  description String?
   isActive    Boolean     @default(true)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  updatedBy   String?     // User ID who last updated this content
+  updatedBy   String?
 
   @@map("site_content")
 }
 
 model VerificationToken {
-  id         String    @id @default(cuid())
-  email      String
-  token      String    @unique
-  type       TokenType
-  expires    DateTime
-  createdAt  DateTime  @default(now())
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  type      TokenType
+  expires   DateTime
+  createdAt DateTime  @default(now())
+}
+
+model SiteSettings {
+  id              String   @id @default(cuid())
+  siteName        String   @default("Kia Ora Kahi")
+  siteDescription String   @default("Connect with celebrities for personalized video messages")
+  contactEmail    String   @default("admin@kiaora.com")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model FinancialSettings {
+  id             String   @id @default(cuid())
+  platformFee    Float    @default(20)
+  minimumPayout  Float    @default(50)
+  payoutSchedule String   @default("weekly")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SupportTicket {
+  id           String                  @id @default(cuid())
+  ticketNumber String                  @unique
+  name         String
+  email        String
+  phone        String?
+  category     String                  @default("general")
+  subject      String
+  message      String
+  priority     String                  @default("normal")
+  status       String                  @default("OPEN")
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  responses    SupportTicketResponse[]
+}
+
+model SupportTicketResponse {
+  id            String        @id @default(cuid())
+  ticketId      String
+  message       String
+  isFromSupport Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  ticket        SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -468,10 +415,10 @@ enum OrderStatus {
   PENDING
   CONFIRMED
   IN_PROGRESS
-  PENDING_APPROVAL
   COMPLETED
   CANCELLED
   REFUNDED
+  PENDING_APPROVAL
   REVISION_REQUESTED
 }
 
@@ -487,10 +434,10 @@ enum PaymentStatus {
 enum BookingStatus {
   PENDING
   ACCEPTED
-  CONFIRMED
   COMPLETED
   CANCELLED
   REFUNDED
+  CONFIRMED
 }
 
 enum ApprovalStatus {
@@ -513,7 +460,6 @@ enum ApplicationStatus {
   REQUIRES_CHANGES
 }
 
-// Updated Stripe Connect Enums to match what we're using in code
 enum StripeAccountStatus {
   PENDING
   RESTRICTED
@@ -540,59 +486,11 @@ enum TransferType {
   TIP
 }
 
-// NEW: Content Type Enum
 enum ContentType {
-  TEXT        // Plain text
-  HTML        // Rich text/HTML
-  JSON        // Structured data
-  IMAGE       // Image URL
-  NUMBER      // Numeric values
-  BOOLEAN     // True/false values
-}
-
-model SiteSettings {
-  id              String   @id @default(cuid())
-  siteName        String   @default("Kia Ora Kahi")
-  siteDescription String   @default("Connect with celebrities for personalized video messages")
-  contactEmail    String   @default("admin@kiaora.com")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model FinancialSettings {
-  id             String   @id @default(cuid())
-  platformFee    Float    @default(20)
-  minimumPayout  Float    @default(50)
-  payoutSchedule String   @default("weekly")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-// Support Ticket System
-model SupportTicket {
-  id          String   @id @default(cuid())
-  ticketNumber String  @unique
-  name        String
-  email       String
-  phone       String?
-  category    String   @default("general")
-  subject     String
-  message     String   @db.Text
-  priority    String   @default("normal")
-  status      String   @default("OPEN")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Responses to this ticket
-  responses SupportTicketResponse[]
-}
-
-model SupportTicketResponse {
-  id              String        @id @default(cuid())
-  ticketId        String
-  message         String        @db.Text
-  isFromSupport   Boolean       @default(false)
-  createdAt       DateTime      @default(now())
-  
-  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  TEXT
+  HTML
+  JSON
+  IMAGE
+  NUMBER
+  BOOLEAN
 }

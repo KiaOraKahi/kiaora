@@ -160,6 +160,12 @@ export default function Navbar() {
                         <Link href="/dashboard">Dashboard</Link>
                       </DropdownMenuItem>
                     )}
+                    {session.user?.role === "ADMIN" && (
+                      <DropdownMenuItem className="text-white hover:bg-white/10">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <Link href="/admin">Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer" onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Sign out</span>
