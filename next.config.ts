@@ -1,13 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  /* Remember to remove this type blockage */
+  serverExternalPackages: ['@prisma/client'],
   typescript: {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["lxzosqesvwftyg1v.public.blob.vercel-storage.com", "images.unsplash.com"],
+    domains: [
+      "lxzosqesvwftyg1v.public.blob.vercel-storage.com", 
+      "images.unsplash.com",
+      "blob.vercel-storage.com",
+      "lh3.googleusercontent.com"
+    ],
   },
 };
 
