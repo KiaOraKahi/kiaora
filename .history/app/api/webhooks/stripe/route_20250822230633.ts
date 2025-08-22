@@ -216,49 +216,6 @@ async function handleAutomaticDestinationChargeSuccess(paymentIntent: Stripe.Pay
   }
 }
 
-async function handleManualTransferSuccess(paymentIntent: Stripe.PaymentIntent) {
-  console.log("🔄 STARTING MANUAL TRANSFER SUCCESS HANDLER")
-  console.log("   - Payment Intent ID:", paymentIntent.id)
-  console.log("   - This payment was manually transferred to the celebrity")
-
-  try {
-    // Find the order
-    const order = await prisma.order.findUnique({
-      where: { paymentIntentId: paymentIntent.id },
-      include: {
-        celebrity: { include: { user: true } },
-        user: true,
-      },
-    })
-
-    if (!order) {
-      console.log("❌ Order not found for payment intent:", paymentIntent.id)
-      return
-    }
-
-    console.log("✅ Order found:", order.orderNumber)
-    console.log("   - Celebrity:", order.celebrity.user.name)
-    console.log("   - Amount:", paymentIntent.amount / 100)
-    console.log("   - Manual transfer completed")
-
-    // Update order to reflect that transfer is completed
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentStatus: "SUCCEEDED",
-        transferStatus: "PAID", // Transfer is completed
-        paidAt: new Date(),
-      },
-    })
-
-    console.log("✅ Order updated - transfer status set to PAID")
-
-  } catch (error) {
-    console.error("❌ Error handling manual transfer success:", error)
-    throw error
-  }
-}
-
 async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   console.log("🔄 STARTING BOOKING PAYMENT SUCCESS HANDLER")
   console.log("   - Payment Intent ID:", paymentIntent.id)

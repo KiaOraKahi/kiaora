@@ -108,21 +108,6 @@ export async function POST(
       },
     })
 
-    // Create transfer record in database
-    await prisma.transfer.create({
-      data: {
-        stripeTransferId: transfer.id,
-        celebrityId: order.celebrityId,
-        orderId: order.id,
-        amount: celebrityAmount,
-        currency: "nzd",
-        type: "ORDER",
-        status: "IN_TRANSIT",
-        description: `Payment for order ${orderNumber} - ${order.celebrity.user.name}`,
-        initiatedAt: new Date(),
-      },
-    })
-
     // Send notification email
     try {
       const emailResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/send-approval-emails`, {
