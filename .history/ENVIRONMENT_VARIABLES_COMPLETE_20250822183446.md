@@ -54,7 +54,7 @@ Vercel Value: [Keep same for test, change to live key for production]
 Status: ✅ Can use same (test mode)
 
 Name: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-Current Value: pk_test_51Rx60fIc04RmNsOBUmmqq2DNNM65Ad18h4pKXdUhLdIVlEAnhU5gdhxXm7NZWakgcZl7De80lCaKNW4QrIlQKbKq00XV1fDcm5
+Current Value: pk_test_[your-stripe-publishable-key]
 Vercel Value: [Keep same for test, change to live key for production]
 Status: ✅ Can use same (test mode)
 ```
@@ -110,8 +110,8 @@ Copy these exact names and values to your Vercel dashboard:
 | `DATABASE_URL` | `postgresql://postgres:1234@localhost:5432/kia_ora_db` | `[Production PostgreSQL URL]` | ⚠️ Change |
 | `NEXTAUTH_SECRET` | `your-super-secret-key-here-change-in-production` | `[Generate secure string]` | ⚠️ Change |
 | `NEXTAUTH_URL` | `http://localhost:3000` | `https://your-app-name.vercel.app` | ⚠️ Change |
-| `STRIPE_SECRET_KEY` | `sk_test_51Rx60fIc04RmNsOB0pcwaF7l0CyL81h15Q39pUGb9G7buFtrSvj7H2DMW4XMeX0liXiiUTB9O3kEsdHQ0S7T4weY009024qMdP` | `[Same or live key]` | ✅ Keep |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_51Rx60fIc04RmNsOBUmmqq2DNNM65Ad18h4pKXdUhLdIVlEAnhU5gdhxXm7NZWakgcZl7De80lCaKNW4QrIlQKbKq00XV1fDcm5` | `[Same or live key]` | ✅ Keep |
+| `STRIPE_SECRET_KEY` | `sk_test_[your-stripe-secret-key]` | `[Same or live key]` | ✅ Keep |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_[your-stripe-publishable-key]` | `[Same or live key]` | ✅ Keep |
 | `GOOGLE_CLIENT_ID` | `[NOT SET]` | `[Your Google OAuth Client ID]` | ❌ MUST SET |
 | `GOOGLE_CLIENT_SECRET` | `[NOT SET]` | `[Your Google OAuth Client Secret]` | ❌ MUST SET |
 | `BLOB_READ_WRITE_TOKEN` | `[NOT SET]` | `[Your Vercel Blob token]` | ❌ MUST SET |
@@ -160,8 +160,8 @@ Here are the exact values you can copy to Vercel (replace placeholders with your
 DATABASE_URL=[Your production PostgreSQL URL]
 NEXTAUTH_SECRET=[Generate secure random string]
 NEXTAUTH_URL=https://your-app-name.vercel.app
-STRIPE_SECRET_KEY=sk_test_51Rx60fIc04RmNsOB0pcwaF7l0CyL81h15Q39pUGb9G7buFtrSvj7H2DMW4XMeX0liXiiUTB9O3kEsdHQ0S7T4weY009024qMdP
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51Rx60fIc04RmNsOBUmmqq2DNNM65Ad18h4pKXdUhLdIVlEAnhU5gdhxXm7NZWakgcZl7De80lCaKNW4QrIlQKbKq00XV1fDcm5
+STRIPE_SECRET_KEY=sk_test_[your-stripe-secret-key]
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_[your-stripe-publishable-key]
 GOOGLE_CLIENT_ID=[Your Google OAuth Client ID]
 GOOGLE_CLIENT_SECRET=[Your Google OAuth Client Secret]
 BLOB_READ_WRITE_TOKEN=[Your Vercel Blob token]
