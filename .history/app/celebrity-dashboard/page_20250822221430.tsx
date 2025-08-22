@@ -1497,18 +1497,7 @@ export default function CelebrityDashboard() {
                            className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
                            onClick={() => setActiveTab("requests")}
                          >
-                           <div className="flex items-center gap-2">
-                             <span>View All Pending Requests ({bookingRequests.length})</span>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={fetchBookingRequests}
-                               disabled={requestsLoading}
-                               className="p-1 h-auto text-purple-200 hover:text-white"
-                             >
-                               <RefreshCw className={`w-3 h-3 ${requestsLoading ? 'animate-spin' : ''}`} />
-                             </Button>
-                           </div>
+                           View All Pending Requests ({bookingRequests.length})
                          </Button>
                       </>
                     ) : (
@@ -1660,22 +1649,10 @@ export default function CelebrityDashboard() {
             <TabsContent value="requests" className="space-y-6">
               <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                 <CardHeader>
-                                     <div className="flex items-center justify-between">
-                    <CardTitle className="text-white flex items-center gap-2">
-                       <MessageSquare className="w-5 h-5" />
-                       Pending Requests ({bookingRequests.length})
-                     </CardTitle>
-                     <Button
-                       variant="outline"
-                       size="sm"
-                       onClick={fetchBookingRequests}
-                       disabled={requestsLoading}
-                       className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                     >
-                       <RefreshCw className={`w-4 h-4 mr-2 ${requestsLoading ? 'animate-spin' : ''}`} />
-                       Refresh
-                     </Button>
-                   </div>
+                                     <CardTitle className="text-white flex items-center gap-2">
+                     <MessageSquare className="w-5 h-5" />
+                     Pending Requests ({bookingRequests.length})
+                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {requestsLoading ? (
