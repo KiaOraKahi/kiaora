@@ -551,23 +551,22 @@ export default function KiaOraHomepage() {
               ))}
             </div>
 
-                          <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="text-center mt-12"
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="text-center mt-12"
+            >
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-8 py-4 text-lg"
+                onClick={() => router.push('/how-it-works')}
               >
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-8 py-4 text-lg"
-                  onClick={() => router.push('/how-it-works')}
-                >
-                  Learn More
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </motion.div>
+                Learn More
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </motion.div>
           </div>
         </section>

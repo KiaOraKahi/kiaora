@@ -52,6 +52,7 @@ import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 import { TipModal } from "@/components/tip-modal"
+import { ProfileImageUpload } from "@/components/profile-image-upload"
 
 interface Order {
   id: string
@@ -300,6 +301,25 @@ export default function UserDashboard() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
+  // Fetch user profile when session is available
+  useEffect(() => {
+    if (session?.user?.id) {
+      const fetchUserProfile = async () => {
+        try {
+          const response = await fetch("/api/user/profile")
+          if (response.ok) {
+            const userProfile = await response.json()
+            setProfile(userProfile)
+            setEditedProfile(userProfile)
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error)
+        }
+      }
+      fetchUserProfile()
+    }
+  }, [session?.user?.id])
+
   const filteredOrders = orders.filter((order) => {
     const matchesSearch = searchTerm === "" || 
       order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -311,10 +331,30 @@ export default function UserDashboard() {
     return matchesSearch && matchesStatus
   })
 
-  const handleProfileSave = () => {
-    setProfile(editedProfile)
-    setIsEditingProfile(false)
-    // Here you would typically save to the API
+  const handleProfileSave = async () => {
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editedProfile),
+      })
+
+      if (response.ok) {
+        const updatedProfile = await response.json()
+        setProfile(updatedProfile)
+        setEditedProfile(updatedProfile)
+        setIsEditingProfile(false)
+        toast.success("Profile updated successfully!")
+      } else {
+        const error = await response.json()
+        toast.error(error.error || "Failed to update profile")
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error)
+      toast.error("Failed to update profile. Please try again.")
+    }
   }
 
   const handleProfileCancel = () => {
@@ -721,16 +761,11 @@ export default function UserDashboard() {
                       </AvatarFallback>
                     </Avatar>
                     {isEditingProfile && (
-                      <div className="space-y-2">
-                        <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                          <Camera className="w-4 h-4 mr-2" />
-                          Change Photo
-                        </Button>
-                        <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Remove
-                        </Button>
-                      </div>
+                      <ProfileImageUpload
+                        currentImage={editedProfile.avatar}
+                        onImageUpdate={(imageUrl) => setEditedProfile({ ...editedProfile, avatar: imageUrl })}
+                        disabled={false}
+                      />
                     )}
                   </div>
 
