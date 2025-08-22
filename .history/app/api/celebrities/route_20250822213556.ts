@@ -205,10 +205,32 @@ export async function GET(request: NextRequest) {
         hasNext,
         hasPrev,
       },
-      useMockData: false,
+      useMockData,
     })
   } catch (error) {
     console.error("Error fetching celebrities:", error)
-    return NextResponse.json({ error: "Failed to fetch celebrities" }, { status: 500 })
+    
+    // Fallback to mock data on any error
+    const page = Number.parseInt(new URL(request.url).searchParams.get("page") || "1")
+    const limit = 12
+    const skip = (page - 1) * limit
+    const total = mockCelebrities.length
+    const totalPages = Math.ceil(total / limit)
+    const hasNext = page < totalPages
+    const hasPrev = page > 1
+
+    return NextResponse.json({
+      celebrities: mockCelebrities.slice(skip, skip + limit),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext,
+        hasPrev,
+      },
+      useMockData: true,
+      error: "Using fallback data due to system error",
+    })
   }
 }
