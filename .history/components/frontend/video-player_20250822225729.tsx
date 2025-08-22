@@ -66,17 +66,6 @@ export default function VideoPlayer({
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
 
-  // Toggle play/pause
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
-      } else {
-        videoRef.current.play()
-      }
-    }
-  }
-
   // Convert YouTube URL to embed URL
   const getYouTubeEmbedUrl = (url: unknown) => {
     if (typeof url !== "string" || url.trim().length === 0) return null
@@ -254,24 +243,23 @@ export default function VideoPlayer({
               <>
                 {/* Regular Video Element */}
                 <video ref={videoRef} className="w-full aspect-video" poster={poster} preload="metadata">
-                  <source src={videoUrl || src} type="video/mp4" />
+                  <source src={src} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
 
-                {/* Video Controls */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/60">
-                  {/* Center Play Button */}
-                  {!isPlaying && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Button
-                        size="lg"
-                        className="w-20 h-20 rounded-full bg-white/20 hover:bg-white/30 text-white border-2 border-white/30"
-                        onClick={togglePlay}
-                      >
-                        <Play className="w-8 h-8 ml-1" />
-                      </Button>
+                {/* Video Placeholder (since we don't have real videos) */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/50 to-pink-900/50 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                      <Play className="w-12 h-12 text-white ml-1" />
                     </div>
-                  )}
+                    <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
+                    {celebrity && <p className="text-purple-200">by {celebrity}</p>}
+                    {duration && <p className="text-purple-300 text-sm mt-2">{duration}</p>}
+                    <p className="text-purple-300 text-sm mt-4 max-w-md">
+                      This is a sample video player. In a real implementation, this would play actual celebrity videos.
+                    </p>
+                  </div>
                 </div>
               </>
             )}
