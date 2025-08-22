@@ -71,11 +71,8 @@ export async function POST(request: NextRequest) {
         if (paymentIntent.metadata?.type === "tip") {
           console.log("💝 Processing as TIP payment...")
           await handleTipPaymentSuccess(paymentIntent)
-        } else if (paymentIntent.metadata?.transferType === "automatic_destination_charge") {
-          console.log("🎬 Processing as AUTOMATIC DESTINATION CHARGE (transfer will be created automatically)...")
-          await handleAutomaticDestinationChargeSuccess(paymentIntent)
         } else {
-          console.log("🎬 Processing as REGULAR BOOKING payment...")
+          console.log("🎬 Processing as BOOKING payment...")
           await handleBookingPaymentSuccess(paymentIntent)
         }
         console.log("✅ Payment processing completed successfully")
@@ -169,50 +166,6 @@ export async function POST(request: NextRequest) {
 // ==========================================
 // BOOKING PAYMENT HANDLERS
 // ==========================================
-
-async function handleAutomaticDestinationChargeSuccess(paymentIntent: Stripe.PaymentIntent) {
-  console.log("🔄 STARTING AUTOMATIC DESTINATION CHARGE SUCCESS HANDLER")
-  console.log("   - Payment Intent ID:", paymentIntent.id)
-  console.log("   - This payment will automatically create a transfer to the celebrity")
-
-  try {
-    // Find the order
-    const order = await prisma.order.findUnique({
-      where: { paymentIntentId: paymentIntent.id },
-      include: {
-        celebrity: { include: { user: true } },
-        user: true,
-      },
-    })
-
-    if (!order) {
-      console.log("❌ Order not found for payment intent:", paymentIntent.id)
-      return
-    }
-
-    console.log("✅ Order found:", order.orderNumber)
-    console.log("   - Celebrity:", order.celebrity.user.name)
-    console.log("   - Amount:", paymentIntent.amount / 100)
-    console.log("   - Transfer will be created automatically by Stripe")
-
-    // Update order to reflect that transfer is pending
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentStatus: "SUCCEEDED",
-        transferStatus: "PENDING", // Transfer is pending until webhook confirms
-        paidAt: new Date(),
-      },
-    })
-
-    console.log("✅ Order updated - transfer status set to PENDING")
-    console.log("   - Waiting for transfer.created webhook event...")
-
-  } catch (error) {
-    console.error("❌ Error handling automatic destination charge success:", error)
-    throw error
-  }
-}
 
 async function handleBookingPaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   console.log("🔄 STARTING BOOKING PAYMENT SUCCESS HANDLER")
@@ -658,218 +611,74 @@ async function handleConnectAccountUpdate(account: Stripe.Account) {
 
 async function handleTransferCreated(transfer: Stripe.Transfer) {
   console.log("🔄 Processing transfer created:", transfer.id)
-  console.log("   - Transfer ID:", transfer.id)
-  console.log("   - Amount:", transfer.amount, "cents")
-  console.log("   - Destination:", transfer.destination)
-  console.log("   - Description:", transfer.description)
 
-  try {
-    // First, try to find an existing transfer record
-    let transferRecord = await prisma.transfer.findUnique({
-      where: { stripeTransferId: transfer.id },
-    })
+  // Update transfer record status
+  await prisma.transfer.updateMany({
+    where: { stripeTransferId: transfer.id },
+    data: {
+      status: "IN_TRANSIT",
+      initiatedAt: new Date(transfer.created * 1000),
+    },
+  })
 
-    if (transferRecord) {
-      // Update existing transfer record
-      await prisma.transfer.update({
-        where: { stripeTransferId: transfer.id },
-        data: {
-          status: "IN_TRANSIT",
-          initiatedAt: new Date(transfer.created * 1000),
-        },
-      })
-      console.log("✅ Existing transfer record updated")
-    } else {
-      // This might be a transfer from a destination charge - try to find by description
-      console.log("🔍 Transfer record not found, checking if this is from a destination charge...")
-      
-      // Look for orders that might be related to this transfer
-      const orders = await prisma.order.findMany({
-        where: {
-          transferStatus: "PENDING",
-          celebrity: {
-            stripeConnectAccountId: transfer.destination
-          }
-        },
-        include: {
-          celebrity: { include: { user: true } },
-          user: true,
-        }
-      })
-
-      if (orders.length > 0) {
-        console.log(`🔍 Found ${orders.length} pending orders for this celebrity`)
-        
-        // Find the most recent pending order that matches the transfer amount
-        const matchingOrder = orders.find(order => {
-          const orderAmount = Math.round(order.celebrityAmount * 100)
-          return orderAmount === transfer.amount
-        })
-
-        if (matchingOrder) {
-          console.log("✅ Found matching order:", matchingOrder.orderNumber)
-          
-          // Update the order's transfer status
-          await prisma.order.update({
-            where: { id: matchingOrder.id },
-            data: {
-              transferStatus: "IN_TRANSIT",
-              transferredAt: new Date(),
-            },
-          })
-
-          // Update the payout record
-          await prisma.payout.updateMany({
-            where: { orderId: matchingOrder.id },
-            data: {
-              status: "IN_TRANSIT",
-              stripeTransferId: transfer.id,
-              initiatedAt: new Date(transfer.created * 1000),
-            },
-          })
-
-          console.log("✅ Order and payout updated for automatic transfer")
-        } else {
-          console.log("⚠️ No matching order found for transfer amount")
-        }
-      } else {
-        console.log("⚠️ No pending orders found for this celebrity")
-      }
-    }
-
-    console.log("✅ Transfer created processing completed")
-  } catch (error) {
-    console.error("❌ Error processing transfer created:", error)
-    throw error
-  }
+  console.log("✅ Transfer created status updated")
 }
 
 async function handleTransferCompleted(transfer: Stripe.Transfer) {
   console.log("🔄 Processing transfer completion:", transfer.id)
 
-  try {
-    // First, try to find an existing transfer record
-    let transferRecord = await prisma.transfer.findUnique({
-      where: { stripeTransferId: transfer.id },
-      include: { celebrity: true },
-    })
+  // Update transfer record
+  const transferRecord = await prisma.transfer.findUnique({
+    where: { stripeTransferId: transfer.id },
+    include: { celebrity: true },
+  })
 
-    if (transferRecord) {
-      // Update existing transfer record
-      await prisma.transfer.update({
-        where: { stripeTransferId: transfer.id },
-        data: {
-          status: "PAID",
-          completedAt: new Date(),
-        },
-      })
-
-      // Update related order or tip
-      if (transferRecord.orderId) {
-        await prisma.order.update({
-          where: { id: transferRecord.orderId },
-          data: {
-            transferStatus: "PAID",
-            transferredAt: new Date(),
-          },
-        })
-      }
-
-      if (transferRecord.tipId) {
-        await prisma.tip.update({
-          where: { id: transferRecord.tipId },
-          data: {
-            transferStatus: "PAID",
-            transferredAt: new Date(),
-          },
-        })
-      }
-
-      // Update celebrity earnings
-      await prisma.celebrity.update({
-        where: { id: transferRecord.celebrityId },
-        data: {
-          totalEarnings: {
-            increment: transfer.amount / 100, // Convert from cents
-          },
-          lastPayoutAt: new Date(),
-        },
-      })
-
-      console.log("✅ Existing transfer record completion processed")
-    } else {
-      // This might be a transfer from a destination charge - try to find by description
-      console.log("🔍 Transfer record not found, checking if this is from a destination charge...")
-      
-      // Look for orders that might be related to this transfer
-      const orders = await prisma.order.findMany({
-        where: {
-          transferStatus: "IN_TRANSIT",
-          celebrity: {
-            stripeConnectAccountId: transfer.destination
-          }
-        },
-        include: {
-          celebrity: { include: { user: true } },
-          user: true,
-        }
-      })
-
-      if (orders.length > 0) {
-        console.log(`🔍 Found ${orders.length} in-transit orders for this celebrity`)
-        
-        // Find the most recent in-transit order that matches the transfer amount
-        const matchingOrder = orders.find(order => {
-          const orderAmount = Math.round(order.celebrityAmount * 100)
-          return orderAmount === transfer.amount
-        })
-
-        if (matchingOrder) {
-          console.log("✅ Found matching order:", matchingOrder.orderNumber)
-          
-          // Update the order's transfer status
-          await prisma.order.update({
-            where: { id: matchingOrder.id },
-            data: {
-              transferStatus: "PAID",
-              transferredAt: new Date(),
-            },
-          })
-
-          // Update the payout record
-          await prisma.payout.updateMany({
-            where: { orderId: matchingOrder.id },
-            data: {
-              status: "PAID",
-              completedAt: new Date(),
-            },
-          })
-
-          // Update celebrity earnings
-          await prisma.celebrity.update({
-            where: { id: matchingOrder.celebrityId },
-            data: {
-              totalEarnings: {
-                increment: transfer.amount / 100, // Convert from cents
-              },
-              lastPayoutAt: new Date(),
-            },
-          })
-
-          console.log("✅ Order and payout updated for automatic transfer completion")
-        } else {
-          console.log("⚠️ No matching order found for transfer amount")
-        }
-      } else {
-        console.log("⚠️ No in-transit orders found for this celebrity")
-      }
-    }
-
-    console.log("✅ Transfer completion processed successfully")
-  } catch (error) {
-    console.error("❌ Error processing transfer completion:", error)
-    throw error
+  if (!transferRecord) {
+    console.log("⚠️ Transfer record not found:", transfer.id)
+    return
   }
+
+  await prisma.transfer.update({
+    where: { stripeTransferId: transfer.id },
+    data: {
+      status: "PAID",
+      completedAt: new Date(),
+    },
+  })
+
+  // Update related order or tip
+  if (transferRecord.orderId) {
+    await prisma.order.update({
+      where: { id: transferRecord.orderId },
+      data: {
+        transferStatus: "PAID",
+        transferredAt: new Date(),
+      },
+    })
+  }
+
+  if (transferRecord.tipId) {
+    await prisma.tip.update({
+      where: { id: transferRecord.tipId },
+      data: {
+        transferStatus: "PAID",
+        transferredAt: new Date(),
+      },
+    })
+  }
+
+  // Update celebrity earnings
+  await prisma.celebrity.update({
+    where: { id: transferRecord.celebrityId },
+    data: {
+      totalEarnings: {
+        increment: transfer.amount / 100, // Convert from cents
+      },
+      lastPayoutAt: new Date(),
+    },
+  })
+
+  console.log("✅ Transfer completion processed successfully")
 }
 
 async function handleTransferFailed(transfer: Stripe.Transfer) {
