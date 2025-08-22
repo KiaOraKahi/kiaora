@@ -153,7 +153,6 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ WEBHOOK PROCESSING COMPLETED SUCCESSFULLY")
     return NextResponse.json({ received: true })
-    }
   } catch (error) {
     console.error("❌ CRITICAL WEBHOOK ERROR:")
     console.error("📋 Error message:", error instanceof Error ? error.message : "Unknown error")
