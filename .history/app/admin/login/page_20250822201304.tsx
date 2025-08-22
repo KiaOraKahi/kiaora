@@ -89,13 +89,16 @@ export default function AdminLoginPage() {
       <SubtleLuxuryStarfield />
       
       <div className="absolute top-8 left-8 z-10">
-        <a
-          href="/"
-          className="inline-flex items-center px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 border border-white/20 rounded-lg transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </a>
+        <Link href="/">
+          <Button
+            variant="ghost"
+            className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 cursor-pointer"
+            type="button"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
       </div>
 
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
