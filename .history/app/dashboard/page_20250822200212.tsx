@@ -406,27 +406,17 @@ export default function UserDashboard() {
               </Badge>
             </div>
             
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="w-16 h-16">
-                  <AvatarImage src={profile.avatar} alt={profile.name} />
-                  <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl">
-                    {profile.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h1 className="text-4xl font-bold text-white">Welcome back, {profile.name}!</h1>
-                  <p className="text-purple-200">Manage your celebrity video bookings and account</p>
-                </div>
+            <div className="flex items-center gap-4 mb-4">
+              <Avatar className="w-16 h-16">
+                <AvatarImage src={profile.avatar} alt={profile.name} />
+                <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl">
+                  {profile.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Welcome back, {profile.name}!</h1>
+                <p className="text-purple-200">Manage your celebrity video bookings and account</p>
               </div>
-              <Button
-                variant="outline"
-                className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                onClick={() => signOut({ callbackUrl: "/" })}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
             </div>
 
             {/* Quick Stats */}
