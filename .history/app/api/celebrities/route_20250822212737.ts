@@ -2,6 +2,104 @@ import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 // Database-only celebrities API - no mock data
+  },
+  {
+    id: "7",
+    name: "Taylor Swift",
+    image: "/talents/4.jpg",
+    category: "Musician",
+    bio: "Global pop superstar and songwriter. Creates magical, personal video messages perfect for fans and special occasions.",
+    price: 1499,
+    rating: 4.9,
+    reviewCount: 567,
+    responseTime: "1 week",
+    completedVideos: 289,
+    verified: true,
+    featured: true,
+    nextAvailable: "2024-01-22",
+    tags: ["Pop", "Songwriter", "Global Star", "Fan Favorite"]
+  },
+  {
+    id: "8",
+    name: "Dwayne Johnson",
+    image: "/talents/5.jpg",
+    category: "Actor",
+    bio: "The Rock - action star and motivational figure. Delivers powerful, inspiring messages perfect for motivation and celebration.",
+    price: 999,
+    rating: 4.8,
+    reviewCount: 234,
+    responseTime: "72 hours",
+    completedVideos: 178,
+    verified: true,
+    featured: false,
+    nextAvailable: "2024-01-19",
+    tags: ["Action", "Motivation", "Fitness", "Hollywood"]
+  },
+  {
+    id: "9",
+    name: "Ellen DeGeneres",
+    image: "/talents/6.jpg",
+    category: "Comedian",
+    bio: "Beloved talk show host and comedian. Creates warm, funny video messages that bring joy and laughter.",
+    price: 699,
+    rating: 4.6,
+    reviewCount: 189,
+    responseTime: "1 week",
+    completedVideos: 134,
+    verified: true,
+    featured: false,
+    nextAvailable: "2024-01-24",
+    tags: ["Comedy", "Talk Show", "Joy", "Entertainment"]
+  },
+  {
+    id: "10",
+    name: "LeBron James",
+    image: "/celeb1.jpg",
+    category: "Athlete",
+    bio: "NBA superstar and philanthropist. Inspires with messages about teamwork, success, and achieving your dreams.",
+    price: 1199,
+    rating: 4.9,
+    reviewCount: 312,
+    responseTime: "1 week",
+    completedVideos: 245,
+    verified: true,
+    featured: true,
+    nextAvailable: "2024-01-26",
+    tags: ["NBA", "Basketball", "Success", "Inspiration"]
+  },
+  {
+    id: "11",
+    name: "Michelle Obama",
+    image: "/celeb2.jpg",
+    category: "Motivator",
+    bio: "Former First Lady and advocate. Delivers powerful messages about education, leadership, and making a difference.",
+    price: 1599,
+    rating: 5.0,
+    reviewCount: 98,
+    responseTime: "2 weeks",
+    completedVideos: 67,
+    verified: true,
+    featured: true,
+    nextAvailable: "2024-02-05",
+    tags: ["Leadership", "Education", "Advocacy", "Inspiration"]
+  },
+  {
+    id: "12",
+    name: "Kevin Hart",
+    image: "/celeb3.jpg",
+    category: "Comedian",
+    bio: "Stand-up comedian and actor. Creates hilarious, energetic video messages perfect for birthdays and celebrations.",
+    price: 799,
+    rating: 4.7,
+    reviewCount: 267,
+    responseTime: "48 hours",
+    completedVideos: 189,
+    verified: true,
+    featured: false,
+    nextAvailable: "2024-01-17",
+    tags: ["Comedy", "Stand-up", "Energy", "Entertainment"]
+  }
+]
 
 export async function GET(request: NextRequest) {
   try {
