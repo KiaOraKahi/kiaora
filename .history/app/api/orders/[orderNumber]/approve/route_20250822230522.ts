@@ -94,7 +94,7 @@ export async function POST(
       },
     })
 
-    // Create payout record with transfer ID
+    // Create payout record - status will be updated by webhook when transfer completes
     await prisma.payout.create({
       data: {
         celebrityId: order.celebrityId,
@@ -102,24 +102,9 @@ export async function POST(
         amount: celebrityAmount / 100,
         platformFee: platformFee / 100,
         currency: "nzd",
-        stripeTransferId: transfer.id, // Set the transfer ID immediately
-        status: "IN_TRANSIT", // Transfer is now in transit
-        initiatedAt: new Date(),
-      },
-    })
-
-    // Create transfer record in database
-    await prisma.transfer.create({
-      data: {
-        stripeTransferId: transfer.id,
-        celebrityId: order.celebrityId,
-        orderId: order.id,
-        amount: celebrityAmount,
-        currency: "nzd",
-        type: "ORDER",
-        status: "IN_TRANSIT",
-        description: `Payment for order ${orderNumber} - ${order.celebrity.user.name}`,
-        initiatedAt: new Date(),
+        stripeTransferId: null, // Will be set by webhook when transfer is created
+        status: "PENDING", // Pending until webhook confirms transfer
+        paidAt: null, // Will be set when transfer completes
       },
     })
 
@@ -149,12 +134,12 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: "Video approved and payment transferred successfully",
+      message: "Video approved and payment initiated successfully",
       data: {
         orderNumber,
         status: "COMPLETED",
         approvalStatus: "APPROVED",
-        transferId: transfer.id,
+        paymentIntentId: paymentIntent.id,
         celebrityEarnings: celebrityAmount / 100,
         platformFee: platformFee / 100,
       },
