@@ -32,16 +32,9 @@ export async function GET(request: NextRequest) {
     const ordersForCelebrity = await prisma.order.findMany({
       where: {
         celebrityId: celebrity.id,
-        OR: [
-          {
-            status: {
-              in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'REVISION_REQUESTED']
-            }
-          },
-          {
-            approvalStatus: 'DECLINED'  // Include declined orders regardless of status
-          }
-        ]
+        status: {
+          in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'REVISION_REQUESTED']
+        }
       },
       include: {
         user: {
