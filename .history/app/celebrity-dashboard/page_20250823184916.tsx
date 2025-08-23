@@ -897,11 +897,8 @@ export default function CelebrityDashboard() {
   //   return allOrders.filter((order) => order.approvalStatus?.toLowerCase() === "declined" && order.revisionCount || 0 < 2)
   // }
   const getDeclinedOrders = (): BookingRequest[] => {
-    // Return declined orders that need revision (revision count < max revisions)
-    return allOrders.filter((order) => 
-      order.approvalStatus === "DECLINED" && 
-      (order.revisionCount || 0) < 2 // Assuming max 2 revisions
-    )
+    // Return empty array to hide revision requests data while keeping the section
+    return []
   }
   console.log("Declined orders", getDeclinedOrders());
 

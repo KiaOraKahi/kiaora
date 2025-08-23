@@ -94,10 +94,8 @@ export default function VideoDeclineModal({ isOpen, onClose, order, onSuccess }:
       // Auto close after 3 seconds
       setTimeout(() => {
         onClose()
-        // Call the success callback if provided, otherwise just close
-        if (onSuccess) {
-          onSuccess()
-        }
+        // Refresh the page to show updated status
+        window.location.reload()
       }, 3000)
     } catch (error) {
       console.error("Error declining video:", error)

@@ -99,7 +99,6 @@ export async function POST(
 
     // Create a direct transfer to the celebrity's account
     // This transfers the money that was already paid by the customer
-    console.log(`🔄 Creating Stripe transfer...`)
     const transfer = await stripe.transfers.create({
       amount: celebrityAmount,
       currency: currency,
@@ -114,11 +113,9 @@ export async function POST(
         transferType: "manual_transfer",
       },
     })
-    console.log(`✅ Stripe transfer created: ${transfer.id}`)
 
     // Update order status and store the transfer ID
     // Status is COMPLETED and transfer is initiated
-    console.log(`🔄 Updating order status...`)
     const updatedOrder = await prisma.order.update({
       where: { id: order.id },
       data: {
@@ -130,10 +127,8 @@ export async function POST(
         transferStatus: "IN_TRANSIT", // Transfer is now in transit
       },
     })
-    console.log(`✅ Order updated: ${updatedOrder.id}`)
 
     // Create payout record with transfer ID
-    console.log(`🔄 Creating payout record...`)
     await prisma.payout.create({
       data: {
         celebrityId: order.celebrityId,
@@ -145,10 +140,8 @@ export async function POST(
         status: "IN_TRANSIT", // Transfer is now in transit
       },
     })
-    console.log(`✅ Payout record created`)
 
     // Create transfer record in database
-    console.log(`🔄 Creating transfer record...`)
     await prisma.transfer.create({
       data: {
         stripeTransferId: transfer.id,
@@ -162,10 +155,8 @@ export async function POST(
         initiatedAt: new Date(),
       },
     })
-    console.log(`✅ Transfer record created`)
 
     // Send notification email
-    console.log(`🔄 Sending notification email...`)
     try {
       const emailResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/send-approval-emails`, {
         method: "POST",
@@ -184,14 +175,11 @@ export async function POST(
 
       if (!emailResponse.ok) {
         console.error("Failed to send approval email:", await emailResponse.text())
-      } else {
-        console.log(`✅ Notification email sent`)
       }
     } catch (emailError) {
       console.error("Error sending approval email:", emailError)
     }
 
-    console.log(`🎉 Approval completed successfully for order ${orderNumber}`)
     return NextResponse.json({
       success: true,
       message: "Video approved and payment transferred successfully",
