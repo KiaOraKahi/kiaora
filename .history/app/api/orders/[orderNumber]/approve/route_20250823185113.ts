@@ -165,7 +165,6 @@ export async function POST(
     console.log(`✅ Transfer record created`)
 
     // Send notification email
-    console.log(`🔄 Sending notification email...`)
     try {
       const emailResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/send-approval-emails`, {
         method: "POST",
@@ -184,14 +183,11 @@ export async function POST(
 
       if (!emailResponse.ok) {
         console.error("Failed to send approval email:", await emailResponse.text())
-      } else {
-        console.log(`✅ Notification email sent`)
       }
     } catch (emailError) {
       console.error("Error sending approval email:", emailError)
     }
 
-    console.log(`🎉 Approval completed successfully for order ${orderNumber}`)
     return NextResponse.json({
       success: true,
       message: "Video approved and payment transferred successfully",
