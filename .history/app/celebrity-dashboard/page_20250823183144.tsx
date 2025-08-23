@@ -2040,7 +2040,7 @@ export default function CelebrityDashboard() {
                           <Button
                             variant="outline"
                             className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                            onClick={() => router.push(`/celebrity/orders/${order.orderNumber}`)}
+                            onClick={() => router.push(`/orders/${order.orderNumber}`)}
                           >
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
