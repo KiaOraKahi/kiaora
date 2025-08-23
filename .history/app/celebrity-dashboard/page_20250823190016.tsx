@@ -361,7 +361,7 @@ export default function CelebrityDashboard() {
       }))
       
       console.log("🔄 Transformed orders:", transformedOrders)
-      console.log("🔍 Declined orders in transformed data:", transformedOrders.filter((order: any) => order.approvalStatus === "DECLINED"))
+      console.log("🔍 Declined orders in transformed data:", transformedOrders.filter(order => order.approvalStatus === "DECLINED"))
       
       setAllOrders(transformedOrders)
     } catch (error) {

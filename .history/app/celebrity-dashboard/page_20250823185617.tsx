@@ -328,9 +328,6 @@ export default function CelebrityDashboard() {
       }
       const data = await response.json()
 
-      console.log("🔍 API Response for all orders:", data)
-      console.log("📊 Raw requests data:", data.requests)
-
       // Transform the data to match our interface
       const transformedOrders = (data.requests || []).map((request: any) => ({
         id: request.id,
@@ -359,10 +356,6 @@ export default function CelebrityDashboard() {
         revisionCount: request.revisionCount || 0,
         tips: request.tips || [],
       }))
-      
-      console.log("🔄 Transformed orders:", transformedOrders)
-      console.log("🔍 Declined orders in transformed data:", transformedOrders.filter((order: any) => order.approvalStatus === "DECLINED"))
-      
       setAllOrders(transformedOrders)
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching all orders:", error)
@@ -886,7 +879,7 @@ export default function CelebrityDashboard() {
 
   // Filter orders based on selected filter
   const getFilteredOrders = () => {
-    if (orderFilter === "all") return allOrders // This now includes declined orders
+    if (orderFilter === "all") return allOrders
     if (orderFilter === "pending") return allOrders.filter((order) => order.status === "pending")
     if (orderFilter === "confirmed") return allOrders.filter((order) => order.status === "confirmed")
     if (orderFilter === "completed") return allOrders.filter((order) => order.status === "completed")
