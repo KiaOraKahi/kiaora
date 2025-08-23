@@ -141,7 +141,8 @@ export async function POST(
         approvedAt: new Date(),
         platformFee: platformFee / 100,
         celebrityAmount: celebrityAmount / 100,
-        transferStatus: "IN_TRANSIT", // Transfer is now in transit
+        transferStatus: "PAID", // Transfer was successful
+        transferredAt: new Date(), // Set transfer completion timestamp
       },
     })
     console.log(`✅ Order updated: ${updatedOrder.id}`)
@@ -156,7 +157,8 @@ export async function POST(
         platformFee: platformFee / 100,
         currency: currency,
         stripeTransferId: transfer.id, // Set the transfer ID immediately
-        status: "IN_TRANSIT", // Transfer is now in transit
+        status: "PAID", // Transfer was successful, so mark as PAID
+        paidAt: new Date(), // Set the paid timestamp
       },
     })
     console.log(`✅ Payout record created`)
@@ -171,9 +173,10 @@ export async function POST(
         amount: celebrityAmount,
         currency: currency,
         type: "BOOKING_PAYMENT",
-        status: "IN_TRANSIT",
+        status: "PAID", // Transfer was successful
         description: `Payment for order ${orderNumber} - ${order.celebrity.user.name}`,
         initiatedAt: new Date(),
+        completedAt: new Date(), // Set completion timestamp
       },
     })
     console.log(`✅ Transfer record created`)
