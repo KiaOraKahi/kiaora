@@ -44,13 +44,14 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized to approve this order" }, { status: 403 })
     }
 
-    if (order.status !== "PENDING_APPROVAL") {
+    if (order.approvalStatus !== "PENDING_APPROVAL") {
       return NextResponse.json(
-        { error: `Order cannot be approved. Current status: ${order.status}` },
+        { error: `Order cannot be approved. Current approval status: ${order.approvalStatus}` },
         { status: 400 }
       )
     }
 
+    // Check if celebrity has Stripe Connect account
     if (!order.celebrity.stripeConnectAccountId) {
       return NextResponse.json(
         { error: "Celebrity payment account not set up" },
@@ -58,16 +59,19 @@ export async function POST(
       )
     }
 
+    // Use the order's actual currency instead of hardcoded "nzd"
+    const currency = order.currency.toLowerCase()
+    
     // Amounts (in cents)
     const originalAmount = Math.round(order.totalAmount * 100)
-    const platformFee = Math.round(originalAmount * 0.1)
+    const platformFee = Math.round(originalAmount * 0.2) // 20% platform fee
     const celebrityAmount = originalAmount - platformFee
 
     // Create a direct transfer to the celebrity's account
     // This transfers the money that was already paid by the customer
     const transfer = await stripe.transfers.create({
       amount: celebrityAmount,
-      currency: "nzd",
+      currency: currency,
       destination: order.celebrity.stripeConnectAccountId,
       description: `Payment for order ${orderNumber} - ${order.celebrity.user.name}`,
       metadata: {
@@ -101,10 +105,9 @@ export async function POST(
         orderId: order.id,
         amount: celebrityAmount / 100,
         platformFee: platformFee / 100,
-        currency: "nzd",
+        currency: currency,
         stripeTransferId: transfer.id, // Set the transfer ID immediately
         status: "IN_TRANSIT", // Transfer is now in transit
-        initiatedAt: new Date(),
       },
     })
 
@@ -115,8 +118,8 @@ export async function POST(
         celebrityId: order.celebrityId,
         orderId: order.id,
         amount: celebrityAmount,
-        currency: "nzd",
-        type: "ORDER",
+        currency: currency,
+        type: "BOOKING_PAYMENT",
         status: "IN_TRANSIT",
         description: `Payment for order ${orderNumber} - ${order.celebrity.user.name}`,
         initiatedAt: new Date(),
@@ -161,6 +164,18 @@ export async function POST(
     })
   } catch (error: any) {
     console.error("Approval processing error:", error)
+    
+    // Log more detailed error information
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error("Stripe error details:", {
+        type: error.type,
+        code: error.code,
+        message: error.message,
+        decline_code: (error as any).decline_code,
+        param: (error as any).param,
+      })
+    }
+    
     return NextResponse.json(
       {
         error: "Failed to process approval",
