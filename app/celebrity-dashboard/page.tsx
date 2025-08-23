@@ -165,7 +165,6 @@ export default function CelebrityDashboard() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState("requests")
   const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([])
-  const [earnings, setEarnings] = useState<EarningsData | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null)
   const [loading, setLoading] = useState(false)
@@ -182,6 +181,7 @@ export default function CelebrityDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [profileError, setProfileError] = useState<string | null>(null)
   const [profileSuccess, setProfileSuccess] = useState(false)
+  const [orderFilter, setOrderFilter] = useState("all")
 
   // Check if user is a celebrity
   const isCelebrity = session?.user?.role === "CELEBRITY"
@@ -896,10 +896,10 @@ export default function CelebrityDashboard() {
   // const getDeclinedOrders = () => {
   //   return allOrders.filter((order) => order.approvalStatus?.toLowerCase() === "declined" && order.revisionCount || 0 < 2)
   // }
-  const getDeclinedOrders = () => {
-  // Return empty array to hide revision requests data while keeping the section
-  return []
-}
+  const getDeclinedOrders = (): BookingRequest[] => {
+    // Return empty array to hide revision requests data while keeping the section
+    return []
+  }
   console.log("Declined orders", getDeclinedOrders());
 
   const getStatusBadgeColor = (status: string) => {
