@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import Stripe from "stripe"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-05-28.basil",
+  apiVersion: "2024-06-20",
 })
 
 export async function POST(request: NextRequest) {
@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
             status: "COMPLETED",
             approvalStatus: "APPROVED",
             approvedAt: new Date(),
+            tipAmount: tipAmount,
             platformFee: platformFee / 100,
             celebrityAmount: celebrityAmount / 100,
             transferStatus: "IN_TRANSIT", // Mark as in transit
@@ -109,12 +110,12 @@ export async function POST(request: NextRequest) {
         if (rating) {
           review = await tx.review.create({
             data: {
-              bookingId: null, // Reviews are not tied to specific bookings in this flow
-              celebrityId: order.celebrityId,
+              orderId: order.id,
               userId: session.user.id,
+              celebrityId: order.celebrityId,
               rating: rating,
               comment: reviewText || null,
-              occasion: order.occasion,
+              isApproved: true, // Auto-approve reviews from completed orders
             },
           })
         }
@@ -128,8 +129,7 @@ export async function POST(request: NextRequest) {
               userId: session.user.id,
               celebrityId: order.celebrityId,
               amount: tipAmount,
-              currency: order.currency || "nzd",
-              message: null,
+              status: "COMPLETED",
             },
           })
         }
@@ -141,8 +141,8 @@ export async function POST(request: NextRequest) {
           
           transfer = await stripe.transfers.create({
             amount: celebrityAmount, // Already in cents
-            currency: (order.currency || "nzd") as string, // Ensure it's a string
-            destination: order.celebrity.stripeConnectAccountId!, // We already checked this exists above
+            currency: order.currency || "nzd", // Use order currency
+            destination: order.celebrity.stripeConnectAccountId, // Correct field name
             description: `Payment for video order ${orderNumber}${tipAmount > 0 ? ` (includes $${tipAmount} tip)` : ""}`,
             metadata: {
               orderId: order.id.toString(),
@@ -165,9 +165,10 @@ export async function POST(request: NextRequest) {
               orderId: order.id,
               amount: celebrityAmount / 100,
               platformFee: platformFee / 100,
-              currency: (order.currency || "nzd") as string,
+              currency: order.currency || "nzd",
               stripeTransferId: transfer.id,
               status: "IN_TRANSIT", // Transfer is in transit
+              initiatedAt: new Date(),
             },
           })
 
@@ -178,7 +179,7 @@ export async function POST(request: NextRequest) {
               celebrityId: order.celebrityId,
               orderId: order.id,
               amount: celebrityAmount / 100,
-              currency: (order.currency || "nzd") as string,
+              currency: order.currency || "nzd",
               type: "BOOKING_PAYMENT",
               status: "IN_TRANSIT",
               description: `Approved video payment for order ${orderNumber}`,
@@ -302,9 +303,9 @@ export async function GET(request: NextRequest) {
             user: true,
           },
         },
-        user: true,
-        payouts: true,
+        reviews: true,
         tips: true,
+        payouts: true,
       },
     })
 
@@ -321,10 +322,13 @@ export async function GET(request: NextRequest) {
       orderNumber: order.orderNumber,
       status: order.status,
       approvedAt: order.approvedAt,
+      tipAmount: order.tipAmount,
       platformFee: order.platformFee,
-      celebrityAmount: order.celebrityAmount,
+      celebrityEarnings: order.celebrityEarnings,
+      hasReview: order.reviews.length > 0,
+      hasTip: order.tips.length > 0,
       payoutStatus: order.payouts[0]?.status || null,
-      payoutProcessedAt: order.payouts[0]?.paidAt || null,
+      payoutProcessedAt: order.payouts[0]?.processedAt || null,
     })
   } catch (error: any) {
     console.error("Get approval payment status error:", error)

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import Stripe from "stripe"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-05-28.basil",
+  apiVersion: "2024-06-20",
 })
 
 export async function POST(request: NextRequest) {
@@ -62,31 +62,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if celebrity has Stripe Connect account
-    if (!order.celebrity.stripeConnectAccountId) {
+    // Check if celebrity has Stripe account
+    if (!order.celebrity.stripeAccountId) {
       return NextResponse.json(
         {
-          error: "Celebrity payment account not set up. They need to complete Stripe Connect onboarding.",
+          error: "Celebrity payment account not set up",
         },
         { status: 400 },
       )
     }
 
     // Calculate amounts (in cents)
-    const originalAmount = Math.round(order.totalAmount * 100) // Use totalAmount instead of amount
+    const originalAmount = Math.round(order.amount * 100)
     const tipAmountCents = Math.round(tipAmount * 100)
     const totalAmount = originalAmount + tipAmountCents
 
-    // Platform fee (20% of original amount - standard platform fee)
-    const platformFee = Math.round(originalAmount * 0.2)
+    // Platform fee (10% of original amount)
+    const platformFee = Math.round(originalAmount * 0.1)
     const celebrityAmount = originalAmount - platformFee + tipAmountCents
-
-    console.log("💰 APPROVAL PAYMENT CALCULATION:")
-    console.log("   - Original Amount:", originalAmount / 100, "NZD")
-    console.log("   - Tip Amount:", tipAmount, "NZD")
-    console.log("   - Platform Fee (20%):", platformFee / 100, "NZD")
-    console.log("   - Celebrity Amount:", celebrityAmount / 100, "NZD")
-    console.log("   - Celebrity Stripe Account:", order.celebrity.stripeConnectAccountId)
 
     try {
       // Start a database transaction
@@ -96,11 +89,10 @@ export async function POST(request: NextRequest) {
           where: { id: order.id },
           data: {
             status: "COMPLETED",
-            approvalStatus: "APPROVED",
             approvedAt: new Date(),
+            tipAmount: tipAmount,
             platformFee: platformFee / 100,
-            celebrityAmount: celebrityAmount / 100,
-            transferStatus: "IN_TRANSIT", // Mark as in transit
+            celebrityEarnings: celebrityAmount / 100,
           },
         })
 
@@ -109,12 +101,12 @@ export async function POST(request: NextRequest) {
         if (rating) {
           review = await tx.review.create({
             data: {
-              bookingId: null, // Reviews are not tied to specific bookings in this flow
-              celebrityId: order.celebrityId,
+              orderId: order.id,
               userId: session.user.id,
+              celebrityId: order.celebrityId,
               rating: rating,
               comment: reviewText || null,
-              occasion: order.occasion,
+              isApproved: true, // Auto-approve reviews from completed orders
             },
           })
         }
@@ -128,8 +120,7 @@ export async function POST(request: NextRequest) {
               userId: session.user.id,
               celebrityId: order.celebrityId,
               amount: tipAmount,
-              currency: order.currency || "nzd",
-              message: null,
+              status: "COMPLETED",
             },
           })
         }
@@ -137,26 +128,20 @@ export async function POST(request: NextRequest) {
         // 4. Transfer money to celebrity via Stripe
         let transfer = null
         if (celebrityAmount > 0) {
-          console.log("🔄 Creating Stripe transfer to celebrity...")
-          
           transfer = await stripe.transfers.create({
-            amount: celebrityAmount, // Already in cents
-            currency: (order.currency || "nzd") as string, // Ensure it's a string
-            destination: order.celebrity.stripeConnectAccountId!, // We already checked this exists above
+            amount: celebrityAmount,
+            currency: "usd",
+            destination: order.celebrity.stripeAccountId,
             description: `Payment for video order ${orderNumber}${tipAmount > 0 ? ` (includes $${tipAmount} tip)` : ""}`,
             metadata: {
               orderId: order.id.toString(),
               orderNumber: orderNumber,
               celebrityId: order.celebrityId.toString(),
-              transferType: "approved_booking_payment",
               originalAmount: (originalAmount / 100).toString(),
-              tipAmount: tipAmount.toString(),
+              tipAmount: (tipAmountCents / 100).toString(),
               platformFee: (platformFee / 100).toString(),
-              celebrityAmount: (celebrityAmount / 100).toString(),
             },
           })
-
-          console.log("✅ Stripe transfer created successfully:", transfer.id)
 
           // Record the payout
           await tx.payout.create({
@@ -164,28 +149,11 @@ export async function POST(request: NextRequest) {
               celebrityId: order.celebrityId,
               orderId: order.id,
               amount: celebrityAmount / 100,
-              platformFee: platformFee / 100,
-              currency: (order.currency || "nzd") as string,
               stripeTransferId: transfer.id,
-              status: "IN_TRANSIT", // Transfer is in transit
+              status: "COMPLETED",
+              processedAt: new Date(),
             },
           })
-
-          // Create transfer record in database
-          await tx.transfer.create({
-            data: {
-              stripeTransferId: transfer.id,
-              celebrityId: order.celebrityId,
-              orderId: order.id,
-              amount: celebrityAmount / 100,
-              currency: (order.currency || "nzd") as string,
-              type: "BOOKING_PAYMENT",
-              status: "IN_TRANSIT",
-              description: `Approved video payment for order ${orderNumber}`,
-            },
-          })
-
-          console.log("✅ Transfer and payout records created in database")
         }
 
         return { updatedOrder, review, tip, transfer }
@@ -217,11 +185,6 @@ export async function POST(request: NextRequest) {
         // Don't fail the whole request for email errors
       }
 
-      console.log("🎉 APPROVAL PAYMENT COMPLETED SUCCESSFULLY:")
-      console.log("   - Order:", orderNumber, "marked as COMPLETED")
-      console.log("   - Transfer ID:", result.transfer?.id)
-      console.log("   - Celebrity will receive:", celebrityAmount / 100, "NZD")
-
       return NextResponse.json({
         success: true,
         message: "Video approved and payment processed successfully",
@@ -238,37 +201,28 @@ export async function POST(request: NextRequest) {
         },
       })
     } catch (stripeError: any) {
-      console.error("❌ STRIPE TRANSFER ERROR:", stripeError)
-      console.error("   - Error message:", stripeError.message)
-      console.error("   - Error code:", stripeError.code)
-      console.error("   - Error type:", stripeError.type)
+      console.error("Stripe transfer error:", stripeError)
 
       // Try to update order status back if Stripe fails
       try {
         await prisma.order.update({
           where: { id: order.id },
-          data: { 
-            status: "PENDING_APPROVAL",
-            approvalStatus: "PENDING_APPROVAL",
-            transferStatus: "PENDING"
-          },
+          data: { status: "PENDING_APPROVAL" },
         })
-        console.log("✅ Order status rolled back to PENDING_APPROVAL")
       } catch (rollbackError) {
-        console.error("❌ Failed to rollback order status:", rollbackError)
+        console.error("Failed to rollback order status:", rollbackError)
       }
 
       return NextResponse.json(
         {
           error: "Payment processing failed",
           details: stripeError.message,
-          code: stripeError.code,
         },
         { status: 500 },
       )
     }
   } catch (error: any) {
-    console.error("❌ APPROVAL PAYMENT PROCESSING ERROR:", error)
+    console.error("Approval payment processing error:", error)
     return NextResponse.json(
       {
         error: "Failed to process approval payment",
@@ -302,9 +256,9 @@ export async function GET(request: NextRequest) {
             user: true,
           },
         },
-        user: true,
-        payouts: true,
+        reviews: true,
         tips: true,
+        payouts: true,
       },
     })
 
@@ -321,10 +275,13 @@ export async function GET(request: NextRequest) {
       orderNumber: order.orderNumber,
       status: order.status,
       approvedAt: order.approvedAt,
+      tipAmount: order.tipAmount,
       platformFee: order.platformFee,
-      celebrityAmount: order.celebrityAmount,
+      celebrityEarnings: order.celebrityEarnings,
+      hasReview: order.reviews.length > 0,
+      hasTip: order.tips.length > 0,
       payoutStatus: order.payouts[0]?.status || null,
-      payoutProcessedAt: order.payouts[0]?.paidAt || null,
+      payoutProcessedAt: order.payouts[0]?.processedAt || null,
     })
   } catch (error: any) {
     console.error("Get approval payment status error:", error)

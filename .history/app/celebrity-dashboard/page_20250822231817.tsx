@@ -163,17 +163,30 @@ export default function CelebrityDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [activeTab, setActiveTab] = useState("requests")
-  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([])
-  const [earnings, setEarnings] = useState<EarningsData | null>(null)
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<BookingRequest | null>(null)
-  const [showOrderModal, setShowOrderModal] = useState(false)
+  const [activeTab, setActiveTab] = useState("overview")
+  
+  // Handle URL parameters for automatic tab switching
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    const setupParam = searchParams.get('setup')
+    
+    if (tabParam && ['overview', 'payments', 'requests', 'orders', 'calendar', 'profile'].includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+    
+    // Show success message if returning from Stripe setup
+    if (setupParam === 'complete') {
+      toast.success("Stripe account setup completed successfully!")
+    }
+  }, [searchParams])
+  const [orderFilter, setOrderFilter] = useState("all")
   const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([])
   const [allOrders, setAllOrders] = useState<BookingRequest[]>([])
   const [profile, setProfile] = useState<CelebrityProfile | null>(null)
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null)
+  const [loading, setLoading] = useState(true)
   const [requestsLoading, setRequestsLoading] = useState(false)
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [profileLoading, setProfileLoading] = useState(false)

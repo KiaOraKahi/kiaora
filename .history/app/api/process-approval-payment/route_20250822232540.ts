@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import Stripe from "stripe"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-05-28.basil",
+  apiVersion: "2024-06-20",
 })
 
 export async function POST(request: NextRequest) {
@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
             status: "COMPLETED",
             approvalStatus: "APPROVED",
             approvedAt: new Date(),
+            tipAmount: tipAmount,
             platformFee: platformFee / 100,
             celebrityAmount: celebrityAmount / 100,
             transferStatus: "IN_TRANSIT", // Mark as in transit
@@ -109,12 +110,12 @@ export async function POST(request: NextRequest) {
         if (rating) {
           review = await tx.review.create({
             data: {
-              bookingId: null, // Reviews are not tied to specific bookings in this flow
-              celebrityId: order.celebrityId,
+              orderId: order.id,
               userId: session.user.id,
+              celebrityId: order.celebrityId,
               rating: rating,
               comment: reviewText || null,
-              occasion: order.occasion,
+              isApproved: true, // Auto-approve reviews from completed orders
             },
           })
         }
@@ -128,8 +129,7 @@ export async function POST(request: NextRequest) {
               userId: session.user.id,
               celebrityId: order.celebrityId,
               amount: tipAmount,
-              currency: order.currency || "nzd",
-              message: null,
+              status: "COMPLETED",
             },
           })
         }
