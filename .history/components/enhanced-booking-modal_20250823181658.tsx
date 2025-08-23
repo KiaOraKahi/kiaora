@@ -134,17 +134,6 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
     tipMessage: "",
   })
 
-  // Debug logging for state changes
-  useEffect(() => {
-    console.log("🔍 Modal state changed:", {
-      currentStep,
-      clientSecret: clientSecret ? "EXISTS" : "MISSING",
-      orderNumber,
-      isCreatingPayment,
-      paymentError
-    })
-  }, [currentStep, clientSecret, orderNumber, isCreatingPayment, paymentError])
-
   // Update email when session changes
   useEffect(() => {
     if (session?.user?.email) {
@@ -1088,7 +1077,6 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
             {/* Step 6: Payment */}
             {currentStep === 6 && clientSecret && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                {console.log("🎯 Payment step rendering - conditions met:", { currentStep, clientSecret: !!clientSecret })}
                 <h4 className="text-xl font-bold text-white">Complete Your Payment</h4>
 
                 <div className="bg-white/10 rounded-lg p-6 mb-6">
@@ -1144,32 +1132,6 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                 >
                   Back to Review
                 </Button>
-              </motion.div>
-            )}
-
-            {/* Debug: Show payment step state when it should render but doesn't */}
-            {currentStep === 6 && !clientSecret && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6">
-                  <h4 className="text-xl font-bold text-yellow-300 mb-4">Payment Step Debug</h4>
-                  <div className="text-yellow-200 text-sm space-y-2">
-                    <p><strong>Current Step:</strong> {currentStep}</p>
-                    <p><strong>Client Secret:</strong> {clientSecret ? "EXISTS" : "MISSING"}</p>
-                    <p><strong>Order Number:</strong> {orderNumber || "NOT SET"}</p>
-                    <p><strong>Payment Error:</strong> {paymentError || "NONE"}</p>
-                    <p><strong>Is Creating Payment:</strong> {isCreatingPayment ? "YES" : "NO"}</p>
-                  </div>
-                  <p className="text-yellow-300 mt-4">
-                    The payment step should be showing but the client secret is missing. 
-                    This usually means there was an issue with the payment intent creation.
-                  </p>
-                  <Button
-                    onClick={() => setCurrentStep(5)}
-                    className="mt-4 bg-yellow-600 hover:bg-yellow-700"
-                  >
-                    Go Back to Review
-                  </Button>
-                </div>
               </motion.div>
             )}
 
