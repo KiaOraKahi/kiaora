@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No signature" }, { status: 400 })
     }
 
+    // Declare event variable at function scope
+    let event: Stripe.Event
+
     if (!process.env.STRIPE_WEBHOOK_SECRET) {
       console.log("⚠️ WARNING: STRIPE_WEBHOOK_SECRET environment variable not set")
       console.log("📋 This is required for production. For testing, we'll continue without verification.")
@@ -37,7 +40,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Invalid webhook body" }, { status: 400 })
       }
     } else {
-      let event: Stripe.Event
       try {
         console.log("🔐 Verifying webhook signature...")
         event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
