@@ -358,11 +358,367 @@ export default function CelebrityDashboard() {
         declineReason: request.declineReason,
         revisionCount: request.revisionCount || 0,
         tips: request.tips || [],
+"use client"
+
+import type React from "react"
+import { useState, useEffect } from "react"
+import { useSession, signOut } from "next-auth/react"
+import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { VideoUploadModal } from "@/components/video-upload-modal"
+import StripeConnectOnboarding from "@/components/stripe-connect-onboarding"
+import { toast } from "sonner"
+import {
+  DollarSign,
+  Calendar,
+  MessageSquare,
+  User,
+  TrendingUp,
+  Star,
+  CheckCircle,
+  XCircle,
+  Settings,
+  BarChart3,
+  Loader2,
+  Save,
+  AlertCircle,
+  Upload,
+  Eye,
+  Package,
+  Filter,
+  Share2,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  MessageCircle,
+  Copy,
+  Heart,
+  CreditCard,
+  Gift,
+  Clock,
+  PlayCircle,
+  AlertTriangle,
+  RefreshCw,
+  Download,
+  FileText,
+  LogOut,
+} from "lucide-react"
+import { format } from "date-fns"
+import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
+
+interface DashboardStats {
+  totalEarnings: number
+  orderEarnings: number
+  tipEarnings: number
+  pendingEarnings: number // 🔥 NEW: Money for confirmed but not delivered bookings
+  monthlyEarnings: number
+  monthlyOrderEarnings: number
+  monthlyTipEarnings: number
+  monthlyPendingEarnings: number // 🔥 NEW: Monthly pending earnings
+  pendingRequests: number
+  confirmedBookings: number // 🔥 NEW: Accepted but not delivered
+  completedBookings: number
+  totalBookings: number
+  averageRating: number
+  totalReviews: number
+  responseRate: number
+  averageResponseTime: number
+  completionRate: number
+  // 🔥 NEW: Approval-related stats
+  pendingApprovalCount: number
+  approvedThisMonth: number
+  declinedThisMonth: number
+}
+
+interface BookingRequest {
+  id: string
+  orderNumber: string
+  customerName: string
+  customerEmail: string
+  customerImage: string | null
+  recipientName: string
+  occasion: string
+  instructions: string
+  amount: number
+  celebrityAmount: number
+  tipAmount: number
+  totalEarnings: number
+  requestedDate: string
+  status: string
+  createdAt: string
+  deadline: string
+  paymentStatus: string
+  videoUrl?: string
+  // 🔥 NEW: Approval fields
+  approvalStatus?: string
+  approvedAt?: string
+  declinedAt?: string
+  declineReason?: string
+  revisionCount?: number
+  tips: Array<{
+    id: string
+    amount: number
+    message: string | null
+    createdAt: string
+  }>
+}
+
+interface CelebrityProfile {
+  id: string
+  name: string
+  email: string
+  image: string | null
+  bio: string
+  longBio: string
+  category: string
+  pricePersonal: number
+  priceBusiness: number
+  priceCharity: number
+  isActive: boolean
+  verified: boolean
+  responseTime: string
+  nextAvailable: string
+  tags: string[]
+  achievements: string[]
+}
+
+interface Review {
+  id: string
+  rating: number
+  comment: string
+  verified: boolean
+  occasion: string
+  createdAt: string
+  user: {
+    name: string
+    image: string | null
+  }
+  orderNumber: string | null
+}
+
+interface ReviewStats {
+  totalReviews: number
+  averageRating: number
+  ratingDistribution: {
+    5: number
+    4: number
+    3: number
+    2: number
+    1: number
+  }
+}
+
+export default function CelebrityDashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState("requests")
+  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<BookingRequest | null>(null)
+  const [showOrderModal, setShowOrderModal] = useState(false)
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [allOrders, setAllOrders] = useState<BookingRequest[]>([])
+  const [profile, setProfile] = useState<CelebrityProfile | null>(null)
+  const [requestsLoading, setRequestsLoading] = useState(false)
+  const [ordersLoading, setOrdersLoading] = useState(false)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [profileError, setProfileError] = useState<string | null>(null)
+  const [profileSuccess, setProfileSuccess] = useState(false)
+  const [orderFilter, setOrderFilter] = useState("all")
+
+  // Check if user is a celebrity
+  const isCelebrity = session?.user?.role === "CELEBRITY"
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (!session || !isCelebrity) {
+      console.log("❌ Celebrity Dashboard - Unauthorized access")
+      return
+    }
+
+    fetchDashboardData()
+    fetchBookingRequests()
+    fetchAllOrders()
+    fetchProfile()
+    // fetchReviews()
+  }, [session, status, isCelebrity])
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await fetch("/api/celebrity/stats")
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("❌ Celebrity Dashboard - Stats fetch failed:", errorText)
+        throw new Error(`Failed to fetch stats: ${response.status} ${errorText}`)
+      }
+      const data = await response.json()
+
+      // Ensure all numeric fields have default values
+      setStats({
+        totalEarnings: data.totalEarnings || 0,
+        orderEarnings: data.orderEarnings || 0,
+        tipEarnings: data.tipEarnings || 0,
+        pendingEarnings: data.pendingEarnings || 0, // 🔥 NEW
+        monthlyEarnings: data.monthlyEarnings || 0,
+        monthlyOrderEarnings: data.monthlyOrderEarnings || 0,
+        monthlyTipEarnings: data.monthlyTipEarnings || 0,
+        monthlyPendingEarnings: data.monthlyPendingEarnings || 0, // 🔥 NEW
+        pendingRequests: data.pendingRequests || 0,
+        confirmedBookings: data.confirmedBookings || 0, // 🔥 NEW
+        completedBookings: data.completedBookings || 0,
+        totalBookings: data.totalBookings || 0,
+        averageRating: data.averageRating || 4.5,
+        totalReviews: data.totalReviews || 0,
+        responseRate: data.responseRate || 95,
+        averageResponseTime: data.averageResponseTime || 24,
+        completionRate: data.completionRate || 95,
+        // 🔥 NEW: Approval stats
+        pendingApprovalCount: data.pendingApprovalCount || 0,
+        approvedThisMonth: data.approvedThisMonth || 0,
+        declinedThisMonth: data.declinedThisMonth || 0,
+      })
+    } catch (error) {
+      console.error("❌ Celebrity Dashboard - Error fetching stats:", error)
+      setError(error instanceof Error ? error.message : "Failed to load dashboard")
+      // Set default stats if API fails
+      setStats({
+        totalEarnings: 0,
+        orderEarnings: 0,
+        tipEarnings: 0,
+        pendingEarnings: 0,
+        monthlyEarnings: 0,
+        monthlyOrderEarnings: 0,
+        monthlyTipEarnings: 0,
+        monthlyPendingEarnings: 0,
+        pendingRequests: 0,
+        confirmedBookings: 0,
+        completedBookings: 0,
+        totalBookings: 0,
+        averageRating: 4.5,
+        totalReviews: 0,
+        responseRate: 95,
+        averageResponseTime: 24,
+        completionRate: 95,
+        pendingApprovalCount: 0,
+        approvedThisMonth: 0,
+        declinedThisMonth: 0,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchBookingRequests = async () => {
+    try {
+      setRequestsLoading(true)
+      // Only fetch PENDING requests for the main dashboard section
+      const response = await fetch("/api/celebrity/booking-requests?status=PENDING&limit=10")
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("❌ Celebrity Dashboard - Booking requests fetch failed:", errorText)
+        throw new Error(`Failed to fetch booking requests: ${response.status} ${errorText}`)
+      }
+      const data = await response.json()
+
+      // Transform the data to match our interface
+      const transformedRequests = (data.requests || []).map((request: any) => ({
+        id: request.id,
+        orderNumber: request.orderNumber,
+        customerName: request.customerName,
+        customerEmail: request.customerEmail || "",
+        customerImage: request.customerImage,
+        recipientName: request.recipientName,
+        occasion: request.occasion,
+        instructions: request.instructions,
+        amount: request.amount,
+        celebrityAmount: request.celebrityAmount || 0,
+        tipAmount: request.tipAmount || 0,
+        totalEarnings: request.totalEarnings || 0,
+        requestedDate: request.requestedDate,
+        status: request.status,
+        createdAt: request.createdAt,
+        deadline: request.deadline,
+        paymentStatus: request.paymentStatus,
+        videoUrl: request.videoUrl,
+        // 🔥 NEW: Approval fields
+        approvalStatus: request.approvalStatus,
+        approvedAt: request.approvedAt,
+        declinedAt: request.declinedAt,
+        declineReason: request.declineReason,
+        revisionCount: request.revisionCount || 0,
+        tips: request.tips || [],
       }))
-      
-      console.log("🔄 Transformed orders:", transformedOrders)
-      console.log("🔍 Declined orders in transformed data:", transformedOrders.filter((order: any) => order.approvalStatus === "DECLINED"))
-      
+
+      setBookingRequests(transformedRequests)
+    } catch (error) {
+      console.error("❌ Celebrity Dashboard - Error fetching booking requests:", error)
+      setBookingRequests([])
+    } finally {
+      setRequestsLoading(false)
+    }
+  }
+
+  const fetchAllOrders = async () => {
+    try {
+      setOrdersLoading(true)
+      const response = await fetch("/api/celebrity/booking-requests?status=ALL&limit=100")
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("❌ Celebrity Dashboard - All orders fetch failed:", errorText)
+        throw new Error(`Failed to fetch all orders: ${response.status} ${errorText}`)
+      }
+      const data = await response.json()
+
+      console.log("🔍 API Response for all orders:", data)
+      console.log("📊 Raw requests data:", data.requests)
+
+      // Transform the data to match our interface
+      const transformedOrders = (data.requests || []).map((request: any) => ({
+        id: request.id,
+        orderNumber: request.orderNumber,
+        customerName: request.customerName,
+        customerEmail: request.customerEmail || "",
+        customerImage: request.customerImage,
+        recipientName: request.recipientName,
+        occasion: request.occasion,
+        instructions: request.instructions,
+        amount: request.amount,
+        celebrityAmount: request.celebrityAmount || 0,
+        tipAmount: request.tipAmount || 0,
+        totalEarnings: request.totalEarnings || 0,
+        requestedDate: request.requestedDate,
+        status: request.status,
+        createdAt: request.createdAt,
+        deadline: request.deadline,
+        paymentStatus: request.paymentStatus,
+        videoUrl: request.videoUrl,
+        // 🔥 NEW: Approval fields
+        approvalStatus: request.approvalStatus,
+        approvedAt: request.approvedAt,
+        declinedAt: request.declinedAt,
+        declineReason: request.declineReason,
+        revisionCount: request.revisionCount || 0,
+        tips: request.tips || [],
+      }))
       setAllOrders(transformedOrders)
     } catch (error) {
       console.error("❌ Celebrity Dashboard - Error fetching all orders:", error)
