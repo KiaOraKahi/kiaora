@@ -4,14 +4,9 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Stripe from "stripe"
 
-console.log("📦 APPROVAL API - Imports loaded successfully")
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-05-28.basil",
 })
-
-console.log("💳 APPROVAL API - Stripe initialized:", !!process.env.STRIPE_SECRET_KEY)
-console.log("🗄️ APPROVAL API - Prisma available:", !!prisma)
 
 export async function POST(
   request: NextRequest,
@@ -219,11 +214,11 @@ export async function POST(
       },
     })
   } catch (error: any) {
-    console.error("❌ Approval processing error:", error)
+    console.error("Approval processing error:", error)
     
     // Log more detailed error information
     if (error instanceof Stripe.errors.StripeError) {
-      console.error("❌ Stripe error details:", {
+      console.error("Stripe error details:", {
         type: error.type,
         code: error.code,
         message: error.message,
