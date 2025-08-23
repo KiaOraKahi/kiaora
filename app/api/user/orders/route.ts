@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
             user: true,
           },
         },
-        services: true,
       },
       orderBy: {
         createdAt: "desc",
