@@ -896,10 +896,10 @@ export default function CelebrityDashboard() {
   // const getDeclinedOrders = () => {
   //   return allOrders.filter((order) => order.approvalStatus?.toLowerCase() === "declined" && order.revisionCount || 0 < 2)
   // }
-  const getDeclinedOrders = (): BookingRequest[] => {
-    // Return empty array to hide revision requests data while keeping the section
-    return []
-  }
+  const getDeclinedOrders = () => {
+  // Return empty array to hide revision requests data while keeping the section
+  return []
+}
   console.log("Declined orders", getDeclinedOrders());
 
   const getStatusBadgeColor = (status: string) => {
@@ -2040,7 +2040,7 @@ export default function CelebrityDashboard() {
                           <Button
                             variant="outline"
                             className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                            onClick={() => router.push(`/celebrity/orders/${order.orderNumber}`)}
+                            onClick={() => router.push(`/orders/${order.orderNumber}`)}
                           >
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
