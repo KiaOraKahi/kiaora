@@ -798,7 +798,7 @@ export default function CelebrityDashboard() {
       
       Chart.register(...registerables)
       
-      const response = await fetch('/api/celebrity/tips')
+      const response = await fetch('/api/celebrity/tips?export=true')
       if (!response.ok) throw new Error('Failed to fetch tips data')
       
       const data = await response.json()
@@ -825,14 +825,12 @@ export default function CelebrityDashboard() {
       pdf.text(`Generated on ${format(new Date(), 'MMM dd, yyyy')}`, 20, 30)
       
       // Summary
-      const totalTips = data.summary?.totalTips || 0
-      const totalTipsCount = tips.length
-      
+      const totalTips = tips.reduce((sum: number, t: any) => sum + (t.amount / 100), 0)
       pdf.setFontSize(14)
       pdf.text('Summary', 20, 50)
       pdf.setFontSize(12)
-      pdf.text(`Total Tips: $${(totalTips / 100).toFixed(2)}`, 20, 60)
-      pdf.text(`Total Tips Received: ${totalTipsCount}`, 20, 70)
+      pdf.text(`Total Tips: $${totalTips.toFixed(2)}`, 20, 60)
+      pdf.text(`Total Tips Received: ${tips.length}`, 20, 70)
       
       // Monthly breakdown
       pdf.setFontSize(14)
