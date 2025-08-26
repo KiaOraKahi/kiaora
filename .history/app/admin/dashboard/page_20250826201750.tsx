@@ -958,10 +958,6 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
                          </TabsContent>
-
-            <TabsContent value="platform-fees" className="space-y-6">
-              <AdminPlatformFees />
-            </TabsContent>
  
              <TabsContent value="settings" className="space-y-6">
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
