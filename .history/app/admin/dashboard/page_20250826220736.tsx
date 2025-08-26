@@ -426,25 +426,12 @@ export default function AdminDashboard() {
       const totalAmount = bookings.reduce((sum: number, booking: any) => sum + (booking.amount || 0), 0)
       const completedBookings = bookings.filter((booking: any) => booking.status === 'COMPLETED').length
       const pendingBookings = bookings.filter((booking: any) => booking.status === 'PENDING').length
-      const confirmedBookings = bookings.filter((booking: any) => booking.status === 'CONFIRMED').length
-      const cancelledBookings = bookings.filter((booking: any) => booking.status === 'CANCELLED').length
       
       doc.setFontSize(9)
       doc.setTextColor(100, 100, 100)
       doc.text(`Total Revenue: $${totalAmount.toLocaleString()}`, 20, finalY + 30)
       doc.text(`Completed Bookings: ${completedBookings}`, 20, finalY + 40)
       doc.text(`Pending Bookings: ${pendingBookings}`, 20, finalY + 50)
-      doc.text(`Confirmed Bookings: ${confirmedBookings}`, 20, finalY + 60)
-      doc.text(`Cancelled Bookings: ${cancelledBookings}`, 20, finalY + 70)
-      
-      // Add payment status breakdown
-      const paidBookings = bookings.filter((booking: any) => booking.paymentStatus === 'PAID').length
-      const unpaidBookings = bookings.filter((booking: any) => booking.paymentStatus === 'PENDING').length
-      const failedBookings = bookings.filter((booking: any) => booking.paymentStatus === 'FAILED').length
-      
-      doc.text(`Paid Bookings: ${paidBookings}`, 120, finalY + 30)
-      doc.text(`Unpaid Bookings: ${unpaidBookings}`, 120, finalY + 40)
-      doc.text(`Failed Payments: ${failedBookings}`, 120, finalY + 50)
       
       // Save PDF
       doc.save(`kia-ora-bookings-${new Date().toISOString().split('T')[0]}.pdf`)

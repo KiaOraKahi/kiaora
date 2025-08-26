@@ -24,7 +24,6 @@ import {
   TrendingUp
 } from "lucide-react"
 import { toast } from "sonner"
-import AdminStripeConnectOnboarding from "./admin-stripe-connect-onboarding"
 
 interface PlatformFeeData {
   financialSettings: {
@@ -61,7 +60,15 @@ export default function AdminPlatformFees() {
   const [data, setData] = useState<PlatformFeeData | null>(null)
   const [loading, setLoading] = useState(true)
   const [transferring, setTransferring] = useState(false)
+  const [setupLoading, setSetupLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
+  
+  // Admin account setup form
+  const [adminAccountForm, setAdminAccountForm] = useState({
+    stripeAccountId: "",
+    email: "",
+    name: "",
+  })
 
   // Manual transfer form
   const [transferForm, setTransferForm] = useState({
@@ -95,7 +102,41 @@ export default function AdminPlatformFees() {
     }
   }
 
+  const setupAdminAccount = async () => {
+    try {
+      setSetupLoading(true)
+      
+      if (!adminAccountForm.stripeAccountId || !adminAccountForm.email || !adminAccountForm.name) {
+        toast.error("Please fill in all fields")
+        return
+      }
 
+      const response = await fetch("/api/admin/platform-fees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          action: "setup_admin_account",
+          ...adminAccountForm,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to setup admin account")
+      }
+
+      toast.success("Admin Stripe account setup successfully")
+      setAdminAccountForm({ stripeAccountId: "", email: "", name: "" })
+      fetchPlatformFeeData()
+    } catch (error) {
+      console.error("Error setting up admin account:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to setup admin account")
+    } finally {
+      setSetupLoading(false)
+    }
+  }
 
   const transferPlatformFees = async (customAmount?: number) => {
     try {
@@ -414,7 +455,125 @@ export default function AdminPlatformFees() {
 
         {/* Setup Tab */}
         <TabsContent value="setup" className="space-y-6">
-          <AdminStripeConnectOnboarding />
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Settings className="w-5 h-5 mr-2" />
+                Setup Admin Stripe Account
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="stripeAccountId" className="text-white">Stripe Account ID</Label>
+                  <Input
+                    id="stripeAccountId"
+                    type="text"
+                    placeholder="acct_1234567890"
+                    value={adminAccountForm.stripeAccountId}
+                    onChange={(e) => setAdminAccountForm({
+                      ...adminAccountForm,
+                      stripeAccountId: e.target.value
+                    })}
+                    className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Your Stripe Connect account ID (starts with acct_)
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="admin@yourcompany.com"
+                    value={adminAccountForm.email}
+                    onChange={(e) => setAdminAccountForm({
+                      ...adminAccountForm,
+                      email: e.target.value
+                    })}
+                    className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="name" className="text-white">Account Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Your Company Name"
+                    value={adminAccountForm.name}
+                    onChange={(e) => setAdminAccountForm({
+                      ...adminAccountForm,
+                      name: e.target.value
+                    })}
+                    className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                  />
+                </div>
+
+                <Button
+                  onClick={setupAdminAccount}
+                  disabled={setupLoading}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white w-full"
+                >
+                  {setupLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Setting up...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Setup Admin Account
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Manual Transfer Section */}
+                                {data.financialSettings?.adminStripeAccountId && (
+                <div className="pt-6 border-t border-white/10">
+                  <h3 className="text-lg font-semibold text-white mb-4">Manual Transfer</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="transferAmount" className="text-white">Amount (NZD)</Label>
+                      <Input
+                        id="transferAmount"
+                        type="number"
+                        step="0.01"
+                        placeholder="100.00"
+                        value={transferForm.amount}
+                        onChange={(e) => setTransferForm({
+                          ...transferForm,
+                          amount: e.target.value
+                        })}
+                        className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                      />
+                    </div>
+
+                    <Button
+                      onClick={() => transferPlatformFees()}
+                      disabled={transferring || !transferForm.amount}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white w-full"
+                    >
+                      {transferring ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Transferring...
+                        </>
+                      ) : (
+                        <>
+                          <ArrowUpRight className="w-4 h-4 mr-2" />
+                          Transfer Platform Fees
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
