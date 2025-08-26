@@ -95,7 +95,41 @@ export default function AdminPlatformFees() {
     }
   }
 
+  const setupAdminAccount = async () => {
+    try {
+      setSetupLoading(true)
+      
+      if (!adminAccountForm.stripeAccountId || !adminAccountForm.email || !adminAccountForm.name) {
+        toast.error("Please fill in all fields")
+        return
+      }
 
+      const response = await fetch("/api/admin/platform-fees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          action: "setup_admin_account",
+          ...adminAccountForm,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to setup admin account")
+      }
+
+      toast.success("Admin Stripe account setup successfully")
+      setAdminAccountForm({ stripeAccountId: "", email: "", name: "" })
+      fetchPlatformFeeData()
+    } catch (error) {
+      console.error("Error setting up admin account:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to setup admin account")
+    } finally {
+      setSetupLoading(false)
+    }
+  }
 
   const transferPlatformFees = async (customAmount?: number) => {
     try {

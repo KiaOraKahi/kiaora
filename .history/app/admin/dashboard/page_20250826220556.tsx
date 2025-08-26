@@ -338,7 +338,7 @@ export default function AdminDashboard() {
   }
 
   const exportBookingsData = async () => {
-    const loadingToast = toast.loading("Generating PDF report...")
+    const loadingToast = toast.loading("Exporting bookings data...")
     
     try {
       // Fetch all bookings data
@@ -356,105 +356,74 @@ export default function AdminDashboard() {
         return
       }
       
-      // Create PDF document
-      const doc = new jsPDF()
+      // Create Excel workbook
+      const workbook = XLSX.utils.book_new()
       
-      // Add title
-      doc.setFontSize(20)
-      doc.setTextColor(75, 0, 130) // Purple color
-      doc.text('Kia Ora - Bookings Report', 20, 20)
+      // Prepare data for export
+      const exportData = bookings.map((booking: any) => ({
+        'Order Number': booking.orderNumber || '',
+        'Customer Name': booking.customerName || '',
+        'Celebrity Name': booking.celebrityName || '',
+        'Recipient Name': booking.recipientName || '',
+        'Occasion': booking.occasion || '',
+        'Message': booking.message || '',
+        'Price': booking.price || 0,
+        'Total Amount': booking.totalAmount || 0,
+        'Status': booking.status || '',
+        'Payment Status': booking.paymentStatus || '',
+        'Created Date': booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : '',
+        'Scheduled Date': booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : '',
+        'Completed Date': booking.completedAt ? new Date(booking.completedAt).toLocaleDateString() : '',
+        'Video URL': booking.videoUrl || ''
+      }))
       
-      // Add subtitle
-      doc.setFontSize(12)
-      doc.setTextColor(100, 100, 100)
-      doc.text(`Generated on ${new Date().toLocaleDateString()}`, 20, 30)
-      doc.text(`Total Bookings: ${bookings.length}`, 20, 40)
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData)
       
-      // Prepare data for table
-      const tableData = bookings.map((booking: any) => [
-        booking.orderNumber || '',
-        booking.customer?.name || '',
-        booking.celebrity?.name || '',
-        booking.amount ? `$${booking.amount}` : '',
-        booking.status || '',
-        booking.paymentStatus || '',
-        booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : ''
-      ])
+      // Set column widths
+      const columnWidths = [
+        { wch: 15 }, // Order Number
+        { wch: 20 }, // Customer Name
+        { wch: 20 }, // Celebrity Name
+        { wch: 20 }, // Recipient Name
+        { wch: 15 }, // Occasion
+        { wch: 30 }, // Message
+        { wch: 10 }, // Price
+        { wch: 12 }, // Total Amount
+        { wch: 12 }, // Status
+        { wch: 12 }, // Payment Status
+        { wch: 12 }, // Created Date
+        { wch: 12 }, // Scheduled Date
+        { wch: 12 }, // Completed Date
+        { wch: 40 }  // Video URL
+      ]
+      worksheet['!cols'] = columnWidths
       
-      // Add table
-      autoTable(doc, {
-        head: [['Order #', 'Customer', 'Celebrity', 'Amount', 'Status', 'Payment', 'Created']],
-        body: tableData,
-        startY: 50,
-        styles: {
-          fontSize: 8,
-          cellPadding: 2,
-        },
-        headStyles: {
-          fillColor: [75, 0, 130], // Purple header
-          textColor: 255,
-          fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-          fillColor: [245, 245, 245]
-        },
-        columnStyles: {
-          0: { cellWidth: 25 }, // Order #
-          1: { cellWidth: 30 }, // Customer
-          2: { cellWidth: 30 }, // Celebrity
-          3: { cellWidth: 20 }, // Amount
-          4: { cellWidth: 25 }, // Status
-          5: { cellWidth: 25 }, // Payment
-          6: { cellWidth: 25 }  // Created
-        },
-        margin: { top: 50, right: 20, bottom: 20, left: 20 },
-        didDrawPage: function (data) {
-          // Add page numbers
-          const pageCount = doc.getNumberOfPages()
-          doc.setFontSize(8)
-          doc.setTextColor(100, 100, 100)
-          doc.text(`Page ${data.pageNumber} of ${pageCount}`, data.settings.margin.left, doc.internal.pageSize.height - 10)
-        }
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings')
+      
+      // Generate Excel file
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+      
+      // Create blob and download
+      const blob = new Blob([excelBuffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
       })
-      
-      // Add summary at the bottom
-      const finalY = (doc as any).lastAutoTable.finalY || 50
-      doc.setFontSize(10)
-      doc.setTextColor(75, 0, 130)
-      doc.text('Summary:', 20, finalY + 20)
-      
-      const totalAmount = bookings.reduce((sum: number, booking: any) => sum + (booking.amount || 0), 0)
-      const completedBookings = bookings.filter((booking: any) => booking.status === 'COMPLETED').length
-      const pendingBookings = bookings.filter((booking: any) => booking.status === 'PENDING').length
-      const confirmedBookings = bookings.filter((booking: any) => booking.status === 'CONFIRMED').length
-      const cancelledBookings = bookings.filter((booking: any) => booking.status === 'CANCELLED').length
-      
-      doc.setFontSize(9)
-      doc.setTextColor(100, 100, 100)
-      doc.text(`Total Revenue: $${totalAmount.toLocaleString()}`, 20, finalY + 30)
-      doc.text(`Completed Bookings: ${completedBookings}`, 20, finalY + 40)
-      doc.text(`Pending Bookings: ${pendingBookings}`, 20, finalY + 50)
-      doc.text(`Confirmed Bookings: ${confirmedBookings}`, 20, finalY + 60)
-      doc.text(`Cancelled Bookings: ${cancelledBookings}`, 20, finalY + 70)
-      
-      // Add payment status breakdown
-      const paidBookings = bookings.filter((booking: any) => booking.paymentStatus === 'PAID').length
-      const unpaidBookings = bookings.filter((booking: any) => booking.paymentStatus === 'PENDING').length
-      const failedBookings = bookings.filter((booking: any) => booking.paymentStatus === 'FAILED').length
-      
-      doc.text(`Paid Bookings: ${paidBookings}`, 120, finalY + 30)
-      doc.text(`Unpaid Bookings: ${unpaidBookings}`, 120, finalY + 40)
-      doc.text(`Failed Payments: ${failedBookings}`, 120, finalY + 50)
-      
-      // Save PDF
-      doc.save(`kia-ora-bookings-${new Date().toISOString().split('T')[0]}.pdf`)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `bookings-export-${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
       
       toast.dismiss(loadingToast)
-      toast.success(`PDF report generated successfully!`)
+      toast.success(`Exported ${bookings.length} bookings successfully!`)
     } catch (error) {
       console.error("Export error:", error)
       toast.dismiss(loadingToast)
-      toast.error("Failed to generate PDF report")
+      toast.error("Failed to export bookings data")
     }
   }
 
@@ -1018,7 +987,7 @@ export default function AdminDashboard() {
                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                       >
                         <Download className="w-4 h-4 mr-2" />
-                        Export PDF
+                        Export
                       </Button>
                     </div>
                   </div>
