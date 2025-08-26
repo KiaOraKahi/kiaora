@@ -166,7 +166,6 @@ model Order {
   updatedAt           DateTime       @updatedAt
   celebrityAmount     Float?
   platformFee         Float?
-  platformFeeTransferred Boolean @default(false)
   transferId          String?
   transferStatus      TransferStatus @default(PENDING)
   transferredAt       DateTime?
@@ -405,18 +404,6 @@ model SupportTicketResponse {
   isFromSupport Boolean       @default(false)
   createdAt     DateTime      @default(now())
   ticket        SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-}
-
-model PlatformFeeTransfer {
-  id            String   @id @default(cuid())
-  amount        Float
-  currency      String   @default("nzd")
-  stripeTransferId String?
-  status        String   @default("PENDING") // PENDING, SUCCEEDED, FAILED
-  description   String?
-  metadata      Json?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
 }
 
 enum Role {

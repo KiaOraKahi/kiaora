@@ -166,7 +166,6 @@ model Order {
   updatedAt           DateTime       @updatedAt
   celebrityAmount     Float?
   platformFee         Float?
-  platformFeeTransferred Boolean @default(false)
   transferId          String?
   transferStatus      TransferStatus @default(PENDING)
   transferredAt       DateTime?

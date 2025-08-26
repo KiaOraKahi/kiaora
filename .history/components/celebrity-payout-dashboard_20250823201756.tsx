@@ -145,7 +145,7 @@ export default function CelebrityPayoutDashboard() {
               amount: 119200, // $1,192.00
               platformFee: 29800, // $298.00
               status: "PENDING",
-              paidAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+              paidAt: null,
               createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
               order: {
                 orderNumber: "REQ-1755435882492",

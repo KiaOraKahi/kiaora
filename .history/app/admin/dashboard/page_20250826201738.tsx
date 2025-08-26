@@ -34,7 +34,6 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import AdminPlatformFees from "@/components/admin/admin-platform-fees"
 
 const SubtleLuxuryStarfield = () => {
   return (
@@ -958,10 +957,6 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
                          </TabsContent>
-
-            <TabsContent value="platform-fees" className="space-y-6">
-              <AdminPlatformFees />
-            </TabsContent>
  
              <TabsContent value="settings" className="space-y-6">
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
