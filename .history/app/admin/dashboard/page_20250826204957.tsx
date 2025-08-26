@@ -34,7 +34,6 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import * as XLSX from 'xlsx'
 import AdminPlatformFees from "@/components/admin/admin-platform-fees"
 
 const SubtleLuxuryStarfield = () => {
@@ -335,96 +334,6 @@ export default function AdminDashboard() {
       // Dismiss the loading toast and show error
       toast.dismiss(loadingToast)
       toast.error("Failed to generate PDF report")
-    }
-  }
-
-  const exportBookingsData = async () => {
-    const loadingToast = toast.loading("Exporting bookings data...")
-    
-    try {
-      // Fetch all bookings data
-      const response = await fetch('/api/admin/bookings')
-      if (!response.ok) {
-        throw new Error('Failed to fetch bookings data')
-      }
-      
-      const data = await response.json()
-      const bookings = data.bookings || []
-      
-      if (bookings.length === 0) {
-        toast.dismiss(loadingToast)
-        toast.error("No bookings data to export")
-        return
-      }
-      
-      // Create Excel workbook
-      const workbook = XLSX.utils.book_new()
-      
-      // Prepare data for export
-      const exportData = bookings.map((booking: any) => ({
-        'Order Number': booking.orderNumber || '',
-        'Customer Name': booking.customerName || '',
-        'Celebrity Name': booking.celebrityName || '',
-        'Recipient Name': booking.recipientName || '',
-        'Occasion': booking.occasion || '',
-        'Message': booking.message || '',
-        'Price': booking.price || 0,
-        'Total Amount': booking.totalAmount || 0,
-        'Status': booking.status || '',
-        'Payment Status': booking.paymentStatus || '',
-        'Created Date': booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : '',
-        'Scheduled Date': booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : '',
-        'Completed Date': booking.completedAt ? new Date(booking.completedAt).toLocaleDateString() : '',
-        'Video URL': booking.videoUrl || ''
-      }))
-      
-      // Create worksheet
-      const worksheet = XLSX.utils.json_to_sheet(exportData)
-      
-      // Set column widths
-      const columnWidths = [
-        { wch: 15 }, // Order Number
-        { wch: 20 }, // Customer Name
-        { wch: 20 }, // Celebrity Name
-        { wch: 20 }, // Recipient Name
-        { wch: 15 }, // Occasion
-        { wch: 30 }, // Message
-        { wch: 10 }, // Price
-        { wch: 12 }, // Total Amount
-        { wch: 12 }, // Status
-        { wch: 12 }, // Payment Status
-        { wch: 12 }, // Created Date
-        { wch: 12 }, // Scheduled Date
-        { wch: 12 }, // Completed Date
-        { wch: 40 }  // Video URL
-      ]
-      worksheet['!cols'] = columnWidths
-      
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings')
-      
-      // Generate Excel file
-      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
-      
-      // Create blob and download
-      const blob = new Blob([excelBuffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-      })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `bookings-export-${new Date().toISOString().split('T')[0]}.xlsx`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-      
-      toast.dismiss(loadingToast)
-      toast.success(`Exported ${bookings.length} bookings successfully!`)
-    } catch (error) {
-      console.error("Export error:", error)
-      toast.dismiss(loadingToast)
-      toast.error("Failed to export bookings data")
     }
   }
 
