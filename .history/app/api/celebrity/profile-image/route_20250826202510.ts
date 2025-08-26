@@ -54,20 +54,16 @@ export async function POST(request: NextRequest) {
     console.log("✅ Celebrity profile image uploaded to Vercel Blob:", blob.url)
 
     // Update user's profile image in database
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: session.user.id },
       data: { image: blob.url }
     })
 
-    console.log("✅ User profile image updated:", updatedUser.image)
-
     // Also update the celebrity's cover image
-    const updatedCelebrity = await prisma.celebrity.update({
+    await prisma.celebrity.update({
       where: { userId: session.user.id },
       data: { coverImage: blob.url }
     })
-
-    console.log("✅ Celebrity cover image updated:", updatedCelebrity.coverImage)
 
     return NextResponse.json({
       message: "Profile image uploaded successfully",
