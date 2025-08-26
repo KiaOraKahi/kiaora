@@ -2272,7 +2272,7 @@ export default function CelebrityDashboard() {
                       <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
                     </div>
                   ) : profile ? (
-                    <form onSubmit={handleProfileUpdate} className="space-y-6">
+                    <form onSubmit={handleProfileUpdate} className="space-y-4">
                       {profileSuccess && (
                         <div className="p-4 bg-green-500/20 text-green-300 rounded-lg flex items-center gap-2">
                           <CheckCircle className="w-4 h-4" />
@@ -2285,17 +2285,6 @@ export default function CelebrityDashboard() {
                           Error: {profileError}
                         </div>
                       )}
-                      
-                      {/* Profile Photo Upload Section */}
-                      <div className="space-y-4">
-                        <Label className="text-white font-semibold">Profile Photo</Label>
-                        <CelebrityProfileImageUpload
-                          currentImage={profile.image || ""}
-                          onImageUpdate={(imageUrl) => updateProfile("image", imageUrl)}
-                          disabled={profileSaving}
-                        />
-                      </div>
-
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="name">Name</Label>
