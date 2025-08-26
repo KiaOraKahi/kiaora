@@ -31,14 +31,14 @@ const mockCelebrities = {
       {
         id: "2",
         title: "Congratulations Message",
-        thumbnail: "/talents/1.jpeg",
+        thumbnail: "/celeb1.jpg",
         duration: "0:58",
         videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
       },
       {
         id: "3",
         title: "Motivational Message",
-        thumbnail: "/talents/1.jpeg",
+        thumbnail: "/celeb1.jpg",
         duration: "1:45",
         videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
       }
@@ -88,8 +88,8 @@ const mockCelebrities = {
     id: "2",
     name: "John Legend",
     email: "john@example.com",
-    image: "/talents/2.jpg",
-    coverImage: "/talents/2.jpg",
+    image: "/celeb2.jpg",
+    coverImage: "/celeb2.jpg",
     category: "Musician",
     rating: 5.0,
     reviewCount: 203,
@@ -153,8 +153,8 @@ const mockCelebrities = {
     id: "3",
     name: "Tony Robbins",
     email: "tony@example.com",
-    image: "/talents/3.jpg",
-    coverImage: "/talents/3.jpg",
+    image: "/celeb3.jpg",
+    coverImage: "/celeb3.jpg",
     category: "Motivator",
     rating: 4.8,
     reviewCount: 89,
@@ -170,14 +170,14 @@ const mockCelebrities = {
       {
         id: "6",
         title: "Business Motivation Message",
-        thumbnail: "/talents/3.jpg",
+        thumbnail: "/celeb3.jpg",
         duration: "3:22",
         videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
       },
       {
         id: "7",
         title: "Personal Development Message",
-        thumbnail: "/talents/3.jpg",
+        thumbnail: "/celeb3.jpg",
         duration: "2:48",
         videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
       }

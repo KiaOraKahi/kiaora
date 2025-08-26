@@ -217,7 +217,7 @@ const heroSlides = [
     title: "Personalised Celebrity Messages",
     subtitle: "Get a custom video from your favorite stars",
     description: "Birthday wishes, congratulations, or just a special hello - make any moment unforgettable",
-    image: "/talents/1.jpeg",
+    image: "/celeb1.jpg",
     cta: "Browse Celebrities",
     color: "from-blue-500 to-purple-500"
   },
@@ -226,7 +226,7 @@ const heroSlides = [
     title: "Perfect Gift for Any Occasion",
     subtitle: "Surprise someone special with a celebrity shoutout",
     description: "Weddings, anniversaries, graduations - create memories that last forever",
-    image: "/talents/2.jpg",
+    image: "/celeb2.jpg",
     cta: "Find the Perfect Gift",
     color: "from-pink-500 to-red-500"
   },
@@ -235,7 +235,7 @@ const heroSlides = [
     title: "Business & Motivation",
     subtitle: "Inspire your team with celebrity motivation",
     description: "Corporate events, team building, or personal motivation from the stars you admire",
-    image: "/talents/3.jpg",
+    image: "/celeb3.jpg",
     cta: "Explore Business Services",
     color: "from-green-500 to-blue-500"
   }
