@@ -220,7 +220,7 @@ export default function AdminPlatformFees() {
     )
   }
 
-  if (!data) {
+  if (!data || !data.financialSettings || !data.summary || !data.transfers) {
     return (
       <div className="text-center py-8">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -270,7 +270,7 @@ export default function AdminPlatformFees() {
                   <div>
                     <p className="text-sm text-gray-400">Total Platform Fees</p>
                     <p className="text-2xl font-bold text-white">
-                      {formatCurrency(data.summary.totalPlatformFees)}
+                      {formatCurrency(data.summary?.totalPlatformFees || 0)}
                     </p>
                   </div>
                   <DollarSign className="w-8 h-8 text-green-400" />
@@ -284,7 +284,7 @@ export default function AdminPlatformFees() {
                   <div>
                     <p className="text-sm text-gray-400">Pending Transfer</p>
                     <p className="text-2xl font-bold text-yellow-400">
-                      {formatCurrency(data.summary.pendingPlatformFees)}
+                      {formatCurrency(data.summary?.pendingPlatformFees || 0)}
                     </p>
                   </div>
                   <Clock className="w-8 h-8 text-yellow-400" />
@@ -298,7 +298,7 @@ export default function AdminPlatformFees() {
                   <div>
                     <p className="text-sm text-gray-400">Total Transfers</p>
                     <p className="text-2xl font-bold text-white">
-                      {data.summary.totalTransfers}
+                      {data.summary?.totalTransfers || 0}
                     </p>
                   </div>
                   <ArrowUpRight className="w-8 h-8 text-blue-400" />
@@ -311,9 +311,9 @@ export default function AdminPlatformFees() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Success Rate</p>
-                    <p className="text-2xl font-bold text-green-400">
-                      {data.summary.totalTransfers > 0 
-                        ? Math.round((data.summary.successfulTransfers / data.summary.totalTransfers) * 100)
+                                        <p className="text-2xl font-bold text-green-400">
+                      {data.summary?.totalTransfers > 0
+                        ? Math.round((data.summary?.successfulTransfers / data.summary?.totalTransfers) * 100)
                         : 0}%
                     </p>
                   </div>
@@ -332,20 +332,20 @@ export default function AdminPlatformFees() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {data.financialSettings.adminStripeAccountId ? (
+              {data.financialSettings?.adminStripeAccountId ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-400">Account Status</p>
                       <div className="flex items-center gap-2">
                         <Badge className={
-                          data.financialSettings.adminStripeAccountStatus === "ACTIVE" 
+                          data.financialSettings?.adminStripeAccountStatus === "ACTIVE" 
                             ? "bg-green-500 text-white" 
                             : "bg-yellow-500 text-white"
                         }>
-                          {data.financialSettings.adminStripeAccountStatus}
+                          {data.financialSettings?.adminStripeAccountStatus}
                         </Badge>
-                        {data.financialSettings.adminStripeAccountStatus === "ACTIVE" && (
+                        {data.financialSettings?.adminStripeAccountStatus === "ACTIVE" && (
                           <CheckCircle className="w-4 h-4 text-green-400" />
                         )}
                       </div>
@@ -355,19 +355,19 @@ export default function AdminPlatformFees() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-400">Account Name</p>
-                      <p className="text-white">{data.financialSettings.adminStripeAccountName}</p>
+                      <p className="text-white">{data.financialSettings?.adminStripeAccountName}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-400">Email</p>
-                      <p className="text-white">{data.financialSettings.adminStripeAccountEmail}</p>
+                      <p className="text-white">{data.financialSettings?.adminStripeAccountEmail}</p>
                     </div>
                   </div>
 
-                  {data.summary.pendingPlatformFees > 0 && (
+                  {data.summary?.pendingPlatformFees > 0 && (
                     <div className="pt-4">
                       <Button
                         onClick={() => transferPlatformFees()}
-                        disabled={transferring || data.financialSettings.adminStripeAccountStatus !== "ACTIVE"}
+                        disabled={transferring || data.financialSettings?.adminStripeAccountStatus !== "ACTIVE"}
                         className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                       >
                         {transferring ? (
@@ -378,7 +378,7 @@ export default function AdminPlatformFees() {
                         ) : (
                           <>
                             <ArrowUpRight className="w-4 h-4 mr-2" />
-                            Transfer All Pending Fees ({formatCurrency(data.summary.pendingPlatformFees)})
+                            Transfer All Pending Fees ({formatCurrency(data.summary?.pendingPlatformFees || 0)})
                           </>
                         )}
                       </Button>
@@ -412,9 +412,9 @@ export default function AdminPlatformFees() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {data.transfers.length > 0 ? (
+              {data.transfers?.length > 0 ? (
                 <div className="space-y-4">
-                  {data.transfers.map((transfer) => (
+                  {data.transfers?.map((transfer) => (
                     <div
                       key={transfer.id}
                       className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
@@ -532,7 +532,7 @@ export default function AdminPlatformFees() {
               </div>
 
               {/* Manual Transfer Section */}
-              {data.financialSettings.adminStripeAccountId && (
+                                {data.financialSettings?.adminStripeAccountId && (
                 <div className="pt-6 border-t border-white/10">
                   <h3 className="text-lg font-semibold text-white mb-4">Manual Transfer</h3>
                   <div className="space-y-4">
