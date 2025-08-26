@@ -133,9 +133,6 @@ export async function PATCH(request: NextRequest) {
     })
   } catch (error) {
     console.error("Error updating celebrity profile:", error)
-    return NextResponse.json({ 
-      error: "Failed to update profile", 
-      details: error instanceof Error ? error.message : "Unknown error" 
-    }, { status: 500 })
+    return NextResponse.json({ error: "Failed to update profile" }, { status: 500 })
   }
 }
