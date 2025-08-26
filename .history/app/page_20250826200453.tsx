@@ -680,95 +680,71 @@ export default function KiaOraHomepage() {
               </p>
             </motion.div>
 
-            {/* Featured Celebrities Grid */}
+            {/* Premium Services Circles */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.8 }}
               transition={{ duration: 1, delay: 0.4 }}
               className="relative mb-12"
             >
-              {celebritiesLoading ? (
-                <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map((index) => (
-                      <div key={index} className="animate-pulse">
-                        <div className="w-full h-48 bg-gray-700 rounded-2xl mb-4"></div>
-                        <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                        <div className="h-3 bg-gray-700 rounded w-2/3"></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {featuredCelebrities.map((celebrity, index) => (
-                      <motion.div
-                        key={celebrity.id}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="group cursor-pointer"
-                        onClick={() => router.push(`/celebrities/${celebrity.id}`)}
-                      >
-                        <div className="relative mb-4">
-                          <div className="w-full h-48 rounded-2xl overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                            <Image
-                              src={celebrity.image || "/placeholder.svg"}
-                              alt={celebrity.name}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                              priority={index < 2}
+              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+                  {services
+                    .filter(service => hasTalentWithImage(service))
+                    .slice(0, 6)
+                    .map((service, index) => {
+                      const talentIndex = (currentTalentIndex + index) % service.talents.length;
+                      const currentTalent = service.talents[talentIndex];
+
+                      return (
+                        <motion.div
+                          key={service.title}
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex flex-col items-center group cursor-pointer"
+                          onClick={() => router.push(`/services?service=${service.id}`)}
+                        >
+                          <div className="relative mb-4">
+                            <div
+                              className={`w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
+                            >
+                              <div className="absolute inset-1 rounded-full overflow-hidden">
+                                <Image
+                                  src={currentTalent?.image || "/placeholder.svg"}
+                                  alt={currentTalent?.name || "Talent"}
+                                  fill
+                                  className="object-cover rounded-full"
+                                  sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
+                                  priority={index < 3}
+                                />
+                              </div>
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="text-white">{getIconComponent(service.icon)}</div>
+                              </div>
+                            </div>
+                            <motion.div
+                              className="absolute -inset-2 rounded-full"
+                              animate={{
+                                boxShadow: [
+                                  "0 0 0 0 rgba(255, 215, 0, 0)",
+                                  "0 0 0 4px rgba(255, 215, 0, 0.3)",
+                                  "0 0 0 0 rgba(255, 215, 0, 0)",
+                                ],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Number.POSITIVE_INFINITY,
+                                delay: index * 0.3,
+                              }}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                            
-                            {/* Verified Badge */}
-                            {celebrity.verified && (
-                              <div className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                                <span className="mr-1">✓</span>
-                                Verified
-                              </div>
-                            )}
-                            
-                            {/* Featured Badge */}
-                            {celebrity.featured && (
-                              <div className="absolute top-3 left-3 bg-yellow-500 text-black text-xs px-2 py-1 rounded-full font-semibold">
-                                Featured
-                              </div>
-                            )}
                           </div>
-                          
-                          {/* Rating */}
-                          <div className="absolute bottom-3 left-3 flex items-center bg-black/70 text-white text-sm px-2 py-1 rounded-full">
-                            <span className="text-yellow-400 mr-1">★</span>
-                            {celebrity.rating}
-                          </div>
-                        </div>
-                        
-                        <div className="text-center">
-                          <h3 className="text-white font-semibold text-lg mb-1 group-hover:text-yellow-200 transition-colors">
-                            {celebrity.name}
-                          </h3>
-                          <p className="text-gray-300 text-sm mb-2">{celebrity.category}</p>
-                          <p className="text-yellow-200 font-semibold">From ${celebrity.price}</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                  
-                  {/* View All Button */}
-                  <div className="text-center mt-8">
-                    <Button
-                      onClick={() => router.push('/celebrities')}
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-semibold px-8 py-3 rounded-full hover:scale-105 transition-transform"
-                    >
-                      View All Celebrities
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
+                          <p className="text-yellow-200 text-xs mt-1 opacity-75">{currentTalent?.name}</p>
+                        </motion.div>
+                      );
+                    })}
                 </div>
-              )}
+              </div>
             </motion.div>
           </div>
         </section>
