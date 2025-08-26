@@ -114,7 +114,6 @@ export default function AdminPlatformFees() {
       const response = await fetch("/api/admin/platform-fees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           action: "setup_admin_account",
           ...adminAccountForm,
@@ -152,7 +151,6 @@ export default function AdminPlatformFees() {
       const response = await fetch("/api/admin/platform-fees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           action: "transfer_platform_fees",
           amount: customAmount ? undefined : amount,
@@ -196,7 +194,7 @@ export default function AdminPlatformFees() {
     }
   }
 
-  if (status === "loading" || loading) {
+  if (loading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
@@ -207,15 +205,6 @@ export default function AdminPlatformFees() {
             ))}
           </div>
         </div>
-      </div>
-    )
-  }
-
-  if (!session || session.user?.role !== "ADMIN") {
-    return (
-      <div className="text-center py-8">
-        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <p className="text-red-200">Access denied. Admin privileges required.</p>
       </div>
     )
   }
