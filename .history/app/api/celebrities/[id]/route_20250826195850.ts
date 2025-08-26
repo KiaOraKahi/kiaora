@@ -177,7 +177,7 @@ const mockCelebrities = {
       {
         id: "7",
         title: "Personal Development Message",
-        thumbnail: "/talents/3.jpg",
+        thumbnail: "/celeb3.jpg",
         duration: "2:48",
         videoUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
       }
