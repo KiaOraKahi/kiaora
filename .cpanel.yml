@@ -1,8 +1,8 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/username/public_html/
-    - export SOURCEPATH=/home/username/repositories/kia-ora/
+    - export DEPLOYPATH=/home/Firstname-:fire/public_html/
+    - export SOURCEPATH=/home/Firstname-:fire/repositories/kia-ora/
     - /bin/cp -R $SOURCEPATH/. $DEPLOYPATH
     - cd $DEPLOYPATH
     - npm install --production=false
