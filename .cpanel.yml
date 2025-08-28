@@ -5,7 +5,7 @@ deployment:
     - export SOURCEPATH=/home/username/repositories/kia-ora/
     - /bin/cp -R $SOURCEPATH/. $DEPLOYPATH
     - cd $DEPLOYPATH
-    - npm install
+    - npm install --production=false
     - npm run build
     - /bin/cp -R .next $DEPLOYPATH
     - /bin/cp -R public $DEPLOYPATH
@@ -17,4 +17,3 @@ deployment:
     - /bin/cp -R types $DEPLOYPATH
     - /bin/cp -R components $DEPLOYPATH
     - /bin/cp -R app $DEPLOYPATH
-    - /bin/cp -R node_modules $DEPLOYPATH
