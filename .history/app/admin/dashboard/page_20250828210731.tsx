@@ -38,7 +38,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import AdminPlatformFees from "@/components/admin/admin-platform-fees"
 import AdminContentManagement from "@/components/admin/admin-content-management"
-
+import AdminServiceManagement from "@/components/admin/admin-service-management"
 
 const SubtleLuxuryStarfield = () => {
   return (
