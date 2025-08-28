@@ -37,7 +37,7 @@ import { toast } from "sonner"
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import AdminPlatformFees from "@/components/admin/admin-platform-fees"
-
+import AdminContentManagement from "@/components/admin/admin-content-management"
 
 
 const SubtleLuxuryStarfield = () => {
