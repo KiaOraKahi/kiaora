@@ -441,12 +441,6 @@ export default function KiaOraHomepage() {
             featured: true,
           }
         ])
-        console.log("Using fallback celebrity data with images:", [
-          "/talents/1.jpeg",
-          "/talents/2.jpg", 
-          "/talents/3.jpg",
-          "/talents/4.jpg"
-        ])
       } finally {
         setCelebritiesLoading(false)
       }
@@ -762,12 +756,8 @@ export default function KiaOraHomepage() {
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                               priority={index < 2}
                               onError={(e) => {
-                                console.log("Image failed to load:", celebrity.image);
                                 const target = e.target as HTMLImageElement;
                                 target.src = "/placeholder.svg";
-                              }}
-                              onLoad={() => {
-                                console.log("Image loaded successfully:", celebrity.image);
                               }}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
