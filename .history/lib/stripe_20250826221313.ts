@@ -116,8 +116,8 @@ export const createConnectAccount = async (celebrityData: {
     // Create onboarding link
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: celebrityData.refreshUrl || `${process.env.NEXTAUTH_URL}/celebrity-dashboard?setup=refresh&tab=payments`,
-      return_url: celebrityData.returnUrl || `${process.env.NEXTAUTH_URL}/celebrity-dashboard?setup=complete&tab=payments`,
+      refresh_url: `${process.env.NEXTAUTH_URL}/celebrity-dashboard?setup=refresh&tab=payments`,
+      return_url: `${process.env.NEXTAUTH_URL}/celebrity-dashboard?setup=complete&tab=payments`,
       type: "account_onboarding",
     })
 
