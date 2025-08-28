@@ -34,24 +34,24 @@ model Session {
 }
 
 model User {
-  id               String     @id @default(cuid())
-  name             String?
-  email            String     @unique
-  emailVerified    DateTime?
-  image            String?
-  password         String?
-  role             Role       @default(FAN)
-  isVerified       Boolean    @default(true)
-  preferredLanguage String    @default("en")
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  accounts         Account[]
-  bookings         Booking[]
-  celebrityProfile Celebrity?
-  orders           Order[]
-  reviews          Review[]
-  sessions         Session[]
-  tips             Tip[]
+  id                String     @id @default(cuid())
+  name              String?
+  email             String     @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String?
+  role              Role       @default(FAN)
+  isVerified        Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  preferredLanguage String     @default("en")
+  accounts          Account[]
+  bookings          Booking[]
+  celebrityProfile  Celebrity?
+  orders            Order[]
+  reviews           Review[]
+  sessions          Session[]
+  tips              Tip[]
 }
 
 model Celebrity {
@@ -118,22 +118,15 @@ model CelebrityApplication {
   phone                   String
   dateOfBirth             String
   nationality             String
-  profession              String
   category                String
   experience              String
-  achievements            String
   instagramHandle         String?
   twitterHandle           String?
   tiktokHandle            String?
   youtubeHandle           String?
   otherSocialMedia        String?
-  followerCount           String
-  basePrice               Float
-  rushPrice               Float
   languages               String[]
-  availability            String
   specialRequests         String?
-  motivation              String
   hasProfilePhoto         Boolean           @default(false)
   hasIdDocument           Boolean           @default(false)
   hasVerificationDocument Boolean           @default(false)
@@ -144,54 +137,61 @@ model CelebrityApplication {
   reviewNotes             String?
   reviewedAt              DateTime?
   reviewedBy              String?
+  achievements            String
+  availability            String
+  basePrice               Float
+  followerCount           String
+  motivation              String
+  profession              String
+  rushPrice               Float
 
   @@map("celebrity_applications")
 }
 
 model Order {
-  id                  String         @id @default(cuid())
-  orderNumber         String         @unique
-  userId              String
-  celebrityId         String
-  status              OrderStatus    @default(PENDING)
-  totalAmount         Float
-  currency            String         @default("nzd")
-  paymentIntentId     String?        @unique
-  paymentStatus       PaymentStatus  @default(PENDING)
-  paidAt              DateTime?
-  recipientName       String
-  occasion            String
-  personalMessage     String
-  specialInstructions String?
-  messageType         String
-  email               String
-  phone               String?
-  scheduledDate       DateTime?
-  scheduledTime       String?
-  deliveredAt         DateTime?
-  videoUrl            String?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  celebrityAmount     Float?
-  platformFee         Float?
-  platformFeeTransferred Boolean @default(false)
-  transferId          String?
-  transferStatus      TransferStatus @default(PENDING)
-  transferredAt       DateTime?
-  payoutStatus        TransferStatus @default(PENDING)
-  approvalStatus      ApprovalStatus @default(PENDING_APPROVAL)
-  approvedAt          DateTime?
-  declineReason       String?
-  declinedAt          DateTime?
-  maxRevisions        Int            @default(2)
-  revisionCount       Int            @default(0)
-  booking             Booking?
-  celebrity           Celebrity      @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
-  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items               OrderItem[]
-  payouts             Payout[]
-  tips                Tip[]
-  transfers           Transfer[]
+  id                     String         @id @default(cuid())
+  orderNumber            String         @unique
+  userId                 String
+  celebrityId            String
+  status                 OrderStatus    @default(PENDING)
+  totalAmount            Float
+  currency               String         @default("nzd")
+  paymentIntentId        String?        @unique
+  paymentStatus          PaymentStatus  @default(PENDING)
+  paidAt                 DateTime?
+  recipientName          String
+  occasion               String
+  personalMessage        String
+  specialInstructions    String?
+  messageType            String
+  email                  String
+  phone                  String?
+  scheduledDate          DateTime?
+  scheduledTime          String?
+  deliveredAt            DateTime?
+  videoUrl               String?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  celebrityAmount        Float?
+  platformFee            Float?
+  transferId             String?
+  transferStatus         TransferStatus @default(PENDING)
+  transferredAt          DateTime?
+  payoutStatus           TransferStatus @default(PENDING)
+  approvalStatus         ApprovalStatus @default(PENDING_APPROVAL)
+  approvedAt             DateTime?
+  declineReason          String?
+  declinedAt             DateTime?
+  maxRevisions           Int            @default(2)
+  revisionCount          Int            @default(0)
+  platformFeeTransferred Boolean        @default(false)
+  booking                Booking?
+  celebrity              Celebrity      @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  user                   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items                  OrderItem[]
+  payouts                Payout[]
+  tips                   Tip[]
+  transfers              Transfer[]
 }
 
 model OrderItem {
@@ -362,8 +362,6 @@ model SiteContent {
   @@map("site_content")
 }
 
-
-
 model SiteSettings {
   id              String   @id @default(cuid())
   siteName        String   @default("Kia Ora Kahi")
@@ -374,20 +372,18 @@ model SiteSettings {
 }
 
 model FinancialSettings {
-  id             String   @id @default(cuid())
-  platformFee    Float    @default(20)
-  minimumPayout  Float    @default(50)
-  payoutSchedule String   @default("weekly")
-  // Admin Stripe Account for Platform Fees
-  adminStripeAccountId String?
-  adminStripeAccountStatus String @default("PENDING")
-  adminStripeAccountEmail String?
-  adminStripeAccountName String?
-  // Platform Fee Balance
-  platformFeeBalance Float @default(0)
-  lastPlatformFeePayout DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                       String    @id @default(cuid())
+  platformFee              Float     @default(20)
+  minimumPayout            Float     @default(50)
+  payoutSchedule           String    @default("weekly")
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  adminStripeAccountEmail  String?
+  adminStripeAccountId     String?
+  adminStripeAccountName   String?
+  adminStripeAccountStatus String    @default("PENDING")
+  lastPlatformFeePayout    DateTime?
+  platformFeeBalance       Float     @default(0)
 }
 
 model SupportTicket {
@@ -416,15 +412,15 @@ model SupportTicketResponse {
 }
 
 model PlatformFeeTransfer {
-  id            String   @id @default(cuid())
-  amount        Float
-  currency      String   @default("nzd")
+  id               String   @id @default(cuid())
+  amount           Float
+  currency         String   @default("nzd")
   stripeTransferId String?
-  status        String   @default("PENDING") // PENDING, SUCCEEDED, FAILED
-  description   String?
-  metadata      Json?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status           String   @default("PENDING")
+  description      String?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Content {
@@ -433,7 +429,7 @@ model Content {
   value       String
   type        ContentType @default(TEXT)
   category    String
-  status      String      @default("active") // active, inactive
+  status      String      @default("active")
   description String?
   updatedBy   String?
   createdAt   DateTime    @default(now())
@@ -481,8 +477,6 @@ enum ApprovalStatus {
   DECLINED
   REVISION_REQUESTED
 }
-
-
 
 enum ApplicationStatus {
   PENDING
