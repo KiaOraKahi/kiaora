@@ -57,31 +57,7 @@ const HowItWorksSteps = () => {
     }
   ]
 
-  return (
-    <>
-      {steps.map((step, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: index * 0.1 }}
-          viewport={{ once: true }}
-          className="text-center group"
-        >
-          <div className="relative mb-6">
-            <div
-              className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
-            >
-              <div className="text-white">{step.icon}</div>
-            </div>
-            <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-yellow-400/20 to-purple-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-          <p className="text-gray-300 leading-relaxed">{step.description}</p>
-        </motion.div>
-      ))}
-    </>
-  )
+  return steps
 }
 
 // Icon mapping helper
@@ -651,7 +627,27 @@ export default function KiaOraHomepage() {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <HowItWorksSteps />
+                              {HowItWorksSteps().map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="text-center group"
+                >
+                  <div className="relative mb-6">
+                    <div
+                      className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <div className="text-white">{step.icon}</div>
+                    </div>
+                    <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-yellow-400/20 to-purple-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-gray-300 leading-relaxed">{step.description}</p>
+                </motion.div>
+              ))}
             </div>
 
             <motion.div

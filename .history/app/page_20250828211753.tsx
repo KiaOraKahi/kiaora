@@ -57,31 +57,7 @@ const HowItWorksSteps = () => {
     }
   ]
 
-  return (
-    <>
-      {steps.map((step, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: index * 0.1 }}
-          viewport={{ once: true }}
-          className="text-center group"
-        >
-          <div className="relative mb-6">
-            <div
-              className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
-            >
-              <div className="text-white">{step.icon}</div>
-            </div>
-            <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-yellow-400/20 to-purple-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-          <p className="text-gray-300 leading-relaxed">{step.description}</p>
-        </motion.div>
-      ))}
-    </>
-  )
+  return steps
 }
 
 // Icon mapping helper
@@ -323,6 +299,49 @@ const heroSlides = [
     color: "from-green-500 to-blue-500"
   }
 ]
+
+// How It Works Steps Component
+const HowItWorksSteps = () => {
+  const { content, loading } = useContent([
+    "homepage.how-it-works.step1.title",
+    "homepage.how-it-works.step1.description",
+    "homepage.how-it-works.step2.title",
+    "homepage.how-it-works.step2.description",
+    "homepage.how-it-works.step3.title",
+    "homepage.how-it-works.step3.description",
+    "homepage.how-it-works.step4.title",
+    "homepage.how-it-works.step4.description"
+  ])
+
+  const steps = [
+    {
+      icon: <Search className="w-8 h-8" />,
+      title: content["homepage.how-it-works.step1.title"] || "Browse & Discover",
+      description: content["homepage.how-it-works.step1.description"] || "Explore our verified celebrities across entertainment, sports, and more",
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: <MessageCircle className="w-8 h-8" />,
+      title: content["homepage.how-it-works.step2.title"] || "Personalise Your Request",
+      description: content["homepage.how-it-works.step2.description"] || "Tell us exactly what you want and who it's for",
+      color: "from-purple-500 to-indigo-500"
+    },
+    {
+      icon: <CreditCard className="w-8 h-8" />,
+      title: content["homepage.how-it-works.step3.title"] || "Secure Payment",
+      description: content["homepage.how-it-works.step3.description"] || "Complete your booking with our secure payment system",
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      icon: <Video className="w-8 h-8" />,
+      title: content["homepage.how-it-works.step4.title"] || "Receive Your Video",
+      description: content["homepage.how-it-works.step4.description"] || "Get your personalised video within the promised timeframe",
+      color: "from-pink-500 to-rose-500"
+    }
+  ]
+
+  return steps
+}
 
 export default function KiaOraHomepage() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -651,7 +670,27 @@ export default function KiaOraHomepage() {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <HowItWorksSteps />
+                              {HowItWorksSteps().map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="text-center group"
+                >
+                  <div className="relative mb-6">
+                    <div
+                      className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <div className="text-white">{step.icon}</div>
+                    </div>
+                    <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-yellow-400/20 to-purple-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-gray-300 leading-relaxed">{step.description}</p>
+                </motion.div>
+              ))}
             </div>
 
             <motion.div
