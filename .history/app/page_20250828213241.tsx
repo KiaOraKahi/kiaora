@@ -528,7 +528,7 @@ export default function KiaOraHomepage() {
 
       <div className="overflow-hidden relative">
         {/* Hero Carousel Section */}
-        <section className="relative h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 lg:pt-20">
+        <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 lg:pt-20">
           {/* Carousel Container */}
           <div className="relative w-full max-w-7xl mx-auto">
             {/* Carousel Slides */}
