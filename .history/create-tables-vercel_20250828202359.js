@@ -1,0 +1,125 @@
+import { PrismaClient } from '@prisma/client';
+
+// Create Prisma client with the regular PostgreSQL URL
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: "postgres://f6b3594d231a10194416a318a056ea2946f16e73c093bca313bf296cc00343bf:sk_qcpY8_xIfgKD2qhKfZBra@db.prisma.io:5432/postgres?sslmode=require"
+    }
+  }
+});
+
+async function createTables() {
+  try {
+    console.log('Creating tables in Vercel database...');
+    
+    // Create Content table
+    console.log('Creating Content table...');
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "Content" (
+        "id" TEXT NOT NULL,
+        "key" TEXT NOT NULL,
+        "value" TEXT NOT NULL,
+        "type" TEXT NOT NULL DEFAULT 'TEXT',
+        "category" TEXT NOT NULL,
+        "status" TEXT NOT NULL DEFAULT 'active',
+        "description" TEXT,
+        "updatedBy" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL,
+        CONSTRAINT "Content_pkey" PRIMARY KEY ("id")
+      );
+    `;
+    
+    // Create unique index for Content key
+    await prisma.$executeRaw`
+      CREATE UNIQUE INDEX IF NOT EXISTS "Content_key_key" ON "Content"("key");
+    `;
+    
+    // Create Service table
+    console.log('Creating Service table...');
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "services" (
+        "id" TEXT NOT NULL,
+        "title" TEXT NOT NULL,
+        "shortDescription" TEXT NOT NULL,
+        "fullDescription" TEXT NOT NULL,
+        "icon" TEXT NOT NULL,
+        "color" TEXT NOT NULL,
+        "startingPrice" DOUBLE PRECISION NOT NULL,
+        "asapPrice" DOUBLE PRECISION NOT NULL,
+        "duration" TEXT NOT NULL,
+        "deliveryTime" TEXT NOT NULL,
+        "asapDeliveryTime" TEXT NOT NULL,
+        "popular" BOOLEAN NOT NULL DEFAULT false,
+        "isActive" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL,
+        "updatedBy" TEXT,
+        "createdBy" TEXT,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        "currency" TEXT NOT NULL DEFAULT 'nzd',
+        "numericId" INTEGER NOT NULL,
+        "samples" JSONB NOT NULL DEFAULT '[]',
+        "talents" JSONB NOT NULL DEFAULT '[]',
+        CONSTRAINT "services_pkey" PRIMARY KEY ("id")
+      );
+    `;
+    
+    // Create unique index for Service numericId
+    await prisma.$executeRaw`
+      CREATE UNIQUE INDEX IF NOT EXISTS "services_numericId_key" ON "services"("numericId");
+    `;
+    
+    // Create ServiceFeature table
+    console.log('Creating ServiceFeature table...');
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "service_features" (
+        "id" TEXT NOT NULL,
+        "serviceId" TEXT NOT NULL,
+        "text" TEXT NOT NULL,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL,
+        CONSTRAINT "service_features_pkey" PRIMARY KEY ("id")
+      );
+    `;
+    
+    // Create foreign key for ServiceFeature (with error handling)
+    try {
+      await prisma.$executeRaw`
+        ALTER TABLE "service_features" ADD CONSTRAINT "service_features_serviceId_fkey" 
+        FOREIGN KEY ("serviceId") REFERENCES "services"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      `;
+      console.log('Foreign key constraint created successfully');
+    } catch (error) {
+      console.log('Foreign key constraint already exists, skipping...');
+    }
+    
+    console.log('All tables created successfully!');
+    
+    // Test the tables
+    console.log('Testing table creation...');
+    
+    try {
+      const contentCount = await prisma.content.count();
+      console.log(`✅ Content table exists with ${contentCount} records`);
+    } catch (error) {
+      console.log('❌ Content table test failed:', error.message);
+    }
+    
+    try {
+      const serviceCount = await prisma.service.count();
+      console.log(`✅ Service table exists with ${serviceCount} records`);
+    } catch (error) {
+      console.log('❌ Service table test failed:', error.message);
+    }
+    
+  } catch (error) {
+    console.error('Error creating tables:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+createTables();
