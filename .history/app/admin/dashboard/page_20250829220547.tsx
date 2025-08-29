@@ -1106,10 +1106,6 @@ export default function AdminDashboard() {
               <AdminPlatformFees />
             </TabsContent>
 
-            <TabsContent value="applications" className="space-y-6">
-              <AdminApplications />
-            </TabsContent>
-
             <TabsContent value="content-management" className="space-y-6">
               <AdminContentManagement />
             </TabsContent>

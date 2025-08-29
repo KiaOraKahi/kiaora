@@ -731,7 +731,7 @@ export default function AdminDashboard() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 bg-white/10 border-white/20">
+            <TabsList className="grid w-full grid-cols-6 bg-white/10 border-white/20">
               <TabsTrigger value="overview" className="text-white data-[state=active]:bg-purple-500">
                 <Activity className="w-4 h-4 mr-2" />
                 Overview
@@ -739,10 +739,6 @@ export default function AdminDashboard() {
               <TabsTrigger value="users" className="text-white data-[state=active]:bg-purple-500">
                 <Users className="w-4 h-4 mr-2" />
                 Users
-              </TabsTrigger>
-              <TabsTrigger value="applications" className="text-white data-[state=active]:bg-purple-500">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Applications
               </TabsTrigger>
               <TabsTrigger value="bookings" className="text-white data-[state=active]:bg-purple-500">
                 <Calendar className="w-4 h-4 mr-2" />
@@ -1104,10 +1100,6 @@ export default function AdminDashboard() {
 
             <TabsContent value="platform-fees" className="space-y-6">
               <AdminPlatformFees />
-            </TabsContent>
-
-            <TabsContent value="applications" className="space-y-6">
-              <AdminApplications />
             </TabsContent>
 
             <TabsContent value="content-management" className="space-y-6">
