@@ -96,10 +96,7 @@ export function AdminApplications() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          status: "REJECTED",
-          reviewNotes: "Application rejected by admin"
-        }),
+        body: JSON.stringify({ action: "reject" }),
       })
 
       const data = await response.json()
