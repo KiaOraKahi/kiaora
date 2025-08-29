@@ -61,14 +61,7 @@ export async function getContentByKeys(keys: string[]): Promise<Record<string, s
     return contentMap
   } catch (error) {
     console.error("Error fetching content by keys:", error)
-    // Return fallback content if database table doesn't exist
-    const fallbackMap: Record<string, string> = {}
-    keys.forEach(key => {
-      if (fallbackContent[key as keyof typeof fallbackContent]) {
-        fallbackMap[key] = fallbackContent[key as keyof typeof fallbackContent]
-      }
-    })
-    return fallbackMap
+    return {}
   }
 }
 
@@ -82,7 +75,6 @@ export async function getAllActiveContent(): Promise<ContentItem[]> {
     return content
   } catch (error) {
     console.error("Error fetching all active content:", error)
-    // Return empty array if database table doesn't exist
     return []
   }
 }

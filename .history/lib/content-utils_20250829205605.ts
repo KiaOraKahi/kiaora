@@ -82,7 +82,6 @@ export async function getAllActiveContent(): Promise<ContentItem[]> {
     return content
   } catch (error) {
     console.error("Error fetching all active content:", error)
-    // Return empty array if database table doesn't exist
     return []
   }
 }
