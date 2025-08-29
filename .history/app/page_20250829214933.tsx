@@ -714,7 +714,7 @@ export default function KiaOraHomepage() {
               className="text-center mb-16"
             >
               <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-                Our Celebrities
+                Featured Celebrities
               </h2>
               <p className="text-xl text-yellow-200 max-w-3xl mx-auto">
                 Connect with verified celebrities and influencers for personalised video messages
