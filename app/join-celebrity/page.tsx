@@ -26,6 +26,7 @@ import {
   BadgeIcon as IdCard,
   Loader2,
   CheckCircle,
+  Video,
 } from "lucide-react"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
@@ -69,8 +70,10 @@ interface FormData {
   // Documents
   hasProfilePhoto: boolean
   hasIdDocument: boolean
+  hasVideoIntroduction: boolean
   profilePhotoUrl?: string
   idDocumentUrl?: string
+  videoIntroductionUrl?: string
 }
 
 interface UploadedFile {
@@ -194,11 +197,33 @@ export default function JoinCelebrityPage() {
     specialRequests: "",
     hasProfilePhoto: false,
     hasIdDocument: false,
+    hasVideoIntroduction: false,
     profilePhotoUrl: undefined,
     idDocumentUrl: undefined,
+    videoIntroductionUrl: undefined,
   })
 
   const [isMobile, setIsMobile] = useState(false)
+
+  // Function to validate video duration
+  const validateVideoDuration = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+      
+      video.onloadedmetadata = () => {
+        const duration = video.duration
+        const isValid = duration >= 30 // 30 seconds minimum
+        resolve(isValid)
+      }
+      
+      video.onerror = () => {
+        resolve(false) // If we can't read metadata, reject
+      }
+      
+      video.src = URL.createObjectURL(file)
+    })
+  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -228,6 +253,16 @@ export default function JoinCelebrityPage() {
   const handleFileUpload = async (file: File, type: string) => {
     setUploadingFiles((prev) => ({ ...prev, [type]: true }))
     try {
+      // Special validation for video introduction
+      if (type === "video") {
+        const isValidDuration = await validateVideoDuration(file)
+        if (!isValidDuration) {
+          toast.error("Video must be at least 30 seconds long. Please upload a longer video.")
+          setUploadingFiles((prev) => ({ ...prev, [type]: false }))
+          return
+        }
+      }
+
       const formData = new FormData()
       formData.append("file", file)
       formData.append("type", type)
@@ -241,14 +276,20 @@ export default function JoinCelebrityPage() {
 
       if (response.ok) {
         setUploadedFiles((prev) => ({ ...prev, [type]: result }))
-        updateFormData(type === "profile" ? "hasProfilePhoto" : "hasIdDocument", true)
-        // Store the actual URL
+        
+        // Update form data based on file type
         if (type === "profile") {
+          updateFormData("hasProfilePhoto", true)
           updateFormData("profilePhotoUrl", result.url)
         } else if (type === "id") {
+          updateFormData("hasIdDocument", true)
           updateFormData("idDocumentUrl", result.url)
+        } else if (type === "video") {
+          updateFormData("hasVideoIntroduction", true)
+          updateFormData("videoIntroductionUrl", result.url)
         }
-        toast.success(`${type} uploaded successfully!`)
+        
+        toast.success(`${type === "video" ? "Video introduction" : type} uploaded successfully!`)
       } else {
         toast.error(result.error || "Upload failed")
       }
@@ -266,7 +307,7 @@ export default function JoinCelebrityPage() {
       case 2:
         return !!(formData.category && formData.experience.length >= 50 && formData.languages.length > 0)
       case 3:
-        return formData.hasProfilePhoto && formData.hasIdDocument
+        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasVideoIntroduction
       default:
         return false
     }
@@ -863,6 +904,50 @@ export default function JoinCelebrityPage() {
                                   <Upload className="w-8 h-8 text-gray-400" />
                                   <span className="text-white">Click to upload government ID</span>
                                   <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Video Introduction */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <Video className="w-5 h-5 text-purple-400" />
+                            <h3 className="text-lg font-semibold text-white">30-Second Video Introduction *</h3>
+                            {formData.hasVideoIntroduction && <CheckCircle className="w-5 h-5 text-green-400" />}
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            Upload a short video introducing yourself. This helps fans get to know you better.
+                          </p>
+                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                            <input
+                              type="file"
+                              id="video-introduction"
+                              accept="video/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleFileUpload(file, "video")
+                              }}
+                              className="hidden"
+                            />
+                            <label htmlFor="video-introduction" className="cursor-pointer">
+                              {uploadingFiles.video ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+                                  <span className="text-white">Uploading...</span>
+                                </div>
+                              ) : formData.hasVideoIntroduction ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <CheckCircle className="w-5 h-5 text-green-400" />
+                                  <span className="text-green-400">Video introduction uploaded</span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                  <Video className="w-8 h-8 text-gray-400" />
+                                  <span className="text-white">Click to upload video introduction</span>
+                                  <span className="text-gray-400 text-sm">MP4, MOV, AVI up to 50MB</span>
+                                  <span className="text-purple-400 text-sm font-medium">Must be at least 30 seconds</span>
                                 </div>
                               )}
                             </label>
