@@ -292,22 +292,10 @@ export default function JoinCelebrityPage() {
 
     setIsSubmitting(true)
     try {
-      // Prepare submission data with all required fields
-      const submissionData = {
-        ...formData,
-        achievements: formData.experience, // Use experience as achievements
-        motivation: formData.experience, // Use experience as motivation
-        profession: formData.category, // Use category as profession
-        availability: formData.availability || "24 hours",
-        basePrice: formData.basePrice || 299.0,
-        rushPrice: formData.rushPrice || 399.0,
-        followerCount: formData.followerCount || "0",
-      }
-
       const response = await fetch("/api/celebrity/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submissionData),
+        body: JSON.stringify(formData),
       })
 
       const result = await response.json()
@@ -319,7 +307,6 @@ export default function JoinCelebrityPage() {
         toast.error(result.error || "Submission failed")
       }
     } catch (error) {
-      console.error("Submission error:", error)
       toast.error("Submission failed. Please try again.")
     } finally {
       setIsSubmitting(false)

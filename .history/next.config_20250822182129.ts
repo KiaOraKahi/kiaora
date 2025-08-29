@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   images: {
     domains: [
       "lxzosqesvwftyg1v.public.blob.vercel-storage.com", 
-      "z4jzmpy08k3e4tez.public.blob.vercel-storage.com",
       "images.unsplash.com",
       "blob.vercel-storage.com",
       "lh3.googleusercontent.com"
