@@ -11,15 +11,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file received." }, { status: 400 })
     }
 
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "File size too large. Maximum 5MB allowed." }, { status: 400 })
+    // Validate file size based on type
+    const maxSize = type === "video" ? 50 * 1024 * 1024 : 5 * 1024 * 1024 // 50MB for videos, 5MB for others
+    if (file.size > maxSize) {
+      const maxSizeMB = type === "video" ? "50MB" : "5MB"
+      return NextResponse.json({ error: `File size too large. Maximum ${maxSizeMB} allowed.` }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"]
+    // Validate file type based on type parameter
+    let allowedTypes: string[]
+    if (type === "video") {
+      allowedTypes = ["video/mp4", "video/mov", "video/avi", "video/quicktime", "video/webm"]
+    } else {
+      allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"]
+    }
+    
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: "Invalid file type. Only images and PDFs are allowed." }, { status: 400 })
+      const fileTypeDesc = type === "video" ? "video files (MP4, MOV, AVI, QuickTime, or WebM)" : "images and PDFs"
+      return NextResponse.json({ error: `Invalid file type. Only ${fileTypeDesc} are allowed.` }, { status: 400 })
     }
 
     // Generate unique filename
