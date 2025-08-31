@@ -880,12 +880,9 @@ export default function JoinCelebrityPage() {
                             <h3 className="text-lg font-semibold text-white">Verification Video *</h3>
                             {formData.hasVerificationDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
                           </div>
-                                                     <p className="text-gray-400 text-sm">
-                             Upload a short video (30-60 seconds) introducing yourself and explaining why you want to join Kia Ora Kahi
-                           </p>
-                           <p className="text-gray-400 text-xs mt-1">
-                             💡 Large video files are automatically handled for optimal upload performance
-                           </p>
+                          <p className="text-gray-400 text-sm">
+                            Upload a short video (30-60 seconds) introducing yourself and explaining why you want to join Kia Ora Kahi
+                          </p>
                           <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
                             <input
                               type="file"

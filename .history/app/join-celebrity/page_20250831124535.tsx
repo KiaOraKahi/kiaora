@@ -234,30 +234,38 @@ export default function JoinCelebrityPage() {
   const handleFileUpload = async (file: File, type: string) => {
     setUploadingFiles((prev) => ({ ...prev, [type]: true }))
     try {
-      console.log(`🚀 Starting upload for ${type} file: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`)
-      
-      // Use the smart upload function that handles large files
-      const result = await uploadFile(file, type)
-      
-      setUploadedFiles((prev) => ({ ...prev, [type]: result }))
-      
-      // Update the appropriate boolean flag and URL based on type
-      if (type === "profile") {
-        updateFormData("hasProfilePhoto", true)
-        updateFormData("profilePhotoUrl", result.url)
-      } else if (type === "id") {
-        updateFormData("hasIdDocument", true)
-        updateFormData("idDocumentUrl", result.url)
-      } else if (type === "video") {
-        updateFormData("hasVerificationDocument", true)
-        updateFormData("verificationDocumentUrl", result.url)
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", type)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setUploadedFiles((prev) => ({ ...prev, [type]: result }))
+        
+        // Update the appropriate boolean flag and URL based on type
+        if (type === "profile") {
+          updateFormData("hasProfilePhoto", true)
+          updateFormData("profilePhotoUrl", result.url)
+        } else if (type === "id") {
+          updateFormData("hasIdDocument", true)
+          updateFormData("idDocumentUrl", result.url)
+        } else if (type === "video") {
+          updateFormData("hasVerificationDocument", true)
+          updateFormData("verificationDocumentUrl", result.url)
+        }
+        
+        toast.success(`${type} uploaded successfully!`)
+      } else {
+        toast.error(result.error || "Upload failed")
       }
-      
-      toast.success(`${type} uploaded successfully!`)
-      console.log(`✅ ${type} upload completed:`, result.url)
     } catch (error) {
-      console.error(`❌ ${type} upload failed:`, error)
-      toast.error(error instanceof Error ? error.message : "Upload failed. Please try again.")
+      toast.error("Upload failed. Please try again.")
     } finally {
       setUploadingFiles((prev) => ({ ...prev, [type]: false }))
     }
@@ -880,12 +888,9 @@ export default function JoinCelebrityPage() {
                             <h3 className="text-lg font-semibold text-white">Verification Video *</h3>
                             {formData.hasVerificationDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
                           </div>
-                                                     <p className="text-gray-400 text-sm">
-                             Upload a short video (30-60 seconds) introducing yourself and explaining why you want to join Kia Ora Kahi
-                           </p>
-                           <p className="text-gray-400 text-xs mt-1">
-                             💡 Large video files are automatically handled for optimal upload performance
-                           </p>
+                          <p className="text-gray-400 text-sm">
+                            Upload a short video (30-60 seconds) introducing yourself and explaining why you want to join Kia Ora Kahi
+                          </p>
                           <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
                             <input
                               type="file"
