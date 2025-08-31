@@ -69,9 +69,10 @@ interface FormData {
   // Documents
   hasProfilePhoto: boolean
   hasIdDocument: boolean
+  hasVerificationDocument: boolean
   profilePhotoUrl?: string
   idDocumentUrl?: string
-  hasVerificationDocument: boolean
+  verificationDocumentUrl?: string
 }
 
 interface UploadedFile {
@@ -195,9 +196,10 @@ export default function JoinCelebrityPage() {
     specialRequests: "",
     hasProfilePhoto: false,
     hasIdDocument: false,
+    hasVerificationDocument: false,
     profilePhotoUrl: undefined,
     idDocumentUrl: undefined,
-    hasVerificationDocument: false,
+    verificationDocumentUrl: undefined,
   })
 
   const [isMobile, setIsMobile] = useState(false)
@@ -243,19 +245,13 @@ export default function JoinCelebrityPage() {
 
       if (response.ok) {
         setUploadedFiles((prev) => ({ ...prev, [type]: result }))
-        
-        // Update the appropriate boolean flag and URL based on type
+        updateFormData(type === "profile" ? "hasProfilePhoto" : "hasIdDocument", true)
+        // Store the actual URL
         if (type === "profile") {
-          updateFormData("hasProfilePhoto", true)
           updateFormData("profilePhotoUrl", result.url)
         } else if (type === "id") {
-          updateFormData("hasIdDocument", true)
           updateFormData("idDocumentUrl", result.url)
-        } else if (type === "video") {
-          updateFormData("hasVerificationDocument", true)
-          updateFormData("verificationDocumentUrl", result.url)
         }
-        
         toast.success(`${type} uploaded successfully!`)
       } else {
         toast.error(result.error || "Upload failed")
@@ -274,7 +270,7 @@ export default function JoinCelebrityPage() {
       case 2:
         return !!(formData.category && formData.experience.length >= 50 && formData.languages.length > 0)
       case 3:
-        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasVerificationDocument
+        return formData.hasProfilePhoto && formData.hasIdDocument
       default:
         return false
     }
@@ -871,49 +867,6 @@ export default function JoinCelebrityPage() {
                                   <Upload className="w-8 h-8 text-gray-400" />
                                   <span className="text-white">Click to upload government ID</span>
                                   <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
-                                </div>
-                              )}
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Verification Video */}
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <Video className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Verification Video *</h3>
-                            {formData.hasVerificationDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
-                          </div>
-                          <p className="text-gray-400 text-sm">
-                            Upload a short video (30-60 seconds) introducing yourself and explaining why you want to join Kia Ora Kahi
-                          </p>
-                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                            <input
-                              type="file"
-                              id="verification-video"
-                              accept="video/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "video")
-                              }}
-                              className="hidden"
-                            />
-                            <label htmlFor="verification-video" className="cursor-pointer">
-                              {uploadingFiles.video ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
-                                </div>
-                              ) : formData.hasVerificationDocument ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">Verification video uploaded</span>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload verification video</span>
-                                  <span className="text-gray-400 text-sm">MP4, MOV, AVI up to 50MB</span>
                                 </div>
                               )}
                             </label>

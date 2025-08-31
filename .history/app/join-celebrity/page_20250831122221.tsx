@@ -877,49 +877,6 @@ export default function JoinCelebrityPage() {
                           </div>
                         </div>
 
-                        {/* Verification Video */}
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <Video className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Verification Video *</h3>
-                            {formData.hasVerificationDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
-                          </div>
-                          <p className="text-gray-400 text-sm">
-                            Upload a short video (30-60 seconds) introducing yourself and explaining why you want to join Kia Ora Kahi
-                          </p>
-                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                            <input
-                              type="file"
-                              id="verification-video"
-                              accept="video/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "video")
-                              }}
-                              className="hidden"
-                            />
-                            <label htmlFor="verification-video" className="cursor-pointer">
-                              {uploadingFiles.video ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
-                                </div>
-                              ) : formData.hasVerificationDocument ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">Verification video uploaded</span>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload verification video</span>
-                                  <span className="text-gray-400 text-sm">MP4, MOV, AVI up to 50MB</span>
-                                </div>
-                              )}
-                            </label>
-                          </div>
-                        </div>
-
                         {/* Privacy Notice */}
                         <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
                           <div className="flex items-start gap-3">
