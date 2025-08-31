@@ -408,12 +408,7 @@ export function AdminApplications() {
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400 text-sm">ID Document:</span>
                         {selectedApplication.idDocumentUrl ? (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-7 px-2 text-xs"
-                            onClick={() => handleViewFile(selectedApplication.idDocumentUrl!, 'id')}
-                          >
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
                             <Download className="w-3 h-3 mr-1" />
                             View ID
                           </Button>
@@ -427,21 +422,11 @@ export function AdminApplications() {
                         <span className="text-gray-400 text-sm">Verification Video:</span>
                         {selectedApplication.verificationDocumentUrl ? (
                           <div className="flex items-center gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-7 px-2 text-xs"
-                              onClick={() => handleViewFile(selectedApplication.verificationDocumentUrl!, 'video')}
-                            >
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
                               <Video className="w-3 h-3 mr-1" />
                               View Video
                             </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-7 px-2 text-xs"
-                              onClick={() => handlePlayVideo(selectedApplication.verificationDocumentUrl!)}
-                            >
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
                               <Play className="w-3 h-3 mr-1" />
                               Play
                             </Button>

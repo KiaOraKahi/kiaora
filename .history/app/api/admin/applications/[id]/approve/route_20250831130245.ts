@@ -137,12 +137,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         role: result.user.role,
         image: result.user.image,
       },
-             celebrity: {
-         id: result.celebrity.id,
-         category: result.celebrity.category,
-         price: result.celebrity.price,
-         image: result.celebrity.coverImage,
-       },
+      celebrity: {
+        id: result.celebrity.id,
+        category: result.celebrity.category,
+        pricePersonal: result.celebrity.pricePersonal,
+        image: result.celebrity.coverImage,
+      },
     })
   } catch (error) {
     console.error("❌ Error approving application:", error)
