@@ -31,16 +31,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     console.log("🔍 Processing application approval for:", application.fullName)
     console.log("📸 Profile photo URL:", application.profilePhotoUrl)
-    console.log("📊 Application data:", {
-      category: application.category,
-      experience: application.experience,
-      achievements: application.achievements,
-      basePrice: application.basePrice,
-      rushPrice: application.rushPrice,
-      languages: application.languages,
-      availability: application.availability,
-      followerCount: application.followerCount
-    })
 
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
