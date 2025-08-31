@@ -26,6 +26,7 @@ import {
   BadgeIcon as IdCard,
   Loader2,
   CheckCircle,
+  Video,
 } from "lucide-react"
 import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
@@ -72,6 +73,7 @@ interface FormData {
   profilePhotoUrl?: string
   idDocumentUrl?: string
   hasVerificationDocument: boolean
+  verificationDocumentUrl?: string
 }
 
 interface UploadedFile {
@@ -198,6 +200,7 @@ export default function JoinCelebrityPage() {
     profilePhotoUrl: undefined,
     idDocumentUrl: undefined,
     hasVerificationDocument: false,
+    verificationDocumentUrl: undefined,
   })
 
   const [isMobile, setIsMobile] = useState(false)
