@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { put } from "@vercel/blob"
 
-// Note: Vercel has a 4.5MB limit for serverless functions
-// For larger files, consider using client-side upload directly to Vercel Blob
+// This route handles large file uploads
+// Next.js App Router automatically handles large files
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,18 +59,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("❌ Upload error:", error)
-    
-    // Check if it's a size-related error
-    if (error instanceof Error) {
-      if (error.message.includes('413') || error.message.includes('Payload Too Large')) {
-        return NextResponse.json({ 
-          error: "File size too large. Please try a smaller video file (under 50MB)." 
-        }, { status: 413 })
-      }
-    }
-    
-    return NextResponse.json({ 
-      error: "Failed to upload file. Please try again." 
-    }, { status: 500 })
+    return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
   }
 }
