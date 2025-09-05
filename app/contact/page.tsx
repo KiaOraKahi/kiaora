@@ -12,28 +12,21 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
   Mail,
-  Phone,
-  MapPin,
-  MessageCircle,
   Clock,
   Send,
   CheckCircle,
-  AlertCircle,
   HelpCircle,
   Users,
   Star,
   Zap,
   Sparkles,
-  Calendar,
   Globe,
   X,
   Copy,
   ExternalLink,
-  PhoneCall,
 } from "lucide-react"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
-import LiveChatWidget from "@/components/frontend/live-chat-widget"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 
 // Subtle starfield component
@@ -102,34 +95,34 @@ const contactMethods = [
     action: "email",
   },
   {
-    icon: <MessageCircle className="w-8 h-8" />,
-    title: "Live Chat",
-    description: "Instant help from our team",
-    contact: "Available on website",
-    responseTime: "Usually instant",
+    icon: <Mail className="w-8 h-8" />,
+    title: "General Inquiries",
+    description: "General questions and information",
+    contact: "hello@kiaora.com",
+    responseTime: "Within 24 hours",
     color: "from-green-500 to-emerald-500",
-    availability: "9 AM - 9 PM PST",
-    action: "chat",
+    availability: "24/7",
+    action: "general",
   },
   {
-    icon: <Phone className="w-8 h-8" />,
-    title: "Phone Support",
-    description: "Speak directly with our team",
-    contact: "+1 (555) 123-4567",
-    responseTime: "Immediate",
+    icon: <Mail className="w-8 h-8" />,
+    title: "Billing Support",
+    description: "Payment and billing questions",
+    contact: "billing@kiaora.com",
+    responseTime: "Within 24 hours",
     color: "from-purple-500 to-indigo-500",
-    availability: "Mon-Fri, 9 AM - 6 PM PST",
-    action: "phone",
+    availability: "24/7",
+    action: "billing",
   },
   {
-    icon: <Calendar className="w-8 h-8" />,
-    title: "Schedule a Call",
-    description: "Book a personalized consultation",
-    contact: "Book online",
-    responseTime: "Same day",
+    icon: <Mail className="w-8 h-8" />,
+    title: "Sign Language Support",
+    description: "Accessibility support via email",
+    contact: "accessibility@kiaora.com",
+    responseTime: "Within 24 hours",
     color: "from-pink-500 to-rose-500",
-    availability: "Flexible scheduling",
-    action: "schedule",
+    availability: "24/7",
+    action: "sign-language",
   },
 ]
 
@@ -162,37 +155,22 @@ const supportCategories = [
 
 
 
-const timeSlots = ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"]
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     category: "",
     subject: "",
     message: "",
-    priority: "normal",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   // Modal states
   const [showEmailModal, setShowEmailModal] = useState(false)
-  const [showPhoneModal, setShowPhoneModal] = useState(false)
-  const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [showFAQModal, setShowFAQModal] = useState(false)
 
-  // Schedule state
-  const [selectedDate, setSelectedDate] = useState("")
-  const [selectedTime, setSelectedTime] = useState("")
-  const [scheduleData, setScheduleData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    reason: "",
-    callType: "phone",
-  })
 
   const [isMobile, setIsMobile] = useState(false)
   
@@ -237,11 +215,9 @@ export default function ContactPage() {
           setFormData({
             name: "",
             email: "",
-            phone: "",
             category: "",
             subject: "",
             message: "",
-            priority: "normal",
           })
         }, 3000)
       } else {
@@ -258,16 +234,10 @@ export default function ContactPage() {
   const handleContactMethodClick = (action: string) => {
     switch (action) {
       case "email":
+      case "general":
+      case "billing":
+      case "sign-language":
         setShowEmailModal(true)
-        break
-      case "chat":
-        // Remove this case - chat will be handled by the widget
-        break
-      case "phone":
-        setShowPhoneModal(true)
-        break
-      case "schedule":
-        setShowScheduleModal(true)
         break
     }
   }
@@ -283,36 +253,11 @@ export default function ContactPage() {
     // You could add a toast notification here
   }
 
-  const handleScheduleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle schedule submission
-    console.log("Schedule data:", { ...scheduleData, date: selectedDate, time: selectedTime })
-    setShowScheduleModal(false)
-    // Reset form
-    setScheduleData({ name: "", email: "", phone: "", reason: "", callType: "phone" })
-    setSelectedDate("")
-    setSelectedTime("")
-  }
-
   const handleQuickAction = (action: string) => {
     switch (action) {
-      case "chat":
-        // Remove this case - chat will be handled by the widget
-        break
       case "faq":
         setShowFAQModal(true)
         break
-      case "schedule":
-        setShowScheduleModal(true)
-        break
-    }
-  }
-
-  const handleEmergencyContact = (type: string) => {
-    if (type === "phone") {
-      window.open("tel:+15559114357")
-    } else if (type === "email") {
-      window.open("mailto:urgent@kiaora.com")
     }
   }
 
@@ -466,80 +411,38 @@ export default function ContactPage() {
                         </div>
                       </div>
 
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                          <Label htmlFor="phone" className="text-white mb-2 block">
-                            Phone Number
-                          </Label>
-                          <Input
-                            id="phone"
-                            name="phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                            className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 focus:border-purple-500"
-                            placeholder="+1 (555) 123-4567"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="category" className="text-white mb-2 block">
-                            Support Category *
-                          </Label>
-                          <select
-                            id="category"
-                            name="category"
-                            required
-                            value={formData.category}
-                            onChange={handleInputChange}
-                            className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
-                          >
-                            <option value="" className="bg-slate-800">
-                              Select a category
-                            </option>
-                            <option value="general" className="bg-slate-800">
-                              General Questions
-                            </option>
-                            <option value="account" className="bg-slate-800">
-                              Account Support
-                            </option>
-                            <option value="booking" className="bg-slate-800">
-                              Booking Help
-                            </option>
-                            <option value="technical" className="bg-slate-800">
-                              Technical Issues
-                            </option>
-                            <option value="billing" className="bg-slate-800">
-                              Billing & Payments
-                            </option>
-                            <option value="celebrity" className="bg-slate-800">
-                              Celebrity Partnership
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-
                       <div>
-                        <Label htmlFor="priority" className="text-white mb-2 block">
-                          Priority Level
+                        <Label htmlFor="category" className="text-white mb-2 block">
+                          Support Category *
                         </Label>
                         <select
-                          id="priority"
-                          name="priority"
-                          value={formData.priority}
+                          id="category"
+                          name="category"
+                          required
+                          value={formData.category}
                           onChange={handleInputChange}
                           className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:border-purple-500"
                         >
-                          <option value="low" className="bg-slate-800">
-                            Low - General inquiry
+                          <option value="" className="bg-slate-800">
+                            Select a category
                           </option>
-                          <option value="normal" className="bg-slate-800">
-                            Normal - Standard support
+                          <option value="general" className="bg-slate-800">
+                            General Questions
                           </option>
-                          <option value="high" className="bg-slate-800">
-                            High - Urgent issue
+                          <option value="account" className="bg-slate-800">
+                            Account Support
                           </option>
-                          <option value="critical" className="bg-slate-800">
-                            Critical - Service disruption
+                          <option value="booking" className="bg-slate-800">
+                            Booking Help
+                          </option>
+                          <option value="technical" className="bg-slate-800">
+                            Technical Issues
+                          </option>
+                          <option value="billing" className="bg-slate-800">
+                            Billing & Payments
+                          </option>
+                          <option value="celebrity" className="bg-slate-800">
+                            Celebrity Partnership
                           </option>
                         </select>
                       </div>
@@ -633,19 +536,11 @@ export default function ContactPage() {
                 </CardContent>
               </Card>
 
-              {/* Quick Actions */}
+              {/* FAQ Section */}
               <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                 <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-white mb-6">Quick Actions</h3>
+                  <h3 className="text-2xl font-bold text-white mb-6">Need Quick Help?</h3>
                   <div className="space-y-4">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start bg-white/10 border-white/20 text-white hover:bg-white/20"
-                      onClick={() => handleQuickAction("chat")}
-                    >
-                      <MessageCircle className="w-5 h-5 mr-3" />
-                      Start Live Chat
-                    </Button>
                     <Button
                       variant="outline"
                       className="w-full justify-start bg-white/10 border-white/20 text-white hover:bg-white/20"
@@ -654,43 +549,6 @@ export default function ContactPage() {
                       <HelpCircle className="w-5 h-5 mr-3" />
                       Browse FAQ
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start bg-white/10 border-white/20 text-white hover:bg-white/20"
-                      onClick={() => handleQuickAction("schedule")}
-                    >
-                      <Calendar className="w-5 h-5 mr-3" />
-                      Schedule a Call
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Emergency Contact */}
-              <Card className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500/30 backdrop-blur-lg">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <AlertCircle className="w-6 h-6 text-red-400" />
-                    <h3 className="text-xl font-bold text-white">Urgent Issues?</h3>
-                  </div>
-                  <p className="text-red-200 mb-4">
-                    For critical issues affecting your account or urgent booking problems, contact us immediately:
-                  </p>
-                  <div className="space-y-2">
-                    <div
-                      className="flex items-center gap-2 text-red-200 cursor-pointer hover:text-red-100 transition-colors"
-                      onClick={() => handleEmergencyContact("phone")}
-                    >
-                      <Phone className="w-4 h-4" />
-                      <span className="font-semibold">+1 (555) 911-HELP</span>
-                    </div>
-                    <div
-                      className="flex items-center gap-2 text-red-200 cursor-pointer hover:text-red-100 transition-colors"
-                      onClick={() => handleEmergencyContact("email")}
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span className="font-semibold">urgent@kiaora.com</span>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -716,18 +574,14 @@ export default function ContactPage() {
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
               We're committed to providing fast, helpful support. Here's what you can expect:
             </p>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
-                <div className="text-3xl font-bold text-green-400 mb-2">{"< 1 hour"}</div>
-                <div className="text-purple-200">Live Chat Response</div>
-              </div>
+            <div className="grid md:grid-cols-2 gap-6 text-center">
               <div>
                 <div className="text-3xl font-bold text-blue-400 mb-2">{"< 24 hours"}</div>
                 <div className="text-purple-200">Email Response</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-purple-400 mb-2">Same Day</div>
-                <div className="text-purple-200">Phone Call Back</div>
+                <div className="text-3xl font-bold text-green-400 mb-2">24/7</div>
+                <div className="text-purple-200">Email Support Available</div>
               </div>
             </div>
           </div>
@@ -771,10 +625,30 @@ export default function ContactPage() {
                 <div className="flex items-center gap-3 p-4 bg-white/10 rounded-lg">
                   <Mail className="w-6 h-6 text-green-400" />
                   <div className="flex-1">
+                    <div className="text-white font-medium">hello@kiaora.com</div>
+                    <div className="text-purple-200 text-sm">General questions and information</div>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => copyToClipboard("hello@kiaora.com")}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-white/10 rounded-lg">
+                  <Mail className="w-6 h-6 text-purple-400" />
+                  <div className="flex-1">
                     <div className="text-white font-medium">billing@kiaora.com</div>
                     <div className="text-purple-200 text-sm">Billing and payment issues</div>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => copyToClipboard("billing@kiaora.com")}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-white/10 rounded-lg">
+                  <Mail className="w-6 h-6 text-pink-400" />
+                  <div className="flex-1">
+                    <div className="text-white font-medium">accessibility@kiaora.com</div>
+                    <div className="text-purple-200 text-sm">Sign language and accessibility support</div>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => copyToClipboard("accessibility@kiaora.com")}>
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
@@ -793,202 +667,6 @@ export default function ContactPage() {
         )}
       </AnimatePresence>
 
-      {/* Phone Modal */}
-      <AnimatePresence>
-        {showPhoneModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowPhoneModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 border border-white/20 rounded-2xl p-8 max-w-md w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-white">Phone Support</h3>
-                <Button variant="ghost" size="icon" onClick={() => setShowPhoneModal(false)}>
-                  <X className="w-5 h-5 text-white" />
-                </Button>
-              </div>
-              <div className="text-center space-y-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto">
-                  <Phone className="w-10 h-10 text-white" />
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-white mb-2">+1 (555) 123-4567</div>
-                  <div className="text-purple-200">Available Mon-Fri, 9 AM - 6 PM PST</div>
-                </div>
-                <div className="space-y-3">
-                  <Button
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
-                    onClick={() => window.open("tel:+15551234567")}
-                  >
-                    <PhoneCall className="w-4 h-4 mr-2" />
-                    Call Now
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    onClick={() => copyToClipboard("+1 (555) 123-4567")}
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy Number
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Schedule Modal */}
-      <AnimatePresence>
-        {showScheduleModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowScheduleModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 border border-white/20 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-white">Schedule a Call</h3>
-                <Button variant="ghost" size="icon" onClick={() => setShowScheduleModal(false)}>
-                  <X className="w-5 h-5 text-white" />
-                </Button>
-              </div>
-
-              <form onSubmit={handleScheduleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-white mb-2 block">Full Name *</Label>
-                    <Input
-                      required
-                      value={scheduleData.name}
-                      onChange={(e) => setScheduleData((prev) => ({ ...prev, name: e.target.value }))}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
-                      placeholder="Your full name"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white mb-2 block">Email *</Label>
-                    <Input
-                      type="email"
-                      required
-                      value={scheduleData.email}
-                      onChange={(e) => setScheduleData((prev) => ({ ...prev, email: e.target.value }))}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-white mb-2 block">Phone Number *</Label>
-                    <Input
-                      type="tel"
-                      required
-                      value={scheduleData.phone}
-                      onChange={(e) => setScheduleData((prev) => ({ ...prev, phone: e.target.value }))}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white mb-2 block">Call Type *</Label>
-                    <select
-                      required
-                      value={scheduleData.callType}
-                      onChange={(e) => setScheduleData((prev) => ({ ...prev, callType: e.target.value }))}
-                      className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2"
-                    >
-                      <option value="phone" className="bg-slate-800">
-                        Phone Call
-                      </option>
-                      <option value="video" className="bg-slate-800">
-                        Video Call
-                      </option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-white mb-2 block">Preferred Date *</Label>
-                    <Input
-                      type="date"
-                      required
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="bg-white/10 border-white/20 text-white"
-                      min={new Date().toISOString().split("T")[0]}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white mb-2 block">Preferred Time *</Label>
-                    <select
-                      required
-                      value={selectedTime}
-                      onChange={(e) => setSelectedTime(e.target.value)}
-                      className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2"
-                    >
-                      <option value="" className="bg-slate-800">
-                        Select a time
-                      </option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time} className="bg-slate-800">
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-white mb-2 block">Reason for Call *</Label>
-                  <Textarea
-                    required
-                    rows={4}
-                    value={scheduleData.reason}
-                    onChange={(e) => setScheduleData((prev) => ({ ...prev, reason: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 resize-none"
-                    placeholder="Please describe what you'd like to discuss..."
-                  />
-                </div>
-
-                <div className="flex gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    onClick={() => setShowScheduleModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Schedule Call
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* FAQ Modal */}
       <AnimatePresence>
@@ -1062,7 +740,6 @@ export default function ContactPage() {
         )}
       </AnimatePresence>
 
-      <LiveChatWidget />
       <Footer />
     </div>
   )

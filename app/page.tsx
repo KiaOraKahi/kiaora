@@ -10,7 +10,6 @@ import { toast } from "sonner"
 import Navbar from "@/components/frontend/navbar"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 import Footer from "@/components/frontend/footer"
-import LiveChatWidget from "@/components/frontend/live-chat-widget"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { formatPrice, heroGreetings } from "@/lib/services-data"
@@ -809,10 +808,11 @@ export default function KiaOraHomepage() {
                   {/* View All Button */}
                   <div className="text-center mt-8">
                     <Button
-                      onClick={() => router.push('/celebrities')}
+                      onClick={() => router.push('/services')}
                       className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-semibold px-8 py-3 rounded-full hover:scale-105 transition-transform"
                     >
-                      View All Celebrities
+                      <Search className="w-4 h-4 mr-2" />
+                      Our Services
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
@@ -976,9 +976,6 @@ export default function KiaOraHomepage() {
       </div>
 
       <Footer />
-
-      {/* Live Chat Widget */}
-      <LiveChatWidget />
     </div>
   )
 }

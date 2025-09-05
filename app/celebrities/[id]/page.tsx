@@ -503,7 +503,7 @@ export default function CelebrityDetailPage() {
                           <Button
                             onClick={handleBookNow}
                             disabled={!selectedService}
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <MessageCircle className="w-5 h-5 mr-2" />
                             Book Now - ${selectedService?.basePrice || 0}
