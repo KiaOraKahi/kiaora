@@ -31,16 +31,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     console.log("🔍 Processing application approval for:", application.fullName)
     console.log("📸 Profile photo URL:", application.profilePhotoUrl)
-    console.log("📊 Application data:", {
-      category: application.category,
-      experience: application.experience,
-      achievements: application.achievements,
-      basePrice: application.basePrice,
-      rushPrice: application.rushPrice,
-      languages: application.languages,
-      availability: application.availability,
-      followerCount: application.followerCount
-    })
 
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
@@ -77,28 +67,38 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         console.log("✅ Updated existing user with image:", user.image)
       }
 
-             // Create celebrity profile with ALL required fields
-       const celebrity = await tx.celebrity.create({
-         data: {
-           userId: user.id,
-           bio: `${application.profession || application.category} with ${application.experience}`,
-           longBio: application.achievements || application.experience,
-           category: application.category,
-           price: application.basePrice || 299.0, // Use the single price field
-           rating: 4.5,
-           averageRating: 4.5,
-           totalReviews: 0,
-           completionRate: 95,
-           responseTime: application.availability || "24 hours",
-           isActive: true,
-           verified: true,
-           featured: false,
-           tags: application.languages || ["English"],
-           achievements: application.achievements ? [application.achievements] : [application.experience],
-           nextAvailable: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-           coverImage: application.profilePhotoUrl || null,
-         },
-       })
+      // Create celebrity profile with ALL required fields
+      const celebrity = await tx.celebrity.create({
+        data: {
+          userId: user.id,
+          bio: `${application.profession || application.category} with ${application.experience}`,
+          longBio: application.achievements || application.experience,
+          category: application.category,
+          pricePersonal: application.basePrice || 299.0,
+          priceBusiness: application.rushPrice || 399.0,
+          priceCharity: Math.round((application.basePrice || 299.0) * 0.8),
+          rating: 4.5,
+          averageRating: 4.5,
+          totalReviews: 0,
+          completionRate: 95,
+          responseTime: application.availability || "24 hours",
+          isActive: true,
+          verified: true,
+          featured: false,
+          tags: application.languages || ["English"],
+          achievements: application.achievements ? [application.achievements] : [application.experience],
+          nextAvailable: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+          coverImage: application.profilePhotoUrl || null,
+          // Social media handles
+          instagramHandle: application.instagramHandle || null,
+          twitterHandle: application.twitterHandle || null,
+          tiktokHandle: application.tiktokHandle || null,
+          youtubeHandle: application.youtubeHandle || null,
+          followerCount: parseInt(application.followerCount) || 0,
+          languages: application.languages || ["English"],
+          availability: application.availability || "24 hours",
+        },
+      })
       console.log("✅ Created celebrity profile with image:", celebrity.coverImage)
 
       // Update application status
@@ -137,12 +137,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         role: result.user.role,
         image: result.user.image,
       },
-             celebrity: {
-         id: result.celebrity.id,
-         category: result.celebrity.category,
-         price: result.celebrity.price,
-         image: result.celebrity.coverImage,
-       },
+      celebrity: {
+        id: result.celebrity.id,
+        category: result.celebrity.category,
+        pricePersonal: result.celebrity.pricePersonal,
+        image: result.celebrity.coverImage,
+      },
     })
   } catch (error) {
     console.error("❌ Error approving application:", error)
