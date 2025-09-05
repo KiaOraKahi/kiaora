@@ -29,7 +29,6 @@ import {
   Video,
 } from "lucide-react"
 import { toast } from "sonner"
-import { uploadFile } from "@/lib/upload-client"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
@@ -40,7 +39,6 @@ interface SocialMedia {
   tiktok: string
   youtube: string
   other: string
-  merchandise: string
 }
 
 interface FormData {
@@ -68,18 +66,14 @@ interface FormData {
   // Additional Info
   languages: string[]
   specialRequests: string
-  agreedToTerms: boolean
 
   // Documents
   hasProfilePhoto: boolean
   hasIdDocument: boolean
-  hasIdDocumentBack: boolean
-  hasVideoIntroduction: boolean
-  keepVideoPrivate: boolean
   profilePhotoUrl?: string
   idDocumentUrl?: string
-  idDocumentBackUrl?: string
-  videoIntroductionUrl?: string
+  hasVerificationDocument: boolean
+  verificationDocumentUrl?: string
 }
 
 interface UploadedFile {
@@ -161,16 +155,13 @@ const categories = [
 ]
 
 const languages = [
-  "Te Reo Māori",
-  "Ōlelo Hawaiʻi",
-  "Tongan",
-  "Cook Island Māori",
-  "Fijian",
-  "Samoan",
-  "Tokelauan",
-  "Tahitian",
-  "Nieuan",
+  "Māori",
   "French",
+  "Samoan",
+  "Tongan",
+  "Cook Island Maori",
+  "Fijian",
+  "Chinese",
   "English",
 ]
 
@@ -201,43 +192,18 @@ export default function JoinCelebrityPage() {
       tiktok: "",
       youtube: "",
       other: "",
-      merchandise: "",
     },
     languages: [],
     specialRequests: "",
-    agreedToTerms: false,
     hasProfilePhoto: false,
     hasIdDocument: false,
-    hasIdDocumentBack: false,
-    hasVideoIntroduction: false,
-    keepVideoPrivate: false,
     profilePhotoUrl: undefined,
     idDocumentUrl: undefined,
-    idDocumentBackUrl: undefined,
-    videoIntroductionUrl: undefined,
+    hasVerificationDocument: false,
+    verificationDocumentUrl: undefined,
   })
 
   const [isMobile, setIsMobile] = useState(false)
-
-  // Function to validate video duration
-  const validateVideoDuration = (file: File): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const video = document.createElement('video')
-      video.preload = 'metadata'
-      
-      video.onloadedmetadata = () => {
-        const duration = video.duration
-        const isValid = duration >= 15 && duration <= 30 // 15-30 seconds
-        resolve(isValid)
-      }
-      
-      video.onerror = () => {
-        resolve(false) // If we can't read metadata, reject
-      }
-      
-      video.src = URL.createObjectURL(file)
-    })
-  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -267,51 +233,38 @@ export default function JoinCelebrityPage() {
   const handleFileUpload = async (file: File, type: string) => {
     setUploadingFiles((prev) => ({ ...prev, [type]: true }))
     try {
-      // Special validation for video introduction
-      if (type === "video") {
-        const isValidDuration = await validateVideoDuration(file)
-        if (!isValidDuration) {
-          toast.error("Video must be between 15-30 seconds long. Please upload a video with the correct duration.")
-          setUploadingFiles((prev) => ({ ...prev, [type]: false }))
-          return
-        }
-      }
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", type)
 
-      console.log(`🚀 Starting upload for ${type} file: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`)
-      
-      // Use the smart upload function that handles large files
-      const result = await uploadFile(file, type)
-      
-      // Convert UploadResult to UploadedFile format
-      const uploadedFile: UploadedFile = {
-        filename: result.pathname.split('/').pop() || file.name,
-        url: result.url,
-        type: file.type,
-        size: result.size
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setUploadedFiles((prev) => ({ ...prev, [type]: result }))
+        
+        // Update the appropriate boolean flag and URL based on type
+        if (type === "profile") {
+          updateFormData("hasProfilePhoto", true)
+          updateFormData("profilePhotoUrl", result.url)
+        } else if (type === "id") {
+          updateFormData("hasIdDocument", true)
+          updateFormData("idDocumentUrl", result.url)
+        } else if (type === "video") {
+          updateFormData("hasVerificationDocument", true)
+          updateFormData("verificationDocumentUrl", result.url)
+        }
+        
+        toast.success(`${type} uploaded successfully!`)
+      } else {
+        toast.error(result.error || "Upload failed")
       }
-      
-      setUploadedFiles((prev) => ({ ...prev, [type]: uploadedFile }))
-      
-      // Update the appropriate boolean flag and URL based on type
-      if (type === "profile") {
-        updateFormData("hasProfilePhoto", true)
-        updateFormData("profilePhotoUrl", result.url)
-      } else if (type === "id") {
-        updateFormData("hasIdDocument", true)
-        updateFormData("idDocumentUrl", result.url)
-      } else if (type === "id-back") {
-        updateFormData("hasIdDocumentBack", true)
-        updateFormData("idDocumentBackUrl", result.url)
-      } else if (type === "video") {
-        updateFormData("hasVideoIntroduction", true)
-        updateFormData("videoIntroductionUrl", result.url)
-      }
-      
-      toast.success(`${type === "video" ? "Video introduction" : type} uploaded successfully!`)
-      console.log(`✅ ${type} upload completed:`, result.url)
     } catch (error) {
-      console.error(`❌ ${type} upload failed:`, error)
-      toast.error(error instanceof Error ? error.message : "Upload failed. Please try again.")
+      toast.error("Upload failed. Please try again.")
     } finally {
       setUploadingFiles((prev) => ({ ...prev, [type]: false }))
     }
@@ -324,7 +277,7 @@ export default function JoinCelebrityPage() {
       case 2:
         return !!(formData.category && formData.experience.length >= 50 && formData.languages.length > 0)
       case 3:
-        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasIdDocumentBack && formData.hasVideoIntroduction && formData.agreedToTerms
+        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasVerificationDocument
       default:
         return false
     }
@@ -789,7 +742,7 @@ export default function JoinCelebrityPage() {
                               />
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="other" className="text-white">
                                 Other Social Media
                               </Label>
@@ -799,19 +752,6 @@ export default function JoinCelebrityPage() {
                                 onChange={(e) => updateFormData("socialMedia.other", e.target.value)}
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                                 placeholder="LinkedIn, Twitch, etc."
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="merchandise" className="text-white">
-                                Merchandise Link
-                              </Label>
-                              <Input
-                                id="merchandise"
-                                value={formData.socialMedia.merchandise}
-                                onChange={(e) => updateFormData("socialMedia.merchandise", e.target.value)}
-                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
-                                placeholder="Link to your merchandise store"
                               />
                             </div>
                           </div>
@@ -897,15 +837,15 @@ export default function JoinCelebrityPage() {
                           </div>
                         </div>
 
-                        {/* Government ID Front */}
+                        {/* Government ID */}
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <IdCard className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Government ID (Front) *</h3>
+                            <h3 className="text-lg font-semibold text-white">Government ID *</h3>
                             {formData.hasIdDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
                           </div>
                           <p className="text-gray-400 text-sm">
-                            Upload a clear photo of the front of your government-issued ID (passport, driver's license, etc.)
+                            Upload a clear photo of your government-issued ID (passport, driver's license, etc.)
                           </p>
                           <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
                             <input
@@ -932,7 +872,7 @@ export default function JoinCelebrityPage() {
                               ) : (
                                 <div className="flex flex-col items-center gap-2">
                                   <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload government ID (front)</span>
+                                  <span className="text-white">Click to upload government ID</span>
                                   <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
                                 </div>
                               )}
@@ -940,82 +880,20 @@ export default function JoinCelebrityPage() {
                           </div>
                         </div>
 
-                        {/* Government ID Back */}
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <IdCard className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Government ID (Back) *</h3>
-                            {formData.hasIdDocumentBack && <CheckCircle className="w-5 h-5 text-green-400" />}
-                          </div>
-                          <p className="text-gray-400 text-sm">
-                            Upload a clear photo of the back of your government-issued ID (passport, driver's license, etc.)
-                          </p>
-                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                            <input
-                              type="file"
-                              id="id-document-back"
-                              accept="image/*,application/pdf"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "id-back")
-                              }}
-                              className="hidden"
-                            />
-                            <label htmlFor="id-document-back" className="cursor-pointer">
-                              {uploadingFiles["id-back"] ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
-                                </div>
-                              ) : formData.hasIdDocumentBack ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">ID document back uploaded</span>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload government ID (back)</span>
-                                  <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
-                                </div>
-                              )}
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Video Introduction */}
+                        {/* Verification Video */}
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <Video className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">15-30 Second Video Introduction *</h3>
-                            {formData.hasVideoIntroduction && <CheckCircle className="w-5 h-5 text-green-400" />}
+                            <h3 className="text-lg font-semibold text-white">Verification Video *</h3>
+                            {formData.hasVerificationDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
                           </div>
                           <p className="text-gray-400 text-sm">
-                            Upload a short video introducing yourself. This helps fans get to know you better.
+                            Upload a short video (30-60 seconds) introducing yourself and explaining why you want to join Kia Ora Kahi
                           </p>
-                          
-                          {/* Example Video */}
-                          <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-                            <h4 className="text-white font-semibold mb-2">Example Video Introduction</h4>
-                            <p className="text-gray-300 text-sm mb-3">
-                              Here's an example of what a good introduction video looks like:
-                            </p>
-                            <div className="bg-black/40 rounded-lg p-4 text-center">
-                              <Video className="w-12 h-12 text-purple-400 mx-auto mb-2" />
-                              <p className="text-gray-300 text-sm">
-                                "Hi! I'm [Your Name], and I'm excited to be part of Kia Ora Kahi. 
-                                I love creating personalized videos for my fans and can't wait to 
-                                make your special moments even more memorable!"
-                              </p>
-                              <p className="text-purple-300 text-xs mt-2">
-                                Duration: 15-30 seconds | Keep it natural and friendly
-                              </p>
-                            </div>
-                          </div>
                           <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
                             <input
                               type="file"
-                              id="video-introduction"
+                              id="verification-video"
                               accept="video/*"
                               onChange={(e) => {
                                 const file = e.target.files?.[0]
@@ -1023,46 +901,24 @@ export default function JoinCelebrityPage() {
                               }}
                               className="hidden"
                             />
-                            <label htmlFor="video-introduction" className="cursor-pointer">
+                            <label htmlFor="verification-video" className="cursor-pointer">
                               {uploadingFiles.video ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
                                   <span className="text-white">Uploading...</span>
                                 </div>
-                              ) : formData.hasVideoIntroduction ? (
+                              ) : formData.hasVerificationDocument ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">Video introduction uploaded</span>
+                                  <span className="text-green-400">Verification video uploaded</span>
                                 </div>
                               ) : (
                                 <div className="flex flex-col items-center gap-2">
-                                  <Video className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload video introduction</span>
+                                  <Upload className="w-8 h-8 text-gray-400" />
+                                  <span className="text-white">Click to upload verification video</span>
                                   <span className="text-gray-400 text-sm">MP4, MOV, AVI up to 50MB</span>
-                                  <span className="text-purple-400 text-sm font-medium">Must be 15-30 seconds</span>
                                 </div>
                               )}
-                            </label>
-                          </div>
-                          
-                          {/* Video Privacy Checkbox */}
-                          <div className="mt-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-                            <label className="flex items-start gap-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={formData.keepVideoPrivate}
-                                onChange={(e) => updateFormData("keepVideoPrivate", e.target.checked)}
-                                className="mt-1 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
-                              />
-                              <div>
-                                <div className="text-white font-semibold text-sm">
-                                  Keep Video Private
-                                </div>
-                                <div className="text-gray-300 text-xs mt-1">
-                                  Check this box if you do not want your video to be used for promoting our site or any other marketing purposes. 
-                                  Your video will remain private and only be used for verification purposes.
-                                </div>
-                              </div>
                             </label>
                           </div>
                         </div>
@@ -1079,34 +935,6 @@ export default function JoinCelebrityPage() {
                               </p>
                             </div>
                           </div>
-                        </div>
-
-                        {/* Terms and Conditions */}
-                        <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-                          <label className="flex items-start gap-3 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={formData.agreedToTerms}
-                              onChange={(e) => updateFormData("agreedToTerms", e.target.checked)}
-                              className="mt-1 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
-                            />
-                            <div>
-                              <div className="text-white font-semibold text-sm">
-                                Terms and Conditions Agreement
-                              </div>
-                              <div className="text-gray-300 text-xs mt-1">
-                                By clicking here, you agree to the{" "}
-                                <a href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
-                                  Kia Ora Kahi Terms and Conditions
-                                </a>{" "}
-                                and acknowledge you have read the{" "}
-                                <a href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
-                                  Kia Ora Kahi Privacy Policy
-                                </a>{" "}
-                                to learn how we collect, use and share your data.
-                              </div>
-                            </div>
-                          </label>
                         </div>
                       </div>
                     </motion.div>

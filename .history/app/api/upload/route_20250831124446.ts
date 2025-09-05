@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { put } from "@vercel/blob"
 
-// Note: Vercel has a 4.5MB limit for serverless functions
-// For larger files, consider using client-side upload directly to Vercel Blob
+// This route handles large file uploads
+// Next.js App Router automatically handles large files
 
 export async function POST(request: NextRequest) {
   try {
