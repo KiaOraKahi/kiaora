@@ -2,24 +2,16 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Heart } from "lucide-react"
+import { Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Heart, MessageCircle, Users } from "lucide-react"
 import Link from "next/link"
-import { useContentByKey } from "@/hooks/useContent"
+// import { useContentByKey } from "@/hooks/useContent" // Temporarily disabled
 
 export default function Footer() {
-  const { content: footerDescription } = useContentByKey("footer.description")
-  const { content: footerCopyright } = useContentByKey("footer.copyright")
+  // Use dummy data for now to avoid API issues
+  const footerDescription = "Connect with your favorite celebrities for personalised video messages, birthday greetings, and exclusive experiences. Making dreams come true, one message at a time."
+  const footerCopyright = "© 2025 Kia Ora Kahi."
   
   const footerSections = [
-    // {
-    //   title: "Platform",
-    //   links: [
-    //     { name: "Browse Talent", href: "/celebrities" },
-    //     { name: "Categories", href: "/categories" },
-    //     { name: "How It Works", href: "/how-it-works" },
-    //     { name: "Pricing", href: "/pricing" },
-    //   ],
-    // },
     {
       title: "Services",
       links: [
@@ -31,35 +23,39 @@ export default function Footer() {
         { name: "Motivational video messages", href: "/services?service=motivation" },
       ],
     },
-        {
-      title: "Company",
-      links: [
-        { name: "Terms and Conditions", href: "/terms" },
-        { name: "Privacy Policy", href: "/privacy" },
-        { name: "Community Guidelines", href: "/safety" },
-      ],
-    },
     {
       title: "Support",
       links: [
-        // { name: "Help Center", href: "/help" },
         { name: "Contact Us", href: "/contact" },
         { name: "FAQ", href: "/faq" },
-        // { name: "Safety Guidelines", href: "/safety" },
+        { name: "Sign Language Support", href: "/contact?support=sign-language" },
+      ],
+    },
+    {
+      title: "Legals",
+      links: [
+        { name: "Terms and Conditions", href: "/terms" },
+        { name: "Privacy Policy", href: "/privacy" },
+        { name: "Community Guidelines", href: "/community-guidelines" },
+        { name: "Cookie Policy", href: "/cookies" },
       ],
     },
   ]
 
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "YouTube" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
-  ]
+    { icon: Facebook, href: "https://facebook.com/kiaorakahi", label: "Facebook" },
+    { icon: Twitter, href: "https://twitter.com/kiaorakahi", label: "Twitter" },
+    { icon: Instagram, href: "https://instagram.com/kiaorakahi", label: "Instagram" },
+    { icon: Youtube, href: "https://youtube.com/@kiaorakahi", label: "YouTube" },
+    { icon: MessageCircle, href: "https://tiktok.com/@kiaorakahi", label: "TikTok" },
+    { icon: Linkedin, href: "https://linkedin.com/company/kiaorakahi", label: "LinkedIn" },
+    { icon: Users, href: "https://twitch.tv/kiaorakahi", label: "Twitch" },
+    { icon: MessageCircle, href: "https://discord.gg/kiaorakahi", label: "Discord" },
+  ].filter(social => social.icon) // Filter out any undefined icons
 
-  return (
-    <footer className="relative bg-gradient-to-b from-slate-900 to-black border-t border-white/10">
+  try {
+    return (
+      <footer className="relative bg-gradient-to-b from-slate-900 to-black border-t border-white/10">
       {/* Background Effects */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,215,0,0.1),transparent)]" />
@@ -111,7 +107,7 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-yellow-200 mb-6 leading-relaxed">
-                {footerDescription || "Connect with your favorite talent for personalised messages, birthday greetings, and exclusive experiences. Making dreams come true, one message at a time."}
+                {footerDescription}
               </p>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 text-yellow-200">
@@ -167,41 +163,51 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0">
             {/* Copyright */}
             <div className="flex items-center space-x-2 text-yellow-200">
-              <span>{footerCopyright || "© 2025 Kia Ora Kahi."}</span>
+              <span>{footerCopyright}</span>
             </div>
 
-            {/* Legal Links */}
-            <div className="flex items-center space-x-6">
-              <Link href="/privacy" className="text-yellow-200 hover:text-white transition-colors duration-200">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-yellow-200 hover:text-white transition-colors duration-200">
-                Terms of Service
-              </Link>
-              <Link href="/cookies" className="text-yellow-200 hover:text-white transition-colors duration-200">
-                Cookie Policy
-              </Link>
+            {/* Copyright Notice */}
+            <div className="text-yellow-200 text-sm">
+              <span>All rights reserved. Made with ❤️ for the Pacific community.</span>
             </div>
 
             {/* Social Links */}
             <div className="flex items-center space-x-4">
-              {socialLinks.map((social) => (
-                <Button
-                  key={social.label}
-                  variant="ghost"
-                  size="icon"
-                  className="text-yellow-200 hover:text-white hover:bg-white/10 transition-colors duration-200"
-                  asChild
-                >
-                  <Link href={social.href} aria-label={social.label}>
-                    <social.icon className="w-5 h-5" />
-                  </Link>
-                </Button>
-              ))}
+              {socialLinks && socialLinks.length > 0 ? socialLinks.map((social) => {
+                const IconComponent = social.icon
+                if (!IconComponent) return null
+                return (
+                  <Button
+                    key={social.label}
+                    variant="ghost"
+                    size="icon"
+                    className="text-yellow-200 hover:text-white hover:bg-white/10 transition-colors duration-200"
+                    asChild
+                  >
+                    <Link href={social.href} aria-label={social.label}>
+                      <IconComponent className="w-5 h-5" />
+                    </Link>
+                  </Button>
+                )
+              }) : (
+                <div className="text-yellow-200 text-sm">Social links coming soon</div>
+              )}
             </div>
           </div>
         </motion.div>
       </div>
     </footer>
-  )
+    )
+  } catch (error) {
+    console.error("Footer rendering error:", error)
+    return (
+      <footer className="relative bg-gradient-to-b from-slate-900 to-black border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center text-yellow-200">
+            <p>Footer temporarily unavailable</p>
+          </div>
+        </div>
+      </footer>
+    )
+  }
 }

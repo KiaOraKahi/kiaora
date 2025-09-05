@@ -443,7 +443,7 @@ export default function TalentsPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
                 {celebrities.map((celebrity, index) => (
                   <motion.div
                     key={celebrity.id}
@@ -455,14 +455,14 @@ export default function TalentsPage() {
                     className="group"
                   >
                     <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
-                      <CardContent className="p-6">
-                        <div className="relative mb-4">
+                      <CardContent className="p-3 md:p-6">
+                        <div className="relative mb-3 md:mb-4">
                           <Image
                             src={celebrity.image || "/placeholder.svg?height=300&width=300"}
                             alt={celebrity.name}
                             width={300}
                             height={300}
-                            className="w-full h-48 object-cover rounded-lg"
+                            className="w-full h-32 md:h-48 object-cover rounded-lg"
                           />
                           <div className="absolute top-2 right-2 flex flex-col gap-2">
                             {celebrity.featured && (
@@ -480,45 +480,38 @@ export default function TalentsPage() {
                           </div>
                         </div>
 
-                        <h3 className="text-xl font-bold text-white mb-2">{celebrity.name}</h3>
-                        <p className="text-yellow-200 text-sm mb-3 line-clamp-2">{celebrity.bio}</p>
+                        <h3 className="text-lg md:text-xl font-bold text-white mb-1 md:mb-2">{celebrity.name}</h3>
+                        <p className="text-yellow-200 text-xs md:text-sm mb-2 md:mb-3 line-clamp-2">{celebrity.bio}</p>
 
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-3 md:mb-4">
                           <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-white text-sm">{celebrity.rating}</span>
+                            <Star className="w-3 h-3 md:w-4 md:h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-white text-xs md:text-sm">{celebrity.rating}</span>
                             <span className="text-purple-300 text-xs">({celebrity.reviewCount})</span>
                           </div>
-                          <span className="text-2xl font-bold text-yellow-300">{formatPrice(celebrity.price)}</span>
+                          <span className="text-lg md:text-2xl font-bold text-yellow-300">{formatPrice(celebrity.price)}</span>
                         </div>
 
-                        <div className="space-y-2 mb-4 text-xs">
+                        <div className="space-y-1 md:space-y-2 mb-3 md:mb-4 text-xs">
                           <div className="flex justify-between">
                             <span className="text-yellow-300 flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              Response:
+                              <span className="hidden md:inline">Response:</span>
                             </span>
-                            <span className="text-white">{celebrity.responseTime}</span>
+                            <span className="text-white text-xs">{celebrity.responseTime}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-yellow-300 flex items-center gap-1">
                               <Users className="w-3 h-3" />
-                              Completed:
+                              <span className="hidden md:inline">Completed:</span>
                             </span>
-                            <span className="text-white">{celebrity.completedVideos}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-yellow-300 flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              Available:
-                            </span>
-                            <span className="text-white">{celebrity.nextAvailable}</span>
+                            <span className="text-white text-xs">{celebrity.completedVideos}</span>
                           </div>
                         </div>
 
-                        {/* Tags */}
+                        {/* Tags - Hidden on mobile to save space */}
                         {celebrity.tags && celebrity.tags.length > 0 && (
-                          <div className="mb-4">
+                          <div className="mb-3 md:mb-4 hidden md:block">
                             <div className="flex flex-wrap gap-1">
                               {celebrity.tags.slice(0, 3).map((tag, idx) => (
                                 <Badge key={idx} variant="outline" className="text-xs bg-white/5 border-white/20 text-yellow-200">
@@ -535,7 +528,7 @@ export default function TalentsPage() {
                         )}
 
                         <Button
-                          className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold"
+                          className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold text-sm md:text-base py-2 md:py-3"
                           onClick={() => handleBookNow(celebrity)}
                         >
                           Book Now

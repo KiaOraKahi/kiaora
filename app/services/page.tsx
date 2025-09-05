@@ -498,46 +498,6 @@ export default function ServicesPage() {
         </section>
       )}
 
-      {/* Add-ons Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Enhance Your Experience</h2>
-            <p className="text-xl text-yellow-200 max-w-3xl mx-auto">
-              Add these premium features to make your talent message even more special.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {addOns.map((addOn, index) => (
-              <motion.div
-                key={addOn.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
-                  <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <div className="text-black">{addOn.icon}</div>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">{addOn.title}</h3>
-                    <p className="text-yellow-200 text-sm mb-4">{addOn.description}</p>
-                    <div className="text-2xl font-bold text-yellow-300">{addOn.price}</div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Testimonials */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5">
