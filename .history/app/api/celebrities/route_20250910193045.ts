@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       // Build where clause for database
       const where: any = {
         isActive: true,
-        // Exclude test celebrities from frontend
+        // Exclude test celebrities
         user: {
           email: {
             notIn: ['testcelb@example.com', 'brity@gmail.com']

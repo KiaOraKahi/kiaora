@@ -33,6 +33,11 @@ export async function GET(request: NextRequest) {
             notIn: ['testcelb@example.com', 'brity@gmail.com']
           }
         }
+        user: {
+          email: {
+            notIn: ['testcelb@example.com', 'brity@gmail.com']
+          }
+        }
       }
 
       // Category filter
