@@ -334,6 +334,8 @@ export default function KiaOraHomepage() {
   const [services, setServices] = useState<EnhancedServiceData[]>([])
   const [loading, setLoading] = useState(true)
   const [fallbackDataUsed, setFallbackDataUsed] = useState(false)
+  const [featuredCelebrities, setFeaturedCelebrities] = useState<any[]>([])
+  const [celebritiesLoading, setCelebritiesLoading] = useState(true)
   const router = useRouter()
 
   // Check if mobile
@@ -381,6 +383,77 @@ export default function KiaOraHomepage() {
     fetchServices()
   }, [])
 
+  // Fetch featured celebrities from API
+  useEffect(() => {
+    const fetchFeaturedCelebrities = async () => {
+      try {
+        setCelebritiesLoading(true)
+        const response = await fetch("/api/celebrities?limit=4")
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch celebrities")
+        }
+
+        const data = await response.json()
+        setFeaturedCelebrities(data.celebrities || [])
+      } catch (error) {
+        console.error("Error fetching featured celebrities:", error)
+        // Fallback to mock celebrities if API fails
+        setFeaturedCelebrities([
+          {
+            id: "1",
+            name: "Emma Stone",
+            category: "Actor",
+            rating: 4.9,
+            price: 299,
+            image: "/talents/1.jpeg",
+            verified: true,
+            featured: true,
+          },
+          {
+            id: "2",
+            name: "Sarah",
+            category: "Musician",
+            rating: 5.0,
+            price: 599,
+            image: "/talents/2.jpg",
+            verified: true,
+            featured: true,
+          },
+          {
+            id: "3",
+            name: "Tony Robbins",
+            category: "Motivator",
+            rating: 4.8,
+            price: 899,
+            image: "/talents/3.jpg",
+            verified: true,
+            featured: true,
+          },
+          {
+            id: "4",
+            name: "MrBeast",
+            category: "Influencer",
+            rating: 4.9,
+            price: 1299,
+            image: "/talents/4.jpg",
+            verified: true,
+            featured: true,
+          }
+        ])
+        console.log("Using fallback celebrity data with images:", [
+          "/talents/1.jpeg",
+          "/talents/2.jpg", 
+          "/talents/3.jpg",
+          "/talents/4.jpg"
+        ])
+      } finally {
+        setCelebritiesLoading(false)
+      }
+    }
+
+    fetchFeaturedCelebrities()
+  }, [])
 
   // Rotate through talent images to show variety
   useEffect(() => {
