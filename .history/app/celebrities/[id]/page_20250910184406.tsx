@@ -420,7 +420,7 @@ export default function CelebrityDetailPage() {
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <Star className="w-5 h-5 text-yellow-400" />
-                        <span className="text-2xl font-bold">{formatRating(celebrity.rating)}</span>
+                        <span className="text-2xl font-bold">{celebrity.rating}</span>
                       </div>
                       <p className="text-purple-300 text-sm">Rating</p>
                     </div>

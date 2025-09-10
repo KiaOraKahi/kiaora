@@ -792,7 +792,7 @@ export default function KiaOraHomepage() {
                           {/* Rating */}
                           <div className="absolute bottom-3 left-3 flex items-center bg-black/70 text-white text-sm px-2 py-1 rounded-full">
                             <span className="text-yellow-400 mr-1">★</span>
-                            {formatRating(celebrity.rating)}
+                            {celebrity.rating}
                           </div>
                         </div>
                         

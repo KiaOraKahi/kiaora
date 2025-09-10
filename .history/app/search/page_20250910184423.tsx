@@ -586,7 +586,7 @@ export default function SearchPage() {
                                 <div className="flex items-center gap-4 mb-3 text-sm">
                                   <div className="flex items-center gap-1">
                                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="text-white font-semibold">{formatRating(celebrity.rating)}</span>
+                                    <span className="text-white font-semibold">{celebrity.rating}</span>
                                     <span className="text-purple-300">({celebrity.reviewCount} reviews)</span>
                                   </div>
                                   <div className="flex items-center gap-1 text-purple-300">

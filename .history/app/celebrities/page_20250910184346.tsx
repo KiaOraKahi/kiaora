@@ -487,7 +487,7 @@ export default function TalentsPage() {
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-white text-sm">{formatRating(celebrity.rating)}</span>
+                            <span className="text-white text-sm">{celebrity.rating}</span>
                             <span className="text-purple-300 text-xs">({celebrity.reviewCount})</span>
                           </div>
                           <span className="text-2xl font-bold text-yellow-300">{formatPrice(celebrity.price)}</span>
