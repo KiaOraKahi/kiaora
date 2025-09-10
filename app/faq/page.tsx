@@ -152,7 +152,7 @@ const faqs = [
     category: "support",
     question: "How can I contact customer support?",
     answer:
-      "You can reach our support team via live chat (available 9 AM - 9 PM PST), email at support@kiaora.com, or phone at +1 (555) 123-4567. We typically respond to emails within 24 hours.",
+      "We offer comprehensive email support 24/7 through multiple specialized channels:\n\n• General Support: support@kiaora.com - For booking issues, account problems, and general inquiries\n• General Questions: hello@kiaora.com - For information about our services and platform\n• Billing Support: billing@kiaora.com - For payment issues, refunds, and billing questions\n• Accessibility Support: accessibility@kiaora.com - For sign language support and accessibility needs\n\nWe respond to all emails within 24 hours and are committed to providing excellent customer service. You can also visit our Contact page for more detailed information and to submit a support request form.",
   },
   {
     id: 15,

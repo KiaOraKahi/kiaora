@@ -14,7 +14,6 @@ import {
   Flag,
   CheckCircle,
   Sparkles,
-  Phone,
 } from "lucide-react"
 import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
@@ -291,7 +290,7 @@ const SubtleLuxuryStarfield = () => {
         </div>
       </section>
 
-      {/* Emergency Contact */}
+      {/* Report Safety Issues */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -300,36 +299,28 @@ const SubtleLuxuryStarfield = () => {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center"
         >
-          <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-lg border border-red-500/30 rounded-3xl p-12">
-            <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-6" />
+          <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-purple-500/30 rounded-3xl p-12">
+            <AlertTriangle className="w-16 h-16 text-purple-400 mx-auto mb-6" />
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Report Safety Issues</h2>
-            <p className="text-xl text-red-200 mb-8 max-w-2xl mx-auto">
-              If you encounter any safety concerns or inappropriate behavior, please report it immediately.
+            <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
+              If you encounter any safety concerns or inappropriate behavior, please report it to our support team immediately.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-12 py-4 text-lg"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-12 py-4 text-lg"
+                onClick={() => (window.location.href = "/contact")}
               >
                 <Flag className="w-5 h-5 mr-2" />
                 Report Issue
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-12 py-4 text-lg"
-                onClick={() => (window.location.href = "/contact")}
-              >
-                <Phone className="w-5 h-5 mr-2" />
-                Emergency Contact
-              </Button>
             </div>
-            <div className="mt-8 space-y-2 text-red-200">
+            <div className="mt-8 space-y-2 text-purple-200">
               <p>
-                <strong>Emergency Email:</strong> safety@kiaora.com
+                <strong>Support Email:</strong> support@kiaora.com
               </p>
-              <p>
-                <strong>24/7 Safety Hotline:</strong> +1 (555) 911-SAFE
+              <p className="text-sm">
+                We respond to all safety reports within 24 hours and take immediate action when necessary.
               </p>
             </div>
           </div>
