@@ -690,77 +690,54 @@ export default function KiaOraHomepage() {
               className="relative mb-12"
             >
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
-                {celebritiesLoading ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-                    {[1, 2, 3, 4, 5, 6].map((index) => (
-                      <div key={index} className="animate-pulse text-center">
-                        <div className="w-24 h-24 mx-auto rounded-full bg-gray-700 mb-4"></div>
-                        <div className="h-4 bg-gray-700 rounded w-3/4 mx-auto"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-                    {featuredCelebrities.map((celebrity, index) => (
-                      <motion.div
-                        key={celebrity.id}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="group cursor-pointer text-center"
-                        onClick={() => router.push(`/celebrities/${celebrity.id}`)}
-                      >
-                        <div className="relative mb-4">
-                          {/* Circular Profile Picture with Glowing Border */}
-                          <div className="relative w-24 h-24 mx-auto group-hover:scale-110 transition-transform duration-300">
-                            {/* Glowing Border Effect */}
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 via-purple-500 to-pink-500 p-1 animate-pulse">
-                              <div className="w-full h-full rounded-full bg-black p-1">
-                                <div className="w-full h-full rounded-full overflow-hidden">
-                                  <Image
-                                    src={celebrity.image || "/placeholder.svg"}
-                                    alt={celebrity.name}
-                                    width={96}
-                                    height={96}
-                                    className="w-full h-full object-cover"
-                                    sizes="96px"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.src = "/placeholder.svg";
-                                    }}
-                                  />
-                                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                  {[
+                    { name: "Emma Bloom", image: "/talents/1.jpeg" },
+                    { name: "John Legend", image: "/talents/2.jpg" },
+                    { name: "Amy Schumer", image: "/talents/3.jpg" },
+                    { name: "PewDiePie", image: "/talents/4.jpg" },
+                    { name: "Gary Vaynerchuk", image: "/talents/5.jpg" },
+                    { name: "Oprah Winfrey", image: "/talents/6.jpg" }
+                  ].map((talent, index) => (
+                    <motion.div
+                      key={talent.name}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="group cursor-pointer text-center"
+                      onClick={() => router.push('/celebrities')}
+                    >
+                      <div className="relative mb-4">
+                        {/* Circular Profile Picture with Glowing Border */}
+                        <div className="relative w-24 h-24 mx-auto group-hover:scale-110 transition-transform duration-300">
+                          {/* Glowing Border Effect */}
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 via-purple-500 to-pink-500 p-1 animate-pulse">
+                            <div className="w-full h-full rounded-full bg-black p-1">
+                              <div className="w-full h-full rounded-full overflow-hidden">
+                                <Image
+                                  src={talent.image}
+                                  alt={talent.name}
+                                  width={96}
+                                  height={96}
+                                  className="w-full h-full object-cover"
+                                  sizes="96px"
+                                />
                               </div>
                             </div>
-                            
-                            {/* Additional Glow Effect */}
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/20 via-purple-500/20 to-pink-500/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            
-                            {/* Verified Badge */}
-                            {celebrity.verified && (
-                              <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                                <span className="text-white text-xs">✓</span>
-                              </div>
-                            )}
                           </div>
+                          
+                          {/* Additional Glow Effect */}
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/20 via-purple-500/20 to-pink-500/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
-                        
-                        {/* Talent Name */}
-                        <h3 className="text-white font-semibold text-sm group-hover:text-yellow-200 transition-colors">
-                          {celebrity.name}
-                        </h3>
-                        
-                        {/* Rating */}
-                        {celebrity.rating && (
-                          <div className="flex items-center justify-center gap-1 mt-1">
-                            <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                            <span className="text-yellow-200 text-xs">{formatRating(celebrity.rating)}</span>
-                          </div>
-                        )}
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
+                      </div>
+                      
+                      {/* Talent Name */}
+                      <h3 className="text-white font-semibold text-sm group-hover:text-yellow-200 transition-colors">
+                        {talent.name}
+                      </h3>
+                    </motion.div>
+                  ))}
+                </div>
                 
                 {/* View All Button */}
                 <div className="text-center mt-12">
