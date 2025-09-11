@@ -8,6 +8,14 @@ export async function POST(request: NextRequest) {
   try {
     console.log("🚀 Upload request received")
     
+    // Check if BLOB_READ_WRITE_TOKEN is available
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error("❌ BLOB_READ_WRITE_TOKEN environment variable is not set")
+      return NextResponse.json({ 
+        error: "File upload is not configured. Please contact support." 
+      }, { status: 500 })
+    }
+    
     const data = await request.formData()
     const file: File | null = data.get("file") as unknown as File
     const type: string = data.get("type") as string
@@ -46,6 +54,7 @@ export async function POST(request: NextRequest) {
     // Upload to Vercel Blob
     const blob = await put(filename, file, {
       access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     })
 
     console.log("✅ File uploaded to Vercel Blob:", blob.url)
@@ -53,6 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: "File uploaded successfully",
       filename: blob.pathname,
+      pathname: blob.pathname,
       url: blob.url,
       type,
       size: file.size,

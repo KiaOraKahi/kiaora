@@ -9,6 +9,11 @@ export interface UploadResult {
 
 export async function uploadFileDirectly(file: File, type: string): Promise<UploadResult> {
   try {
+    // Check if BLOB_READ_WRITE_TOKEN is available
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error('BLOB_READ_WRITE_TOKEN environment variable is not set. Please configure Vercel Blob storage.')
+    }
+
     // Generate unique filename
     const timestamp = Date.now()
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
@@ -17,6 +22,7 @@ export async function uploadFileDirectly(file: File, type: string): Promise<Uplo
     // Upload directly to Vercel Blob
     const blob = await put(filename, file, {
       access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     })
 
     return {
@@ -27,6 +33,11 @@ export async function uploadFileDirectly(file: File, type: string): Promise<Uplo
     }
   } catch (error) {
     console.error('Upload error:', error)
+    if (error instanceof Error) {
+      if (error.message.includes('BLOB_READ_WRITE_TOKEN')) {
+        throw new Error('File upload is not configured. Please contact support.')
+      }
+    }
     throw new Error('Failed to upload file')
   }
 }

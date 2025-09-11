@@ -284,7 +284,7 @@ export default function JoinCelebrityPage() {
       
       // Convert UploadResult to UploadedFile format
       const uploadedFile: UploadedFile = {
-        filename: result.pathname.split('/').pop() || file.name,
+        filename: result.pathname ? result.pathname.split('/').pop() || file.name : file.name,
         url: result.url,
         type: file.type,
         size: result.size
@@ -311,7 +311,29 @@ export default function JoinCelebrityPage() {
       console.log(`✅ ${type} upload completed:`, result.url)
     } catch (error) {
       console.error(`❌ ${type} upload failed:`, error)
-      toast.error(error instanceof Error ? error.message : "Upload failed. Please try again.")
+      
+      // Show specific error messages based on the error type
+      if (error instanceof Error) {
+        if (error.message.includes('BLOB_READ_WRITE_TOKEN') || error.message.includes('not configured')) {
+          toast.error("File upload is not configured. Please contact support.", {
+            description: "The file upload service needs to be set up by an administrator."
+          })
+        } else if (error.message.includes('File size too large')) {
+          toast.error("File too large", {
+            description: error.message
+          })
+        } else if (error.message.includes('Invalid file type')) {
+          toast.error("Invalid file type", {
+            description: error.message
+          })
+        } else {
+          toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}`, {
+            description: "Please try again or contact support if the problem persists."
+          })
+        }
+      } else {
+        toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}. Please try again.`)
+      }
     } finally {
       setUploadingFiles((prev) => ({ ...prev, [type]: false }))
     }
