@@ -112,13 +112,23 @@ export default function AdminServiceManagement() {
       const response = await fetch("/api/admin/services")
       if (response.ok) {
         const data = await response.json()
-        setServices(data)
-        setFilteredServices(data)
+        console.log("Admin services API response:", data)
+        
+        // Handle both old format (direct array) and new format (wrapped in services property)
+        const servicesArray = Array.isArray(data) ? data : (Array.isArray(data.services) ? data.services : [])
+        setServices(servicesArray)
+        setFilteredServices(servicesArray)
       } else {
         toast.error("Failed to fetch services")
+        // Set empty arrays as fallback
+        setServices([])
+        setFilteredServices([])
       }
     } catch (error) {
       console.error("Error fetching services:", error)
+      // Set empty arrays as fallback to prevent map error
+      setServices([])
+      setFilteredServices([])
       toast.error("Failed to fetch services")
     } finally {
       setLoading(false)
@@ -191,7 +201,7 @@ export default function AdminServiceManagement() {
           </div>
         ) : (
           <AnimatePresence>
-            {filteredServices.map((service) => (
+            {Array.isArray(filteredServices) && filteredServices.map((service) => (
               <motion.div
                 key={service.id}
                 initial={{ opacity: 0, y: 20 }}
