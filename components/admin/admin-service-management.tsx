@@ -158,6 +158,35 @@ export default function AdminServiceManagement() {
     return <Settings className="w-6 h-6" />
   }
 
+  const handleEditService = (service: Service) => {
+    // For now, just show a toast - you can implement edit modal later
+    toast.info(`Edit functionality for "${service.title}" - Coming soon!`)
+    console.log("Edit service:", service)
+  }
+
+  const handleDeleteService = async (serviceId: string) => {
+    if (!confirm("Are you sure you want to delete this service?")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/services/${serviceId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        toast.success("Service deleted successfully!")
+        fetchServices() // Refresh the list
+      } else {
+        const error = await response.json()
+        toast.error(error.message || "Failed to delete service")
+      }
+    } catch (error) {
+      console.error("Error deleting service:", error)
+      toast.error("Error deleting service")
+    }
+  }
+
   const getColorClass = (colorValue: string) => {
     const colorOption = colorOptions.find(option => option.value === colorValue)
     return colorOption ? colorOption.color : "bg-gradient-to-r from-gray-500 to-gray-600"
@@ -280,7 +309,8 @@ export default function AdminServiceManagement() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+                        className="flex-1 bg-blue-600/20 border-blue-500 text-blue-300 hover:bg-blue-600/30 hover:border-blue-400"
+                        onClick={() => handleEditService(service)}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -288,7 +318,8 @@ export default function AdminServiceManagement() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-red-500 text-red-400 hover:bg-red-500/10"
+                        className="bg-red-600/20 border-red-500 text-red-300 hover:bg-red-600/30 hover:border-red-400"
+                        onClick={() => handleDeleteService(service.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
