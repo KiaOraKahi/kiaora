@@ -20,7 +20,7 @@ export async function GET() {
       orderBy: { order: "asc" }
     })
 
-    return NextResponse.json(services)
+    return NextResponse.json({ services })
   } catch (error) {
     console.error("Error fetching services:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -85,30 +85,32 @@ export async function POST(request: NextRequest) {
 
     // Create features if provided
     if (features && Array.isArray(features) && features.length > 0) {
-      const featureData = features.map((feature: string, index: number) => ({
-        serviceId: service.id,
-        text: feature,
-        order: index
-      }))
+      const featureData = features
+        .filter((feature: string) => feature.trim() !== "")
+        .map((feature: string, index: number) => ({
+          serviceId: service.id,
+          text: feature,
+          order: index
+        }))
 
-      await prisma.serviceFeature.createMany({
-        data: featureData
-      })
-
-      // Fetch the service with features
-      const serviceWithFeatures = await prisma.service.findUnique({
-        where: { id: service.id },
-        include: {
-          features: {
-            orderBy: { order: "asc" }
-          }
-        }
-      })
-
-      return NextResponse.json(serviceWithFeatures)
+      if (featureData.length > 0) {
+        await prisma.serviceFeature.createMany({
+          data: featureData
+        })
+      }
     }
 
-    return NextResponse.json(service)
+    // Fetch the service with features
+    const serviceWithFeatures = await prisma.service.findUnique({
+      where: { id: service.id },
+      include: {
+        features: {
+          orderBy: { order: "asc" }
+        }
+      }
+    })
+
+    return NextResponse.json(serviceWithFeatures)
   } catch (error) {
     console.error("Error creating service:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
