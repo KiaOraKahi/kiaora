@@ -361,8 +361,12 @@ export default function KiaOraHomepage() {
         }
 
         const data: ServicesApiResponse = await response.json()
-        setServices(data.services)
-        setFallbackDataUsed(data.fallbackDataUsed)
+        console.log("Services API response:", data)
+        
+        // Ensure services is an array
+        const servicesArray = Array.isArray(data.services) ? data.services : []
+        setServices(servicesArray)
+        setFallbackDataUsed(data.fallbackDataUsed || false)
 
         if (data.fallbackDataUsed) {
           console.log("Using fallback data - no services in database yet")
@@ -372,6 +376,9 @@ export default function KiaOraHomepage() {
         }
       } catch (error) {
         console.error("Error fetching services:", error)
+        // Set empty array as fallback to prevent map error
+        setServices([])
+        setFallbackDataUsed(true)
         toast.error("Failed to load services", {
           description: "Please refresh the page to try again",
         })
@@ -797,7 +804,7 @@ export default function KiaOraHomepage() {
             </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {services.map((service, index) => (
+              {Array.isArray(services) && services.map((service, index) => (
                 <motion.div
                   key={service.title}
                   initial={{ opacity: 0, y: 50 }}

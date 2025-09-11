@@ -185,7 +185,11 @@ export default function ServicesPage() {
         }
 
         const data = await response.json()
-        setServices(data.services)
+        console.log("Services API response:", data)
+        
+        // Ensure services is an array
+        const servicesArray = Array.isArray(data.services) ? data.services : []
+        setServices(servicesArray)
 
         if (data.fallbackDataUsed) {
           console.log("Using fallback data - no services in database yet")
@@ -195,6 +199,8 @@ export default function ServicesPage() {
         }
       } catch (error) {
         console.error("Error fetching services:", error)
+        // Set empty array as fallback to prevent map error
+        setServices([])
         toast.error("Failed to load services", {
           description: "Please refresh the page to try again",
         })
@@ -283,7 +289,7 @@ export default function ServicesPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
+            {Array.isArray(services) && services.map((service, index) => (
               <motion.div
                 key={service.id}
                 initial={{ opacity: 0, y: 30 }}
