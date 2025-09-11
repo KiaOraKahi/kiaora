@@ -100,6 +100,23 @@ export default function AdminServiceManagement() {
   const [filteredServices, setFilteredServices] = useState<Service[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
+  const [editingService, setEditingService] = useState<Service | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    shortDescription: "",
+    fullDescription: "",
+    icon: "Briefcase",
+    color: "from-purple-500 to-pink-500",
+    startingPrice: 0,
+    asapPrice: 0,
+    duration: "",
+    deliveryTime: "",
+    asapDeliveryTime: "",
+    popular: false,
+    isActive: true,
+    features: [""]
+  })
 
   // Fetch services on component mount
   useEffect(() => {
@@ -159,9 +176,51 @@ export default function AdminServiceManagement() {
   }
 
   const handleEditService = (service: Service) => {
-    // For now, just show a toast - you can implement edit modal later
-    toast.info(`Edit functionality for "${service.title}" - Coming soon!`)
-    console.log("Edit service:", service)
+    setEditingService(service)
+    setEditFormData({
+      title: service.title,
+      shortDescription: service.shortDescription,
+      fullDescription: service.fullDescription || service.shortDescription,
+      icon: service.icon,
+      color: service.color,
+      startingPrice: service.startingPrice,
+      asapPrice: service.asapPrice,
+      duration: service.duration,
+      deliveryTime: service.deliveryTime,
+      asapDeliveryTime: service.asapDeliveryTime,
+      popular: service.popular,
+      isActive: service.isActive,
+      features: service.features.map(f => f.text)
+    })
+    setShowEditModal(true)
+  }
+
+  const handleUpdateService = async () => {
+    if (!editingService) return
+
+    try {
+      const response = await fetch(`/api/admin/services/${editingService.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...editFormData,
+          features: editFormData.features.filter((f) => f.trim() !== ""),
+        }),
+      })
+
+      if (response.ok) {
+        toast.success("Service updated successfully!")
+        setShowEditModal(false)
+        setEditingService(null)
+        fetchServices() // Refresh the list
+      } else {
+        const error = await response.json()
+        toast.error(error.message || "Failed to update service")
+      }
+    } catch (error) {
+      console.error("Error updating service:", error)
+      toast.error("Error updating service")
+    }
   }
 
   const handleDeleteService = async (serviceId: string) => {
@@ -185,6 +244,27 @@ export default function AdminServiceManagement() {
       console.error("Error deleting service:", error)
       toast.error("Error deleting service")
     }
+  }
+
+  const addFeature = () => {
+    setEditFormData((prev) => ({
+      ...prev,
+      features: [...prev.features, ""],
+    }))
+  }
+
+  const removeFeature = (index: number) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index),
+    }))
+  }
+
+  const updateFeature = (index: number, value: string) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      features: prev.features.map((f, i) => (i === index ? value : f)),
+    }))
   }
 
   const getColorClass = (colorValue: string) => {
@@ -339,6 +419,217 @@ export default function AdminServiceManagement() {
           </div>
         )}
       </div>
+
+      {/* Edit Service Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-4">Edit Service</h3>
+            
+            <div className="space-y-4">
+              {/* Title */}
+              <div>
+                <label className="text-sm font-medium text-gray-300">Title</label>
+                <input
+                  type="text"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                />
+              </div>
+
+              {/* Short Description */}
+              <div>
+                <label className="text-sm font-medium text-gray-300">Short Description</label>
+                <input
+                  type="text"
+                  value={editFormData.shortDescription}
+                  onChange={(e) => setEditFormData({...editFormData, shortDescription: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                />
+              </div>
+
+              {/* Full Description */}
+              <div>
+                <label className="text-sm font-medium text-gray-300">Full Description</label>
+                <textarea
+                  value={editFormData.fullDescription}
+                  onChange={(e) => setEditFormData({...editFormData, fullDescription: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                  rows={3}
+                />
+              </div>
+
+              {/* Icon and Color */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Icon</label>
+                  <select
+                    value={editFormData.icon}
+                    onChange={(e) => setEditFormData({...editFormData, icon: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                  >
+                    {iconOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Color</label>
+                  <select
+                    value={editFormData.color}
+                    onChange={(e) => setEditFormData({...editFormData, color: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                  >
+                    {colorOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Pricing */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Starting Price ($)</label>
+                  <input
+                    type="number"
+                    value={editFormData.startingPrice}
+                    onChange={(e) => setEditFormData({...editFormData, startingPrice: Number(e.target.value)})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-300">ASAP Price ($)</label>
+                  <input
+                    type="number"
+                    value={editFormData.asapPrice}
+                    onChange={(e) => setEditFormData({...editFormData, asapPrice: Number(e.target.value)})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Duration and Delivery */}
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Duration</label>
+                  <input
+                    type="text"
+                    value={editFormData.duration}
+                    onChange={(e) => setEditFormData({...editFormData, duration: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                    placeholder="e.g., 30-60 seconds"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Delivery Time</label>
+                  <input
+                    type="text"
+                    value={editFormData.deliveryTime}
+                    onChange={(e) => setEditFormData({...editFormData, deliveryTime: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                    placeholder="e.g., 3-7 days"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-300">ASAP Delivery</label>
+                  <input
+                    type="text"
+                    value={editFormData.asapDeliveryTime}
+                    onChange={(e) => setEditFormData({...editFormData, asapDeliveryTime: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                    placeholder="e.g., 24-48 hours"
+                  />
+                </div>
+              </div>
+
+              {/* Features */}
+              <div>
+                <label className="text-sm font-medium text-gray-300">Features</label>
+                <div className="space-y-2">
+                  {editFormData.features.map((feature, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={feature}
+                        onChange={(e) => updateFeature(index, e.target.value)}
+                        className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500"
+                        placeholder="Enter feature"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500 text-red-400 hover:bg-red-500/10"
+                        onClick={() => removeFeature(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
+                    onClick={addFeature}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Feature
+                  </Button>
+                </div>
+              </div>
+
+              {/* Checkboxes */}
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editFormData.popular}
+                    onChange={(e) => setEditFormData({...editFormData, popular: e.target.checked})}
+                    className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-gray-300">Popular</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editFormData.isActive}
+                    onChange={(e) => setEditFormData({...editFormData, isActive: e.target.checked})}
+                    className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-gray-300">Active</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 pt-6">
+              <Button
+                onClick={handleUpdateService}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Update Service
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setEditingService(null)
+                }}
+                variant="outline"
+                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
