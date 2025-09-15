@@ -202,29 +202,10 @@ export const createAccountLink = async (accountId: string, refreshUrl: string, r
  */
 export const createLoginLink = async (accountId: string): Promise<string> => {
   try {
-    console.log("🔄 Creating login link for account:", accountId)
-    
-    // First verify the account exists and is accessible
-    const account = await stripe.accounts.retrieve(accountId)
-    console.log("✅ Account verified:", account.id, "Status:", account.details_submitted ? "submitted" : "not submitted")
-    
     const loginLink = await stripe.accounts.createLoginLink(accountId)
-    console.log("✅ Login link created successfully")
     return loginLink.url
   } catch (error) {
     console.error("❌ Failed to create login link:", error)
-    
-    // Provide more specific error messages
-    if (error instanceof Error) {
-      if (error.message.includes("No such account")) {
-        throw new Error("Stripe account not found. Please complete the onboarding process first.")
-      } else if (error.message.includes("Invalid account")) {
-        throw new Error("Invalid Stripe account. Please recreate your account.")
-      } else if (error.message.includes("account_link")) {
-        throw new Error("Account needs additional setup. Please complete onboarding first.")
-      }
-    }
-    
     throw new Error(`Failed to create login link: ${error instanceof Error ? error.message : "Unknown error"}`)
   }
 }
