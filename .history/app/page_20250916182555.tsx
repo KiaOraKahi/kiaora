@@ -415,25 +415,31 @@ export default function KiaOraHomepage() {
 
           return (
             <motion.div
-              key={talent.id}
+              key={service.title}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className="flex flex-col items-center group cursor-pointer"
-              onClick={() => router.push(`/celebrities`)}
+              onClick={() => router.push(`/services?service=${service.id}`)}
             >
-              {/* Talent Circle */}
+              {/* Service Circle with Rotating Talent */}
               <div className="relative mb-4">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden">
+                <div
+                  className={`w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden`}
+                >
                   <div className="absolute inset-1 rounded-full overflow-hidden">
                     <Image
-                      src={talent.image}
-                      alt={talent.name}
+                      src={currentTalent?.image || "/placeholder.svg"}
+                      alt={currentTalent?.name || "Talent"}
                       fill
                       className="object-cover rounded-full"
                       sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
                       priority={index < 3}
                     />
+                  </div>
+                  {/* Service Icon Overlay */}
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="text-white">{getIconComponent(service.icon)}</div>
                   </div>
                 </div>
                 {/* Sparkle Effect */}
@@ -453,23 +459,8 @@ export default function KiaOraHomepage() {
                   }}
                 />
               </div>
-              {/* Talent Info */}
-              <div className="text-center">
-                <h3 className="text-white font-bold text-sm mb-1 group-hover:text-purple-300 transition-colors">
-                  {talent.name}
-                </h3>
-                <p className="text-purple-200 text-xs mb-1">{talent.category}</p>
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                  <span className="text-white text-xs font-semibold">{talent.rating}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-sm">{talent.price}</span>
-                  <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-                    {talent.badge}
-                  </Badge>
-                </div>
-              </div>
+              {/* Current Talent Name */}
+              <p className="text-yellow-200 text-xs mt-1 opacity-75">{currentTalent?.name}</p>
             </motion.div>
           );
         })}
