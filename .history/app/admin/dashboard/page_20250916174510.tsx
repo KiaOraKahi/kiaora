@@ -1479,7 +1479,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-      </div>
-    </AuthRedirect>
-  )
-}
+     </div>
+   )
+ }

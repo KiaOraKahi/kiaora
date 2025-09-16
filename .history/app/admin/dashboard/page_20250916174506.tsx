@@ -672,8 +672,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <AuthRedirect requiredRole="ADMIN">
-      <div className="min-h-screen bg-black overflow-hidden relative">
+    <div className="min-h-screen bg-black overflow-hidden relative">
       <SubtleLuxuryStarfield />
       
       <div className="relative z-10">
@@ -1479,7 +1478,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-      </div>
-    </AuthRedirect>
-  )
-}
+     </div>
+   )
+ }

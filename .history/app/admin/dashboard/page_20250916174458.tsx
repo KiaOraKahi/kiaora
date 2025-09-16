@@ -216,6 +216,18 @@ export default function AdminDashboard() {
     }
   }, [userSearch, userRoleFilter])
 
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!session || session.user?.role !== "ADMIN") {
+    return null
+  }
+
   const handleRefresh = () => {
     setIsLoading(true)
     fetchAdminData().finally(() => {
@@ -672,8 +684,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <AuthRedirect requiredRole="ADMIN">
-      <div className="min-h-screen bg-black overflow-hidden relative">
+    <div className="min-h-screen bg-black overflow-hidden relative">
       <SubtleLuxuryStarfield />
       
       <div className="relative z-10">
@@ -1479,7 +1490,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-      </div>
-    </AuthRedirect>
-  )
-}
+     </div>
+   )
+ }

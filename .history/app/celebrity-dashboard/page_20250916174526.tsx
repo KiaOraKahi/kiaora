@@ -1069,8 +1069,7 @@ export default function CelebrityDashboard() {
   }
 
   return (
-    <AuthRedirect requiredRole="CELEBRITY">
-      <div className="min-h-screen bg-black relative">
+    <div className="min-h-screen bg-black relative">
       {/* Animated Stars Background */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(100)].map((_, i) => (
@@ -2443,6 +2442,5 @@ export default function CelebrityDashboard() {
         </div>
       </div>
     </div>
-    </AuthRedirect>
   )
 }

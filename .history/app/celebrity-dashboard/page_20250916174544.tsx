@@ -2443,6 +2443,5 @@ export default function CelebrityDashboard() {
         </div>
       </div>
     </div>
-    </AuthRedirect>
   )
 }
