@@ -433,10 +433,6 @@ export default function KiaOraHomepage() {
                       className="object-cover rounded-full"
                       sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
                       priority={index < 3}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(talent.name)}&background=8b5cf6&color=fff&size=400`;
-                      }}
                     />
                   </div>
                 </div>
