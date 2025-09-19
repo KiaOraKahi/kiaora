@@ -234,6 +234,10 @@ export default function CelebrityDetailPage() {
 
         if (response.ok) {
           setServices(data.services || [])
+
+          console.error("data.services 123:", data.services)
+
+
           // Auto-select the first service
           if (data.services && data.services.length > 0) {
             setSelectedService(data.services[0])
@@ -420,7 +424,7 @@ export default function CelebrityDetailPage() {
                   <p className="text-xl text-purple-200 mb-6 max-w-3xl">{celebrity.bio}</p>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <Star className="w-5 h-5 text-yellow-400" />
@@ -449,7 +453,7 @@ export default function CelebrityDetailPage() {
                       </div>
                       <p className="text-purple-300 text-sm">Completion Rate</p>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Service Selection & Book Button */}
                   <div className="space-y-6">
@@ -477,12 +481,12 @@ export default function CelebrityDetailPage() {
                                   <div className="flex items-center gap-3">
                                     <div className="text-purple-400">{getServiceIcon(service.icon)}</div>
                                     <div>
-                                      <h4 className="text-white font-semibold">{service.name}</h4>
+                                      <h4 className="text-white font-semibold">{service.title}</h4>
                                       <p className="text-purple-200 text-sm">{service.description}</p>
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-2xl font-bold text-purple-300">${service.basePrice}</div>
+                                    <div className="text-2xl font-bold text-purple-300">${service.startingPrice}</div>
                                     <div className="text-purple-400 text-sm">{service.duration}</div>
                                   </div>
                                 </div>
@@ -511,7 +515,7 @@ export default function CelebrityDetailPage() {
                             className="bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <MessageCircle className="w-5 h-5 mr-2" />
-                            Book Now - ${selectedService?.basePrice || 0}
+                            Book Now - ${selectedService?.startingPrice || 0}
                           </Button>
                           {selectedService && (
                             <div className="text-purple-200 text-sm">
@@ -538,27 +542,27 @@ export default function CelebrityDetailPage() {
         {/* Main Content */}
         <section className="px-4 sm:px-6 lg:px-8 py-16">
           <div className="max-w-7xl mx-auto">
-            <Tabs defaultValue="about" className="w-full text-white">
+            <Tabs defaultValue="samples" className="w-full text-white">
               <TabsList className="grid w-full grid-cols-5 bg-white/10 border-white/20 text-white">
-                <TabsTrigger value="about" className="data-[state=active]:bg-purple-500 text-white">
+                {/* <TabsTrigger value="about" className="data-[state=active]:bg-purple-500 text-white">
                   About
                 </TabsTrigger>
                 <TabsTrigger value="services" className="data-[state=active]:bg-purple-500 text-white">
                   Services
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger value="samples" className="data-[state=active]:bg-purple-500 text-white">
                   Gallery
                 </TabsTrigger>
-                <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 text-white">
+                {/* <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 text-white">
                   Reviews
                 </TabsTrigger>
                 <TabsTrigger value="availability" className="data-[state=active]:bg-purple-500 text-white">
                   Calendar
-                </TabsTrigger>
+                </TabsTrigger> */}
               </TabsList>
 
               {/* About Tab */}
-              <TabsContent value="about" className="mt-8">
+              {/* <TabsContent value="about" className="mt-8">
                 <div className="grid lg:grid-cols-3 gap-8">
                   <div className="lg:col-span-2">
                     <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
@@ -596,7 +600,7 @@ export default function CelebrityDetailPage() {
                     </Card>
                   </div>
 
-                  {/* Rate Card */}
+                  {}
                   <div>
                     <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/30 backdrop-blur-lg">
                       <CardHeader>
@@ -616,16 +620,16 @@ export default function CelebrityDetailPage() {
                           <div className="text-purple-200 text-sm">Charity Message</div>
                         </div>
                         <div className="text-center text-yellow-300 text-sm">
-                          * Prices may vary based on message length and urgency
+                           Prices may vary based on message length and urgency
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                 </div>
-              </TabsContent>
+              </TabsContent> */}
 
               {/* Services Tab */}
-              <TabsContent value="services" className="mt-8">
+              {/* <TabsContent value="services" className="mt-8">
                 {servicesLoading ? (
                   <div className="text-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-purple-500 mx-auto mb-4" />
@@ -689,7 +693,7 @@ export default function CelebrityDetailPage() {
                     <p className="text-purple-200">Services will be available soon.</p>
                   </div>
                 )}
-              </TabsContent>
+              </TabsContent> */}
 
               {/* Gallery Tab */}
               <TabsContent value="samples" className="mt-8">
@@ -736,7 +740,7 @@ export default function CelebrityDetailPage() {
               </TabsContent>
 
               {/* Reviews Tab */}
-              <TabsContent value="reviews" className="mt-8">
+              {/* <TabsContent value="reviews" className="mt-8">
                 {celebrity.reviews && celebrity.reviews.length > 0 ? (
                   <div className="space-y-6">
                     {celebrity.reviews.map((review) => (
@@ -784,10 +788,10 @@ export default function CelebrityDetailPage() {
                     <p className="text-purple-200">Be the first to leave a review!</p>
                   </div>
                 )}
-              </TabsContent>
+              </TabsContent> */}
 
               {/* Calendar Tab */}
-              <TabsContent value="availability" className="mt-8">
+              {/* <TabsContent value="availability" className="mt-8">
                 <div className="grid lg:grid-cols-2 gap-8">
                   <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                     <CardHeader>
@@ -853,7 +857,7 @@ export default function CelebrityDetailPage() {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </div>
         </section>

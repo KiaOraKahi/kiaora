@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { sendApplicationStatusEmail } from "@/lib/email"
+import { Console } from "console"
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +15,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
       }
     }
+
+    console.log("body : ", body);
 
     // Validate experience length
     if (body.experience.length < 50) {

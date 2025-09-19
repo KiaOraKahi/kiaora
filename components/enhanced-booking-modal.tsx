@@ -504,7 +504,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                 <p className="text-purple-200">
                   {orderConfirmed
                     ? "Booking Confirmed!"
-                    : `${selectedService.name} - Step ${currentStep} of ${currentStep === 6 ? 6 : 6}`}
+                    : `${selectedService.title} - Step ${currentStep} of ${currentStep === 6 ? 6 : 6}`}
                 </p>
               </div>
             </div>
@@ -573,11 +573,11 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     <div className="flex items-center gap-3 mb-3">
                       <div className="text-purple-400">{getServiceIcon(selectedService.icon)}</div>
                       <div>
-                        <h5 className="text-white font-semibold">{selectedService.name}</h5>
+                        <h5 className="text-white font-semibold">{selectedService.title}</h5>
                         <p className="text-purple-200 text-sm">{selectedService.description}</p>
                       </div>
                       <div className="ml-auto text-right">
-                        <div className="text-2xl font-bold text-purple-300">${selectedService.basePrice}</div>
+                        <div className="text-2xl font-bold text-purple-300">${selectedService.startingPrice}</div>
                         <div className="text-purple-400 text-sm">{selectedService.duration}</div>
                       </div>
                     </div>
@@ -1007,7 +1007,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                         <span>
                           {celebrity.name} - {selectedService.name}
                         </span>
-                        <span>${selectedService.basePrice}</span>
+                        <span>${selectedService.startingPrice}</span>
                       </div>
 
                       {selectedAddOns.map((addOnId) => {
@@ -1097,7 +1097,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     <span>
                       {celebrity.name} - {selectedService.name}
                     </span>
-                    <span>${selectedService.basePrice}</span>
+                    <span>${selectedService.startingPrice}</span>
                   </div>
                   {selectedAddOns.map((addOnId) => {
                     const addOn = addOns.find((a) => a.id === addOnId)

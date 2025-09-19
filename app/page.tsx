@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback  } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -34,68 +34,29 @@ const getIconComponent = (iconName: string) => {
   }
 }
 
-const talents = [
-  {
-    id: 1,
-    name: "Emma Stone",
-    category: "Actor",
-    rating: 4.9,
-    price: "$299",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
-    badge: "Trending",
-    discount: "20% OFF",
-  },
-  {
-    id: 2,
-    name: "John Legend",
-    category: "Musician",
-    rating: 5.0,
-    price: "$599",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    badge: "New",
-    discount: "Limited Time",
-  },
-  {
-    id: 3,
-    name: "Tony Robbins",
-    category: "Motivator",
-    rating: 4.8,
-    price: "$899",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    badge: "Popular",
-    discount: "15% OFF",
-  },
-  {
-    id: 4,
-    name: "MrBeast",
-    category: "Influencer",
-    rating: 4.9,
-    price: "$1299",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    badge: "Hot",
-    discount: "New Offer",
-  },
-  {
-    id: 5,
-    name: "Oprah Winfrey",
-    category: "Motivator",
-    rating: 5.0,
-    price: "$1999",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
-    badge: "Premium",
-    discount: "Exclusive",
-  },
-  {
-    id: 6,
-    name: "Ryan Reynolds",
-    category: "Actor",
-    rating: 4.7,
-    price: "$799",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=face",
-    badge: "Comedy",
-    discount: "25% OFF",
-  },
-]
+interface Celebrity {
+  id: string;
+  name: string;
+  image: string;
+  bio: string;
+  // add other fields if needed
+}
+
+interface CelebritiesResponse {
+  celebrities: Celebrity[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+
+const talents = [];
+
 
 const hasTalentWithImage = (service: EnhancedServiceData) => {
   return service.talents.some(talent => talent?.image && talent.image !== "/placeholder.svg");
@@ -219,6 +180,37 @@ export default function KiaOraHomepage() {
   const [loading, setLoading] = useState(true)
   const [fallbackDataUsed, setFallbackDataUsed] = useState(false)
   const router = useRouter()
+
+  const [talents, setTalents] = useState<Celebrity[]>([]);
+
+  const fetchCelebrities = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "6", // only 6 for homepage
+      });
+
+      const response = await fetch(`/api/celebrities?${params}`);
+      const data: CelebritiesResponse = await response.json();
+
+      if (response.ok) {
+        setTalents(data.celebrities);
+      } else {
+        toast.error("Failed to load talents");
+      }
+    } catch (error) {
+      console.error("Error fetching talents:", error);
+      toast.error("Failed to load talents");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCelebrities();
+  }, [fetchCelebrities]);
 
   // Check if mobile
   useEffect(() => {
@@ -409,74 +401,81 @@ export default function KiaOraHomepage() {
   className="relative mb-12"
 >
   <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
-    <h2 className="text-2xl font-bold text-white mb-8">Featured Talents</h2>
+    <h2 className="text-2xl font-bold text-white mb-8">Our Celebrities</h2>
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
-      {talents.slice(0, 6).map((talent, index) => {
+     {talents.slice(0, 6).map((talent, index) => {
+  console.log("talent : ", talent);
+  return (
+    <motion.div
+      key={talent.id}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 1 }}
+      className="flex flex-col items-center group cursor-pointer"
+      onClick={() => router.push(`/celebrities/${talent.id}`)}   // ✅ direct to detail page
+    >
+      {/* Talent Circle */}
+      <div className="relative mb-4">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden">
+          <div className="absolute inset-1 rounded-full overflow-hidden">
+            <Image
+              src={talent.image}
+              alt={talent.name}
+              fill
+              className="object-cover rounded-full"
+              sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
+              priority={index < 3}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  talent.name
+                )}&background=8b5cf6&color=fff&size=400`;
+              }}
+            />
+          </div>
+        </div>
+        {/* Sparkle Effect */}
+        <motion.div
+          className="absolute -inset-2 rounded-full"
+          animate={{
+            boxShadow: [
+              "0 0 0 0 rgba(255, 215, 0, 0)",
+              "0 0 0 4px rgba(255, 215, 0, 0.3)",
+              "0 0 0 0 rgba(255, 215, 0, 0)",
+            ],
+          }}
+          transition={{
+            duration: 5,
+            repeat: Number.POSITIVE_INFINITY,
+            delay: index * 1,
+          }}
+        />
+      </div>
+      {/* Talent Info */}
+      <div className="text-center">
+        <h3 className="text-white font-bold text-sm mb-1 group-hover:text-purple-300 transition-colors">
+          {talent.name}
+        </h3>
+        <p className="text-purple-200 text-xs mb-1">{talent.category}</p>
+        <div className="flex items-center justify-center gap-1 mb-1">
+          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+          <span className="text-white text-xs font-semibold">{talent.rating}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-white font-bold text-sm">
+            ${talent.price}
+          </span>
+          {talent.badge && (
+            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
+              {talent.badge}
+            </Badge>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+})}
 
-          return (
-            <motion.div
-              key={talent.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex flex-col items-center group cursor-pointer"
-              onClick={() => router.push(`/celebrities`)}
-            >
-              {/* Talent Circle */}
-              <div className="relative mb-4">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden">
-                  <div className="absolute inset-1 rounded-full overflow-hidden">
-                    <Image
-                      src={talent.image}
-                      alt={talent.name}
-                      fill
-                      className="object-cover rounded-full"
-                      sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
-                      priority={index < 3}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(talent.name)}&background=8b5cf6&color=fff&size=400`;
-                      }}
-                    />
-                  </div>
-                </div>
-                {/* Sparkle Effect */}
-                <motion.div
-                  className="absolute -inset-2 rounded-full"
-                  animate={{
-                    boxShadow: [
-                      "0 0 0 0 rgba(255, 215, 0, 0)",
-                      "0 0 0 4px rgba(255, 215, 0, 0.3)",
-                      "0 0 0 0 rgba(255, 215, 0, 0)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Number.POSITIVE_INFINITY,
-                    delay: index * 0.3,
-                  }}
-                />
-              </div>
-              {/* Talent Info */}
-              <div className="text-center">
-                <h3 className="text-white font-bold text-sm mb-1 group-hover:text-purple-300 transition-colors">
-                  {talent.name}
-                </h3>
-                <p className="text-purple-200 text-xs mb-1">{talent.category}</p>
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                  <span className="text-white text-xs font-semibold">{talent.rating}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-sm">{talent.price}</span>
-                  <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-                    {talent.badge}
-                  </Badge>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
     </div>
   </div>
 </motion.div>

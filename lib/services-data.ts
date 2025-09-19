@@ -282,6 +282,16 @@ export const heroGreetings = [
   "G'day",
 ]
 
+
+// Greetings for the hero animation
+export const heroCelebrityGreetings = [
+  "Discover",
+  "Amazing",
+  "Talent"
+]
+
+
+
 // Helper function to check if we're using fallback data
 export const isFallbackData = () => true
 

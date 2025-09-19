@@ -33,7 +33,7 @@ export default function MobileNavbar() {
   const navItems = [
     { name: "Home", href: "/", icon: <Home className="w-5 h-5" /> },
     { name: "Celebrities", href: "/celebrities", icon: <Users className="w-5 h-5" /> },
-    { name: "How It Works", href: "/how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
+    // { name: "How It Works", href: "/how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
     { name: "Become Talent", href: "/join-celebrity", icon: <Star className="w-5 h-5" /> },
   ]
 

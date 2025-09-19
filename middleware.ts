@@ -27,11 +27,18 @@ export default withAuth(
       }
     }
 
+    // if (pathname.startsWith("/api/celebrity")) {
+    //   if (!token || token.role !== "CELEBRITY" || token.role !== "FAN") {
+    //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    //   }
+    // }
+
     if (pathname.startsWith("/api/celebrity")) {
-      if (!token || token.role !== "CELEBRITY") {
+      if (!token || (token.role !== "CELEBRITY" && token.role !== "FAN")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
     }
+
 
     return NextResponse.next()
   },

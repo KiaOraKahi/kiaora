@@ -8,6 +8,8 @@ import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { AuthModal } from "@/components/auth/auth-modal"
 import SearchAutocomplete from "@/components/frontend/search-autocomplete"
+import Image from "next/image";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +39,7 @@ export default function Navbar() {
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Celebrities", href: "/celebrities" },
-    { name: "How It Works", href: "/how-it-works" },
+    // { name: "How It Works", href: "/how-it-works" },
     { name: "Become Talent", href: "/join-celebrity" },
   ]
 
@@ -76,12 +78,26 @@ export default function Navbar() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-lg flex items-center justify-center">
+                {/* <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-lg flex items-center justify-center">
                   <Star className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                </div> */}
+
+
+                <div className="w-18 h-18 relative rounded-lg overflow-hidden">
+                <Image
+                  src="/logo.webp" // file should be inside /public/
+                  alt="Kia Ora Kahi"
+                  fill
+                  className="object-cover rounded-lg"
+                  sizes="60px"
+                  priority
+                />
+              </div>
+
+
+                {/* <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
                   Kia Ora Kahi
-                </span>
+                </span> */}
               </motion.div>
             </Link>
 
@@ -101,9 +117,9 @@ export default function Navbar() {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center space-x-4">
-              <div className="w-64">
-                <SearchAutocomplete placeholder="Search celebrities..." className="w-full" />
-              </div>
+              {/* <div className="w-64">
+                <SearchAutocomplete placeholder="Search celebrities......" className="w-full" />
+              </div> */}
 
               {status === "loading" ? (
                 <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />

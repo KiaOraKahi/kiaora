@@ -390,7 +390,11 @@ export default function JoinCelebrityPage() {
         body: JSON.stringify(submissionData),
       })
 
+    
+
       const result = await response.json()
+
+        console.log("result : ", result);
 
       if (response.ok) {
         setIsSubmitted(true)

@@ -14,6 +14,7 @@ import Navbar from "@/components/frontend/navbar"
 import Footer from "@/components/frontend/footer"
 import MobileNavbar from "@/components/frontend/mobile-navbar"
 import { formatRating } from "@/lib/utils"
+import { formatPrice, heroGreetings, heroCelebrityGreetings } from "@/lib/services-data"
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = (): null => {
@@ -230,6 +231,19 @@ export default function TalentsPage() {
     return count
   }
 
+  const greetings = heroCelebrityGreetings
+    const [currentGreeting, setCurrentGreeting] = useState(0)
+  
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setCurrentGreeting((prev) => (prev + 1) % greetings.length)
+      }, 3000)
+  
+      return () => clearInterval(interval)
+    }, [greetings.length])
+
+
+
   return (
     <div className="min-h-screen bg-black">
       {/* Subtle Luxury Starfield Background */}
@@ -249,176 +263,51 @@ export default function TalentsPage() {
               <Sparkles className="w-4 h-4 mr-2" />
               Browse Talent
             </Badge>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-6">
+            {/* <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-6">
               Discover Amazing Talent
-            </h1>
+            </h1> */}
+
+             <motion.h1
+                className="relative text-4xl sm:text-6xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-white via-yellow-200 to-purple-200 bg-clip-text text-transparent mb-2"
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
+                }}
+                style={{
+                  backgroundSize: "200% 200%",
+                  filter: "drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))",
+                }}
+              >
+                <motion.span
+                  key={currentGreeting}
+                  initial={{ opacity: 0, y: 20 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    textShadow: [
+                      "0 0 20px rgba(255, 215, 0, 0.5)",
+                      "0 0 40px rgba(138, 43, 226, 0.5)",
+                      "0 0 20px rgba(255, 215, 0, 0.5)",
+                    ],
+                  }}
+                >
+                  {greetings[currentGreeting]}
+                </motion.span>
+              </motion.h1>
+
+
             <p className="text-xl sm:text-2xl text-yellow-200 max-w-4xl mx-auto leading-relaxed">
               Connect with your favorite stars, influencers, and personalities for personalized video messages and live interactions.
             </p>
           </motion.div>
         </div>
       </section>
-
-      {/* Enhanced Search and Filters */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white/5">
-        <div className="max-w-7xl mx-auto">
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-300 w-5 h-5" />
-              <Input
-                placeholder="Search by name, category, or bio..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-yellow-300 h-12 text-lg"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-300 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Filter Controls */}
-          <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
-            {/* Category Filters */}
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => handleCategoryChange(category)}
-                  size="sm"
-                  className={
-                    selectedCategory === category
-                      ? "bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-bold"
-                      : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  }
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-
-            {/* Filter Toggle and Sort */}
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filters {getActiveFiltersCount() > 0 && `(${getActiveFiltersCount()})`}
-              </Button>
-
-              <div className="flex items-center gap-2">
-                <Filter className="text-yellow-300 w-4 h-4" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option} value={option} className="bg-black">
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Advanced Filters Panel */}
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-6 p-6 bg-white/5 border border-white/10 rounded-lg"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Price Range Filter */}
-                <div>
-                  <label className="block text-white font-semibold mb-3">Price Range</label>
-                  <div className="space-y-3">
-                    <Slider
-                      value={priceRange}
-                      onValueChange={handlePriceRangeChange}
-                      max={2000}
-                      min={0}
-                      step={50}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-sm text-yellow-200">
-                      <span>{formatPrice(priceRange[0])}</span>
-                      <span>{formatPrice(priceRange[1])}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Availability Filter */}
-                <div>
-                  <label className="block text-white font-semibold mb-3">Availability</label>
-                  <div className="space-y-2">
-                    {availabilityOptions.map((option) => (
-                      <Button
-                        key={option}
-                        variant={selectedAvailability === option ? "default" : "outline"}
-                        onClick={() => handleAvailabilityChange(option)}
-                        size="sm"
-                        className={
-                          selectedAvailability === option
-                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                            : "bg-white/10 border-white/20 text-white hover:bg-white/20 w-full justify-start"
-                        }
-                      >
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {option}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Clear Filters */}
-                <div className="flex items-end">
-                  <Button
-                    variant="outline"
-                    onClick={clearAllFilters}
-                    className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 w-full"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Clear All Filters
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      {/* Results Summary */}
-      {!loading && (
-        <section className="py-4 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-yellow-200">
-              <span>
-                Showing {celebrities.length} of {pagination?.total || 0} results
-                {getActiveFiltersCount() > 0 && ` (${getActiveFiltersCount()} active filters)`}
-              </span>
-              {pagination && (
-                <span>
-                  Page {pagination.page} of {pagination.totalPages}
-                </span>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Talents Grid */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
