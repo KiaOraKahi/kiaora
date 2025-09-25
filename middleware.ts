@@ -6,6 +6,9 @@ export default withAuth(
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
+
+    console.log("Middleware hit:", pathname)
+
     // Admin routes protection
     if (pathname.startsWith("/admin")) {
       if (!token || token.role !== "ADMIN") {
@@ -33,11 +36,18 @@ export default withAuth(
     //   }
     // }
 
-    if (pathname.startsWith("/api/celebrity")) {
+    // if (pathname.startsWith("/api/celebrity")) {
+    //   if (!token || (token.role !== "CELEBRITY" && token.role !== "FAN")) {
+    //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    //   }
+    // }
+
+    if (pathname.startsWith("/api/celebrity") && pathname !== "/api/celebrity/apply") {
       if (!token || (token.role !== "CELEBRITY" && token.role !== "FAN")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
     }
+
 
 
     return NextResponse.next()
@@ -80,7 +90,8 @@ export const config = {
     "/admin/:path*",
     "/celebrity-dashboard/:path*",
     "/api/admin/:path*",
-    "/api/celebrity/:path*",
+    // "/api/celebrity/:path*",
+    "/api/celebrity/:path((?!apply).*)", // 👈 excludes /apply
     "/api/user/:path*"
   ]
 }

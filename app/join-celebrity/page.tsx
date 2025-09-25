@@ -210,11 +210,11 @@ export default function JoinCelebrityPage() {
     hasIdDocument: false,
     hasIdDocumentBack: false,
     hasVideoIntroduction: false,
-    keepVideoPrivate: false,
+    keepVideoPrivate: true,
     profilePhotoUrl: undefined,
     idDocumentUrl: undefined,
     idDocumentBackUrl: undefined,
-    videoIntroductionUrl: undefined,
+    // videoIntroductionUrl: undefined,
   })
 
   const [isMobile, setIsMobile] = useState(false)
@@ -302,10 +302,11 @@ export default function JoinCelebrityPage() {
       } else if (type === "id-back") {
         updateFormData("hasIdDocumentBack", true)
         updateFormData("idDocumentBackUrl", result.url)
-      } else if (type === "video") {
-        updateFormData("hasVideoIntroduction", true)
-        updateFormData("videoIntroductionUrl", result.url)
       }
+      // else if (type === "video") {
+      //   updateFormData("hasVideoIntroduction", true)
+      //   updateFormData("videoIntroductionUrl", result.url)
+      // }
       
       toast.success(`${type === "video" ? "Video introduction" : type} uploaded successfully!`)
       console.log(`✅ ${type} upload completed:`, result.url)
@@ -327,12 +328,12 @@ export default function JoinCelebrityPage() {
             description: error.message
           })
         } else {
-          toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}`, {
-            description: "Please try again or contact support if the problem persists."
-          })
+          // toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}`, {
+          //   description: "Please try again or contact support if the problem persists."
+          // })
         }
       } else {
-        toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}. Please try again.`)
+        // toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}. Please try again.`)
       }
     } finally {
       setUploadingFiles((prev) => ({ ...prev, [type]: false }))
@@ -346,7 +347,8 @@ export default function JoinCelebrityPage() {
       case 2:
         return !!(formData.category && formData.experience.length >= 50 && formData.languages.length > 0)
       case 3:
-        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasIdDocumentBack && formData.hasVideoIntroduction && formData.agreedToTerms
+        // return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasIdDocumentBack && formData.hasVideoIntroduction && formData.agreedToTerms
+        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasIdDocumentBack && formData.agreedToTerms
       default:
         return false
     }
@@ -404,7 +406,7 @@ export default function JoinCelebrityPage() {
       }
     } catch (error) {
       console.error("Submission error:", error)
-      toast.error("Submission failed. Please try again.")
+      toast.error("Submission failed " + error + " Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -1007,91 +1009,7 @@ export default function JoinCelebrityPage() {
                               )}
                             </label>
                           </div>
-                        </div>
-
-                        {/* Video Introduction */}
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <Video className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">15-30 Second Video Introduction *</h3>
-                            {formData.hasVideoIntroduction && <CheckCircle className="w-5 h-5 text-green-400" />}
-                          </div>
-                          <p className="text-gray-400 text-sm">
-                            Upload a short video introducing yourself. This helps fans get to know you better.
-                          </p>
-                          
-                          {/* Example Video */}
-                          <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-                            <h4 className="text-white font-semibold mb-2">Example Video Introduction</h4>
-                            <p className="text-gray-300 text-sm mb-3">
-                              Here's an example of what a good introduction video looks like:
-                            </p>
-                            <div className="bg-black/40 rounded-lg p-4 text-center">
-                              <Video className="w-12 h-12 text-purple-400 mx-auto mb-2" />
-                              <p className="text-gray-300 text-sm">
-                                "Hi! I'm [Your Name], and I'm excited to be part of Kia Ora Kahi. 
-                                I love creating personalized videos for my fans and can't wait to 
-                                make your special moments even more memorable!"
-                              </p>
-                              <p className="text-purple-300 text-xs mt-2">
-                                Duration: 15-30 seconds | Keep it natural and friendly
-                              </p>
-                            </div>
-                          </div>
-                          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                            <input
-                              type="file"
-                              id="video-introduction"
-                              accept="video/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "video")
-                              }}
-                              className="hidden"
-                            />
-                            <label htmlFor="video-introduction" className="cursor-pointer">
-                              {uploadingFiles.video ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
-                                </div>
-                              ) : formData.hasVideoIntroduction ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">Video introduction uploaded</span>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <Video className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload video introduction</span>
-                                  <span className="text-gray-400 text-sm">MP4, MOV, AVI up to 50MB</span>
-                                  <span className="text-purple-400 text-sm font-medium">Must be 15-30 seconds</span>
-                                </div>
-                              )}
-                            </label>
-                          </div>
-                          
-                          {/* Video Privacy Checkbox */}
-                          <div className="mt-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-                            <label className="flex items-start gap-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={formData.keepVideoPrivate}
-                                onChange={(e) => updateFormData("keepVideoPrivate", e.target.checked)}
-                                className="mt-1 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
-                              />
-                              <div>
-                                <div className="text-white font-semibold text-sm">
-                                  Keep Video Private
-                                </div>
-                                <div className="text-gray-300 text-xs mt-1">
-                                  Check this box if you do not want your video to be used for promoting our site or any other marketing purposes. 
-                                  Your video will remain private and only be used for verification purposes.
-                                </div>
-                              </div>
-                            </label>
-                          </div>
-                        </div>
+                        </div> 
 
                         {/* Privacy Notice */}
                         <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
