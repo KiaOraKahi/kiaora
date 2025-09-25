@@ -305,3 +305,13 @@ a.text-white\/80.hover\:text-white.transition-colors.duration-200.relative.group
 .text-muted-foreground.inline-flex.h-9.w-fit.items-center.justify-center.rounded-lg.bg-white\/10.border.border-white\/20.p-1 button {
     color: #ffffff;
 }
+
+label.flex.items-center.gap-2.text-sm.leading-none.font-medium.select-none.group-data-\[disabled\=true\]\:pointer-events-none.group-data-\[disabled\=true\]\:opacity-50.peer-disabled\:cursor-not-allowed.peer-disabled\:opacity-50 {
+    margin-bottom: 10px;
+    color: #ffffff;
+  }
+
+  .space-y-6 input, .space-y-6 textarea, .space-y-6 select {
+    color: #ffffff !important;
+}
+

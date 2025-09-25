@@ -30,12 +30,21 @@ export default function MobileNavbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // const navItems = [
+  //   { name: "Home", href: "/", icon: <Home className="w-5 h-5" /> },
+  //   { name: "Celebrities", href: "/celebrities", icon: <Users className="w-5 h-5" /> },
+  //   // { name: "How It Works", href: "/how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
+  //   { name: "Become Talent", href: "/join-celebrity", icon: <Star className="w-5 h-5" /> },
+  // ]
+
   const navItems = [
-    { name: "Home", href: "/", icon: <Home className="w-5 h-5" /> },
-    { name: "Celebrities", href: "/celebrities", icon: <Users className="w-5 h-5" /> },
-    // { name: "How It Works", href: "/how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
-    { name: "Become Talent", href: "/join-celebrity", icon: <Star className="w-5 h-5" /> },
-  ]
+      { name: "Home", href: "/" },
+      { name: "Celebrities", href: "/celebrities" },
+      ...(session
+        ? [{ name: "Become Talent", href: "/join-celebrity" }]
+        : []),
+    ]
+  
 
   // Close menu when route changes
   useEffect(() => {

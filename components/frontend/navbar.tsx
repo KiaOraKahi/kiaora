@@ -36,13 +36,24 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Celebrities", href: "/celebrities" },
-    // { name: "How It Works", href: "/how-it-works" },
-    { name: "Become Talent", href: "/join-celebrity" },
-  ]
+  // const navItems = [
+  //   { name: "Home", href: "/" },
+  //   { name: "Celebrities", href: "/celebrities" },
+  //   // { name: "How It Works", href: "/how-it-works" },
+  //   { name: "Become Talent", href: "/join-celebrity" },
+  // ]
 
+
+   const navItems = [
+      { name: "Home", href: "/" },
+      { name: "Celebrities", href: "/celebrities" },
+      ...(session
+        ? [{ name: "Become Talent", href: "/join-celebrity" }]
+        : []),
+    ]
+  
+
+    
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" })
   }
