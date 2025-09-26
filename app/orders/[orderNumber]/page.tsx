@@ -729,7 +729,7 @@ export default function OrderDetailsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-purple-200">Total Amount</span>
                     <span className="text-white font-semibold">
-                      ${(order.totalAmount || 0).toLocaleString()} {(order.currency || "USD").toUpperCase()}
+                      {(order.totalAmount || 0).toLocaleString()} {(order.currency || "NZD").toUpperCase()}
                     </span>
                   </div>
                   {totalTips > 0 && (

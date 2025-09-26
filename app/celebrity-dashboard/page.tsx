@@ -1981,7 +1981,7 @@ export default function CelebrityDashboard() {
                             <p className="text-purple-200 text-sm mt-2">
                               {format(new Date(order.createdAt), "MMM d, yyyy")}
                             </p>
-                            <Badge className="bg-green-500/20 text-green-300 mt-2">Paid</Badge>
+                            <Badge className="bg-green-500/20 text-green-300 mt-2">Payment Status: { order.paymentStatus }</Badge>
                           </div>
                         </div>
 

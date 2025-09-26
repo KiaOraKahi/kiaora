@@ -315,3 +315,6 @@ label.flex.items-center.gap-2.text-sm.leading-none.font-medium.select-none.group
     color: #ffffff !important;
 }
 
+.space-y-2 textarea {
+    color: #000000 !important;
+}
