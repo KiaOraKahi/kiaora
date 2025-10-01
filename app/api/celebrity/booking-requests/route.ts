@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         OR: [
           {
             status: {
-              in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'REVISION_REQUESTED']
+              in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'REVISION_REQUESTED','PENDING_APPROVAL']
             }
           },
           {

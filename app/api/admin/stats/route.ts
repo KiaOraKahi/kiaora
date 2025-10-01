@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
           createdAt: true
         }
       }),
-      prisma.order.findMany({
+      prisma.booking.findMany({
         orderBy: { createdAt: "desc" },
         take: 5,
         include: {

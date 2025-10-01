@@ -131,15 +131,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate payment status - must be SUCCEEDED
-    if (booking.order?.paymentStatus !== "SUCCEEDED") {
-      console.log("❌ Payment not succeeded for booking:", booking.order?.paymentStatus)
-      return NextResponse.json(
-        {
-          error: "Cannot upload video for unpaid booking. Payment must be completed first.",
-        },
-        { status: 400 },
-      )
-    }
+    // if (booking.order?.paymentStatus !== "SUCCEEDED") {
+    //   console.log("❌ Payment not succeeded for booking:", booking.order?.paymentStatus)
+    //   return NextResponse.json(
+    //     {
+    //       error: "Cannot upload video for unpaid booking. Payment must be completed first.",
+    //     },
+    //     { status: 400 },
+    //   )
+    // }
 
     // Generate unique filename for video
     const timestamp = Date.now()

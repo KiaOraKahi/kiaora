@@ -158,9 +158,15 @@ export async function PATCH(request: NextRequest) {
 
       case "updateBookingStatus":
         result = await prisma.booking.update({
-          where: { orderId },
+          where: { id : orderId },
           data: { status: data.status },
         })
+        // usman
+        // result = await prisma.order.update({
+        //    where: { id: orderId },
+        //   data: { status: data.status },
+        // })
+
         break
 
       case "refundOrder":

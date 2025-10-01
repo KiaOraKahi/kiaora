@@ -341,6 +341,9 @@ export default function AdminDashboard() {
       }
       
       const data = await response.json()
+
+      console.log('bookings :', data);
+
       const bookings = data.bookings || []
       
       if (bookings.length === 0) {
@@ -1050,6 +1053,7 @@ export default function AdminDashboard() {
                           <div>
                             <p className="text-white font-medium">{booking.customer} → {booking.celebrity}</p>
                             <p className="text-purple-300 text-sm">${booking.amount} • {booking.date}</p>
+                            <p className="text-purple-300 text-sm">{booking.id}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
