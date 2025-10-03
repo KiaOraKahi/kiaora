@@ -334,7 +334,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
         setOrderNumber(data.orderNumber)
         
         console.log("🔄 About to set current step to 6")
-        setCurrentStep(6) // Move to payment step
+        setCurrentStep(5) // Move to payment step
         
         console.log("✅ Step transition initiated")
         console.log("🔍 Current step after setState:", currentStep) // This will still show old value due to closure
@@ -353,7 +353,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
   const handlePaymentSuccess = (paymentIntent: any) => {
     console.log("✅ Payment successful:", paymentIntent)
     setOrderConfirmed(true)
-    setCurrentStep(7) // Move to confirmation step (step 7)
+    setCurrentStep(6) // Move to confirmation step (step 7)
   }
 
   const handlePaymentError = (error: string) => {
@@ -537,7 +537,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
           {!orderConfirmed && currentStep <= 6 && (
             <div className="px-6 py-4">
               <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5, 6].map((step) => (
+                {[1, 2, 3, 4, 5].map((step) => (
                   <div key={step} className="flex items-center flex-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
@@ -546,19 +546,18 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     >
                       {currentStep > step ? <CheckCircle className="w-5 h-5" /> : step}
                     </div>
-                    {step < 6 && (
+                    {step < 5 && (
                       <div className={`flex-1 h-1 mx-2 ${currentStep > step ? "bg-purple-500" : "bg-white/20"}`} />
                     )}
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between mt-2 text-sm">
+              <div className="flex space-around mt-2 text-sm">
                 <span className={currentStep >= 1 ? "text-white" : "text-purple-300"}>Details</span>
-                <span className={currentStep >= 2 ? "text-white" : "text-purple-300"}>Schedule</span>
-                <span className={currentStep >= 3 ? "text-white" : "text-purple-300"}>Add-ons</span>
-                <span className={currentStep >= 4 ? "text-white" : "text-purple-300"}>Tips</span>
-                <span className={currentStep >= 5 ? "text-white" : "text-purple-300"}>Review</span>
-                <span className={currentStep >= 6 ? "text-white" : "text-purple-300"}>Payment</span>
+                <span className={currentStep >= 2 ? "text-white" : "text-purple-300"}>Add-ons</span>
+                <span className={currentStep >= 3 ? "text-white" : "text-purple-300"}>Tips</span>
+                <span className={currentStep >= 4 ? "text-white" : "text-purple-300"}>Review</span>
+                <span className={currentStep >= 5 ? "text-white" : "text-purple-300"}>Payment</span>
               </div>
             </div>
           )}
@@ -655,116 +654,10 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
               </motion.div>
             )}
 
-            {/* Step 2: Scheduling & Availability */}
-            {currentStep === 2 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h4 className="text-xl font-bold text-white">Schedule Your {selectedService.name}</h4>
-
-                <div className="bg-white/10 rounded-lg p-4 mb-6">
-                  <div className="flex items-center gap-2 text-purple-200 mb-2">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm">Expected delivery: {selectedService.deliveryTime}</span>
-                  </div>
-                </div>
-
-                <div className="grid lg:grid-cols-2 gap-8">
-                  <div>
-                    <Label className="text-white mb-4 block">Select Date</Label>
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      disabled={(date) => date < new Date()}
-                      className="bg-white/10 border border-white/20 rounded-lg p-4"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-white mb-4 block">Available Time Slots</Label>
-
-                    {!selectedDate && (
-                      <div className="text-center py-8">
-                        <CalendarIcon className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                        <p className="text-purple-200">Please select a date first</p>
-                      </div>
-                    )}
-
-                    {selectedDate && isCheckingAvailability && (
-                      <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4" />
-                        <p className="text-purple-200">Checking availability...</p>
-                      </div>
-                    )}
-
-                    {selectedDate && !isCheckingAvailability && availability && (
-                      <div className="space-y-4">
-                        {availability.available ? (
-                          <>
-                            <div className="flex items-center gap-2 text-green-400 mb-4">
-                              <CheckCircle className="w-5 h-5" />
-                              <span>Available on {format(selectedDate, "MMMM d, yyyy")}</span>
-                            </div>
-
-                            {availability.price > 0 && (
-                              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 mb-4">
-                                <div className="flex items-center gap-2 text-yellow-300">
-                                  <AlertCircle className="w-4 h-4" />
-                                  <span className="text-sm">Weekend Premium: +${availability.price}</span>
-                                </div>
-                              </div>
-                            )}
-
-                            <div className="grid grid-cols-2 gap-3">
-                              {availability.slots.map((slot: string) => (
-                                <button
-                                  key={slot}
-                                  onClick={() => setSelectedSlot(slot)}
-                                  className={`p-3 rounded-lg border transition-all ${
-                                    selectedSlot === slot
-                                      ? "border-purple-500 bg-purple-500/20 text-white"
-                                      : "border-white/20 bg-white/10 text-purple-200 hover:bg-white/20"
-                                  }`}
-                                >
-                                  {slot}
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-center py-8">
-                            <div className="flex items-center justify-center gap-2 text-red-400 mb-4">
-                              <X className="w-5 h-5" />
-                              <span>Not available on {format(selectedDate, "MMMM d, yyyy")}</span>
-                            </div>
-                            <p className="text-purple-200 text-sm">Please select a different date</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep(1)}
-                    className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    onClick={() => setCurrentStep(3)}
-                    disabled={!selectedDate || !selectedSlot || !availability?.available}
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                  >
-                    Continue to Add-ons
-                  </Button>
-                </div>
-              </motion.div>
-            )}
+            
 
             {/* Step 3: Add-ons & Media Upload */}
-            {currentStep === 3 && (
+            {currentStep === 2 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 <h4 className="text-xl font-bold text-white">Enhance Your Experience</h4>
 
@@ -868,7 +761,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
             )}
 
             {/* Step 4: Tip Selection */}
-            {currentStep === 4 && (
+            {currentStep === 3 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 <h4 className="text-xl font-bold text-white">Show Your Appreciation</h4>
                 <p className="text-purple-200 text-center">
@@ -969,7 +862,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
             )}
 
             {/* Step 5: Review & Contact Info */}
-            {currentStep === 5 && (
+            {currentStep === 4 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 <h4 className="text-xl font-bold text-white">Review Your Booking</h4>
 
@@ -1086,7 +979,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
             )}
 
             {/* Step 6: Payment */}
-            {currentStep === 6 && clientSecret && (
+            {currentStep === 5 && clientSecret && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 {console.log("🎯 Payment step rendering - conditions met:", { currentStep, clientSecret: !!clientSecret })}
                 <h4 className="text-xl font-bold text-white">Complete Your Payment</h4>
@@ -1148,7 +1041,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
             )}
 
             {/* Debug: Show payment step state when it should render but doesn't */}
-            {currentStep === 6 && !clientSecret && (
+            {currentStep === 5 && !clientSecret && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6">
                   <h4 className="text-xl font-bold text-yellow-300 mb-4">Payment Step Debug</h4>
@@ -1174,7 +1067,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
             )}
 
             {/* Step 7: Order Confirmation */}
-            {currentStep === 7 && orderConfirmed && (
+            {currentStep === 6 && orderConfirmed && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1247,3 +1140,4 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
     </AnimatePresence>
   )
 }
+
