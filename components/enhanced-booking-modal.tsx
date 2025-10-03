@@ -751,7 +751,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     Back
                   </Button>
                   <Button
-                    onClick={() => setCurrentStep(4)}
+                    onClick={() => setCurrentStep(3)}
                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     Continue to Tips
@@ -852,7 +852,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                     Back
                   </Button>
                   <Button
-                    onClick={() => setCurrentStep(5)}
+                    onClick={() => setCurrentStep(4)}
                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     Continue to Review
