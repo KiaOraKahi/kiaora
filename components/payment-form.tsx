@@ -121,7 +121,6 @@ export default function PaymentForm({
         />
       </div>
 
-      {/* Error Display */}
       {paymentError && (
         <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
           <div className="flex items-center gap-2 text-red-300 mb-2">
