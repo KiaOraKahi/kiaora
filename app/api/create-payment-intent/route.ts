@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { celebrityId, amount, bookingData, orderItems, paymentType = "booking" } = await request.json()
+    const { celebrityId, amount, bookingData, orderItems, paymentType = "booking",revenueSplit } = await request.json()
 
     console.log(`🔄 Creating ${paymentType} payment intent for celebrity:`, celebrityId)
     console.log("💰 Amount:", amount)
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       amount,
       bookingData,
       orderItems,
+      revenueSplit
     })
   } catch (error) {
     console.error("❌ Payment intent creation error:", error)
@@ -76,12 +77,14 @@ async function handleBookingPayment({
   amount,
   bookingData,
   orderItems,
+  revenueSplit
 }: {
   session: any
   celebrity: any
   amount: number
   bookingData: any
   orderItems: any[]
+  revenueSplit:any
 }) {
   // Validate booking data
   if (!bookingData.recipientName || !bookingData.occasion || !bookingData.personalMessage || !bookingData.email) {
@@ -117,7 +120,7 @@ async function handleBookingPayment({
       totalAmount: amount,
       celebrityAmount: celebrityAmount,
       platformFee: platformFee,
-      currency: "usd",
+      currency: "nzd",
       status: "PENDING",
       paymentStatus: "PENDING",
       transferStatus: "PENDING",
@@ -131,6 +134,7 @@ async function handleBookingPayment({
       phone: bookingData.phone || null,
       scheduledDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate) : null,
       scheduledTime: bookingData.scheduledTime || null,
+      // revenueSplit
     },
   })
 
@@ -186,7 +190,7 @@ async function handleBookingPayment({
   console.log("💳 Creating Stripe PaymentIntent...")
   const paymentIntent = await stripe.paymentIntents.create({
     amount: amountInCents, // Already in cents
-    currency: "usd",
+    currency: "nzd",
     description: `Booking: ${celebrity.user.name} for ${bookingData.recipientName}`,
     metadata: {
       type: "booking",
@@ -196,6 +200,13 @@ async function handleBookingPayment({
       celebrityName: celebrity.user.name || "Unknown",
       userId: session.user.id,
       userName: session.user.name || "Unknown",
+      baseAmount: revenueSplit.baseAmount.toString(),
+      tipAmount: revenueSplit.tipAmount.toString(),
+      gstAmount: revenueSplit.gstAmount.toString(),
+      otherFeesAmount: revenueSplit.otherFeesAmount.toString(),
+      celebrityShare: revenueSplit.celebrityShare.toString(),
+      platformShare: revenueSplit.totalPlatformShare.toString(),
+      revenueSplit: revenueSplit.splitPercentage,
       // Payment info (no splits calculated yet)
       totalAmount: amountInCents.toString(),
       // Connect account info
@@ -279,7 +290,7 @@ async function handleTipPayment({
       userId: session.user.id,
       celebrityId: celebrity.id,
       amount: amount,
-      currency: "usd",
+      currency: "nzd",
       message: message || null,
       paymentStatus: "PENDING",
       transferStatus: "PENDING",
@@ -294,7 +305,7 @@ async function handleTipPayment({
 
   const paymentIntent = await stripe.paymentIntents.create({
     amount: amountInCents,
-    currency: "usd",
+    currency: "nzd",
     description: `Tip for ${celebrity.user.name} - Order ${orderNumber}`,
     metadata: {
       type: "tip",

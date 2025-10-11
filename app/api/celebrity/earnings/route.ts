@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     // Add Stripe available balance to pending earnings
     if (stripeBalance?.available && stripeBalance.available.length > 0) {
       const stripeAvailable = stripeBalance.available.reduce((sum, bal) => {
-        return sum + (bal.currency === 'usd' ? bal.amount / 100 : bal.amount / 100)
+        return sum + (bal.currency === 'nzd' ? bal.amount / 100 : bal.amount / 100)
       }, 0)
       totalPendingEarnings += stripeAvailable
     }
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
           // Create Stripe transfer
           const transfer = await stripe.transfers.create({
             amount: celebrityAmount,
-            currency: "usd",
+            currency: "nzd",
             destination: celebrity.stripeConnectAccountId,
             metadata: {
               orderId: order.id,

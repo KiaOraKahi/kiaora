@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     // Create transfer to celebrity
     const transfer = await stripe.transfers.create({
       amount: celebrityAmount,
-      currency: "usd",
+      currency: "nzd",
       destination: celebrity.stripeAccountId,
       metadata: {
         orderId: order.id,

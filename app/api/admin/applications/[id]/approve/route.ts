@@ -15,7 +15,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     const applicationId = params.id
-
+    const body = await request.json()
+    const { approveType } = body
     // Get the application
     const application = await prisma.celebrityApplication.findUnique({
       where: { id: applicationId },
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
            completionRate: 95,
            responseTime: application.availability || "24 hours",
            isActive: true,
+           isVIP:approveType=== "VIP" ? true : false, 
            verified: true,
            featured: false,
            tags: application.languages || ["English"],

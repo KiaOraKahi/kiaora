@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CheckCircle, XCircle, Eye, Mail, DollarSign, Calendar, FileText, Loader2, Video, Play, Download } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 
 interface Application {
   id: string
@@ -44,6 +45,10 @@ export function AdminApplications() {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
+  const [showApproveModal, setShowApproveModal] = useState(false)
+  const [approveType, setApproveType] = useState<"VIP" | "NON_VIP" | "">("")
+
+
   useEffect(() => {
     fetchApplications()
   }, [])
@@ -67,6 +72,12 @@ export function AdminApplications() {
     }
   }
 
+  const openApproveModal = (application: Application) => {
+    setSelectedApplication(application)
+    setApproveType("")
+    setShowApproveModal(true)
+  }
+
   const handleApprove = async (applicationId: string) => {
     try {
       setProcessingId(applicationId)
@@ -79,6 +90,37 @@ export function AdminApplications() {
       if (response.ok) {
         toast.success("Application approved successfully")
         fetchApplications()
+      } else {
+        toast.error(data.error || "Failed to approve application")
+      }
+    } catch (error) {
+      console.error("Error approving application:", error)
+      toast.error("Failed to approve application")
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const confirmApprove = async () => {
+    if (!selectedApplication || !approveType) {
+      toast.error("Please select VIP or Non-VIP")
+      return
+    }
+
+    try {
+      setProcessingId(selectedApplication.id)
+      const response = await fetch(`/api/admin/applications/${selectedApplication.id}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approveType }), // send VIP/Non-VIP
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success(`Application approved as ${approveType}`)
+        fetchApplications()
+        setShowApproveModal(false)
       } else {
         toast.error(data.error || "Failed to approve application")
       }
@@ -218,7 +260,7 @@ export function AdminApplications() {
                           View Details
                         </Button>
                         <Button
-                          onClick={() => handleApprove(application.id)}
+                          onClick={() => openApproveModal(application)}
                           disabled={processingId === application.id}
                           className="bg-green-600 hover:bg-green-700"
                         >
@@ -498,6 +540,52 @@ export function AdminApplications() {
                   </Button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {showApproveModal && selectedApplication && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-purple-500/30 rounded-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Approve Application
+            </h2>
+            <p className="text-purple-300 mb-4">
+              Select whether <span className="font-semibold text-white">{selectedApplication.fullName}</span> is VIP or Non-VIP.
+            </p>
+            
+            <Select value={approveType} onValueChange={(val: any) => setApproveType(val)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select VIP / Non-VIP" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="VIP">VIP</SelectItem>
+                <SelectItem value="NON_VIP">Non-VIP</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                onClick={() => setShowApproveModal(false)}
+                variant="outline"
+                className="border-gray-600 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmApprove}
+                disabled={processingId === selectedApplication.id}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {processingId === selectedApplication.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                )}
+                Confirm
+              </Button>
             </div>
           </div>
         </div>

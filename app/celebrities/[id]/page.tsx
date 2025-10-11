@@ -55,6 +55,7 @@ interface Celebrity {
   image: string
   coverImage: string
   category: string
+  isVIP:boolean
   rating: number
   reviewCount: number
   price: number
@@ -255,6 +256,7 @@ export default function CelebrityDetailPage() {
     fetchServices()
   }, [])
 
+  console.log("ce",celebrity)
   const handleBookNow = () => {
     if (!selectedService) {
       alert("Please select a service first")

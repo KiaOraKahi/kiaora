@@ -214,7 +214,7 @@ export async function GET(request: NextRequest) {
         })
         if (balance.available && balance.available.length > 0) {
           stripeAvailableBalance = balance.available.reduce((sum, bal) => {
-            return sum + (bal.currency === 'usd' ? bal.amount / 100 : bal.amount / 100)
+            return sum + (bal.currency === 'nzd' ? bal.amount / 100 : bal.amount / 100)
           }, 0)
         }
       } catch (error) {

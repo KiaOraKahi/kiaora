@@ -108,8 +108,8 @@ export default function CelebrityPayoutDashboard() {
             totalPayouts: 800000, // $8,000.00
           },
           stripeBalance: {
-            available: [{ amount: 450000, currency: "usd" }], // $4,500.00
-            pending: [{ amount: 200000, currency: "usd" }], // $2,000.00
+            available: [{ amount: 450000, currency: "nzd" }], // $4,500.00
+            pending: [{ amount: 200000, currency: "nzd" }], // $2,000.00
           },
           recentPayouts: [
             {
@@ -180,8 +180,8 @@ export default function CelebrityPayoutDashboard() {
           totalPayouts: 800000,
         },
         stripeBalance: {
-          available: [{ amount: 450000, currency: "usd" }],
-          pending: [{ amount: 200000, currency: "usd" }],
+          available: [{ amount: 450000, currency: "znd" }],
+          pending: [{ amount: 200000, currency: "znd" }],
         },
         recentPayouts: [],
         pendingOrders: []
@@ -259,9 +259,9 @@ export default function CelebrityPayoutDashboard() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NZ", {
       style: "currency",
-      currency: "USD",
+      currency: "NZD",
     }).format(amount / 100)
   }
 

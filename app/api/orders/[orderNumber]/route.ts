@@ -95,7 +95,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       status: order.status?.toLowerCase() || "pending",
       paymentStatus: order.paymentStatus?.toLowerCase() || "pending",
       totalAmount: order.totalAmount || 0,
-      currency: order.currency || "usd",
+      currency: order.currency || "nzd",
       createdAt: order.createdAt.toISOString(),
       paidAt: order.paidAt?.toISOString() || null,
       deliveredAt: order.deliveredAt?.toISOString() || null,
@@ -169,7 +169,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         {
           id: `txn_${order.id}`,
           amount: order.totalAmount || 0,
-          currency: order.currency || "usd",
+          currency: order.currency || "nzd",
           status: order.paymentStatus?.toLowerCase() || "pending",
           paymentMethod: "card",
           createdAt: order.createdAt.toISOString(),

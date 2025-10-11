@@ -281,6 +281,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           rating: Number((celebrity.averageRating || 4.5).toFixed(1)),
           reviewCount: celebrity._count.reviews || 0,
           price: celebrity.price || 299,
+          isVIP:celebrity.isVIP,
           responseTime: celebrity.responseTime || "24 hours",
           verified: celebrity.verified || false,
           featured: celebrity.featured || false,

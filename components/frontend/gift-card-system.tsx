@@ -451,7 +451,7 @@ export default function GiftCardSystem() {
                 <div className="flex items-center justify-between pt-4 border-t border-white/20">
                   <div className="text-white">
                     <span className="text-2xl font-bold">${customAmount || selectedAmount}</span>
-                    <span className="text-purple-200 text-sm ml-2">USD</span>
+                    <span className="text-purple-200 text-sm ml-2">NZD</span>
                   </div>
 
                   <div className="flex gap-3">

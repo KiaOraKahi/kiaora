@@ -107,6 +107,59 @@ const getAvailabilityData = (date: Date) => {
   }
 }
 
+const calculateRevenueSplit = (totalAmount: number, tipAmount: number, isVip: boolean) => {
+  // Constants for fee calculation
+  const GST_RATE = 0.15 // 15%
+  const OTHER_FEES_RATE = 0.089 // 8.9%
+  const TOTAL_FEES_RATE = GST_RATE + OTHER_FEES_RATE // 23.9%
+  
+  // Base amount (excluding tips)
+  const baseAmount = totalAmount - tipAmount
+  
+  // Calculate fees on base amount
+  const gstAmount = baseAmount * GST_RATE
+  const otherFeesAmount = baseAmount * OTHER_FEES_RATE
+  const totalFeesAmount = gstAmount + otherFeesAmount
+  
+  // Amount after fees (for revenue split)
+  const amountAfterFees = baseAmount - totalFeesAmount
+  
+  // Revenue split based on VIP status
+  let celebrityShare, platformShare
+  
+  if (isVip) {
+    // VIP: Celebrity gets 80% of amount after fees
+    celebrityShare = amountAfterFees * 0.80
+    platformShare = amountAfterFees * 0.20
+  } else {
+    // Non-VIP: Celebrity gets 73.9% of amount after fees
+    celebrityShare = amountAfterFees * 0.739
+    platformShare = amountAfterFees * 0.261
+  }
+  
+  // Add 100% of tips to celebrity share
+  celebrityShare += tipAmount
+  
+  // Total platform share includes fees + platform revenue share
+  const totalPlatformShare = totalFeesAmount + platformShare
+  
+  return {
+    totalAmount,
+    baseAmount,
+    tipAmount,
+    gstAmount: Math.round(gstAmount),
+    otherFeesAmount: Math.round(otherFeesAmount),
+    totalFeesAmount: Math.round(totalFeesAmount),
+    amountAfterFees: Math.round(amountAfterFees),
+    celebrityShare: Math.round(celebrityShare),
+    platformShare: Math.round(platformShare),
+    totalPlatformShare: Math.round(totalPlatformShare),
+    isVip,
+    splitPercentage: isVip ? "80/20" : "73.9/26.1"
+  }
+}
+
+
 export default function EnhancedBookingModal({ celebrity, selectedService, isOpen, onClose }: BookingModalProps) {
   const { data: session } = useSession()
   const router = useRouter()
@@ -122,6 +175,7 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
   const [orderConfirmed, setOrderConfirmed] = useState(false)
   const [orderNumber, setOrderNumber] = useState<string>()
   const [paymentError, setPaymentError] = useState<string>("")
+  const [revenueSplit, setRevenueSplit] = useState<any>(null)
 
   const [formData, setFormData] = useState({
     recipientName: "",
@@ -180,6 +234,16 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
 
     return basePrice + addOnTotal + availabilityPremium + tipAmount
   }
+
+  useEffect(() => {
+    if (selectedService) {
+      const total = calculateTotal()
+      const tip = formData.tipAmount || 0
+      const isVip = celebrity?.isVIP || false // Assuming celebrity object has isVip property
+      const split = calculateRevenueSplit(total, tip, isVip)
+      setRevenueSplit(split)
+    }
+  }, [selectedService, formData.tipAmount, selectedAddOns, availability, celebrity])
 
   const handleAddOnToggle = (addOnId: string) => {
     setSelectedAddOns((prev) => (prev.includes(addOnId) ? prev.filter((id) => id !== addOnId) : [...prev, addOnId]))
@@ -302,13 +366,16 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
         serviceId: selectedService.id,
         tipAmount: formData.tipAmount,
         tipMessage: formData.tipMessage,
+        revenueSplit: revenueSplit,
       }
 
-      console.log("📝 Sending payment request:", {
+
+        console.log("📝 Sending payment request:", {
         celebrityId: celebrity.id,
         amount: totalAmount,
         bookingData,
         orderItems,
+        revenueSplit,
       })
 
       const response = await fetch("/api/create-payment-intent", {
@@ -319,6 +386,8 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
           amount: totalAmount,
           bookingData,
           orderItems,
+          revenueSplit,
+          isVIP: celebrity?.isVIP || false,
         }),
       })
 
@@ -891,6 +960,49 @@ export default function EnhancedBookingModal({ celebrity, selectedService, isOpe
                         />
                       </div>
                     </div>
+                    {revenueSplit && (
+                      <div className="mt-6 bg-gradient-to-r from-blue-500/20 to-green-500/20 border border-blue-500/30 rounded-lg p-4">
+                        {/* <h5 className="text-white font-semibold mb-3">Revenue Allocation</h5>
+                        <div className="text-sm space-y-2">
+                          <div className="flex justify-between text-blue-200">
+                            <span>Total Amount:</span>
+                            <span>${revenueSplit.totalAmount}</span>
+                          </div>
+                          <div className="flex justify-between text-blue-200">
+                            <span>Base Amount:</span>
+                            <span>${revenueSplit.baseAmount}</span>
+                          </div>
+                          <div className="flex justify-between text-blue-200">
+                            <span>Tip Amount:</span>
+                            <span>${revenueSplit.tipAmount}</span>
+                          </div>
+                          <div className="flex justify-between text-green-200">
+                            <span>GST (15%):</span>
+                            <span>-${revenueSplit.gstAmount}</span>
+                          </div>
+                          <div className="flex justify-between text-green-200">
+                            <span>Other Fees (8.9%):</span>
+                            <span>-${revenueSplit.otherFeesAmount}</span>
+                          </div>
+                          <div className="border-t border-blue-500/30 pt-2 mt-2">
+                            <div className="flex justify-between text-white font-semibold">
+                              <span>Celebrity Share ({revenueSplit.splitPercentage}):</span>
+                              <span>${revenueSplit.celebrityShare}</span>
+                            </div>
+                            <div className="flex justify-between text-purple-300 text-xs">
+                              <span>Platform Share:</span>
+                              <span>${revenueSplit.totalPlatformShare}</span>
+                            </div>
+                          </div>
+                          <div className="text-blue-300 text-xs mt-2">
+                            <p>• {celebrity.isVip ? "VIP Celebrity - 80/20 Split" : "Non-VIP Celebrity - 73.9/26.1 Split"}</p>
+                            <p>• 100% of tips go directly to celebrity</p>
+                          </div>
+                        </div> */}
+                      </div>
+                    )}
+
+
                   </div>
 
                   <div>
