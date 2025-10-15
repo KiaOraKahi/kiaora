@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Mail,
   Clock,
@@ -24,64 +24,65 @@ import {
   X,
   Copy,
   ExternalLink,
-} from "lucide-react"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
+} from "lucide-react";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
+import { toast } from "sonner";
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 const contactMethods = [
   {
@@ -124,7 +125,7 @@ const contactMethods = [
     availability: "24/7",
     action: "sign-language",
   },
-]
+];
 
 const supportCategories = [
   {
@@ -151,10 +152,7 @@ const supportCategories = [
     description: "Website problems, video playback, and app support",
     action: "technical",
   },
-]
-
-
-
+];
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -163,35 +161,38 @@ export default function ContactPage() {
     category: "",
     subject: "",
     message: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Modal states
-  const [showEmailModal, setShowEmailModal] = useState(false)
-  const [showFAQModal, setShowFAQModal] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showFAQModal, setShowFAQModal] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
 
-  const [isMobile, setIsMobile] = useState(false)
-  
-    useEffect(() => {
-      const checkMobile = () => {
-        setIsMobile(window.innerWidth < 1024)
-      }
-  
-      checkMobile()
-      window.addEventListener("resize", checkMobile)
-      return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/support", {
@@ -200,36 +201,38 @@ export default function ContactPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok) {
-        setIsSubmitted(true)
+        setIsSubmitted(true);
         // Show success message with ticket number
-        toast.success(`Support request submitted! Ticket: ${result.ticketNumber}`)
-        
+        toast.success(
+          `Support request submitted! Ticket: ${result.ticketNumber}`
+        );
+
         // Reset form after 3 seconds
         setTimeout(() => {
-          setIsSubmitted(false)
+          setIsSubmitted(false);
           setFormData({
             name: "",
             email: "",
             category: "",
             subject: "",
             message: "",
-          })
-        }, 3000)
+          });
+        }, 3000);
       } else {
-        toast.error(result.error || "Failed to submit support request")
+        toast.error(result.error || "Failed to submit support request");
       }
     } catch (error) {
-      console.error("Support request error:", error)
-      toast.error("Failed to submit support request. Please try again.")
+      console.error("Support request error:", error);
+      toast.error("Failed to submit support request. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleContactMethodClick = (action: string) => {
     switch (action) {
@@ -237,29 +240,31 @@ export default function ContactPage() {
       case "general":
       case "billing":
       case "sign-language":
-        setShowEmailModal(true)
-        break
+        setShowEmailModal(true);
+        break;
     }
-  }
+  };
 
   const handleSupportCategoryClick = (action: string) => {
-    setFormData((prev) => ({ ...prev, category: action }))
+    setFormData((prev) => ({ ...prev, category: action }));
     // Scroll to form
-    document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" })
-  }
+    document
+      .getElementById("contact-form")
+      ?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+    navigator.clipboard.writeText(text);
     // You could add a toast notification here
-  }
+  };
 
   const handleQuickAction = (action: string) => {
     switch (action) {
       case "faq":
-        setShowFAQModal(true)
-        break
+        setShowFAQModal(true);
+        break;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -274,7 +279,11 @@ export default function ContactPage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
               <Sparkles className="w-4 h-4 mr-2" />
               Contact Support
@@ -283,8 +292,9 @@ export default function ContactPage() {
               We're Here to Help
             </h1>
             <p className="text-xl sm:text-2xl text-purple-200 max-w-4xl mx-auto leading-relaxed">
-              Get in touch with our support team through your preferred method. We're committed to providing you with
-              the best possible experience.
+              Get in touch with our support team through your preferred method.
+              We're committed to providing you with the best possible
+              experience.
             </p>
           </motion.div>
         </div>
@@ -300,9 +310,12 @@ export default function ContactPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Choose Your Preferred Contact Method</h2>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Choose Your Preferred Contact Method
+            </h2>
             <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-              We offer multiple ways to get in touch, so you can reach us however works best for you.
+              We offer multiple ways to get in touch, so you can reach us
+              however works best for you.
             </p>
           </motion.div>
 
@@ -325,7 +338,9 @@ export default function ContactPage() {
                     >
                       <div className="text-white">{method.icon}</div>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-3">{method.title}</h3>
+                    <h3 className="text-xl font-bold text-white mb-3">
+                      {method.title}
+                    </h3>
                     <p className="text-purple-200 mb-4">{method.description}</p>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-center gap-2 text-purple-300">
@@ -336,7 +351,9 @@ export default function ContactPage() {
                         <Clock className="w-4 h-4" />
                         <span>{method.responseTime}</span>
                       </div>
-                      <div className="text-green-400 font-medium">{method.availability}</div>
+                      <div className="text-green-400 font-medium">
+                        {method.availability}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -347,7 +364,10 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form and Support Categories */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5" id="contact-form">
+      <section
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5"
+        id="contact-form"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16">
             {/* Contact Form */}
@@ -359,9 +379,12 @@ export default function ContactPage() {
             >
               <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                 <CardContent className="p-8">
-                  <h3 className="text-3xl font-bold text-white mb-6">Send us a Message</h3>
+                  <h3 className="text-3xl font-bold text-white mb-6">
+                    Send us a Message
+                  </h3>
                   <p className="text-purple-200 mb-8">
-                    Fill out the form below and we'll get back to you as soon as possible.
+                    Fill out the form below and we'll get back to you as soon as
+                    possible.
                   </p>
 
                   {isSubmitted ? (
@@ -371,16 +394,22 @@ export default function ContactPage() {
                       className="text-center py-12"
                     >
                       <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                      <h4 className="text-2xl font-bold text-white mb-2">Message Sent!</h4>
+                      <h4 className="text-2xl font-bold text-white mb-2">
+                        Message Sent!
+                      </h4>
                       <p className="text-purple-200">
-                        Thank you for contacting us. We'll get back to you within 24 hours.
+                        Thank you for contacting us. We'll get back to you
+                        within 24 hours.
                       </p>
                     </motion.div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid md:grid-cols-2 gap-6">
                         <div>
-                          <Label htmlFor="name" className="text-white mb-2 block">
+                          <Label
+                            htmlFor="name"
+                            className="text-white mb-2 block"
+                          >
                             Full Name *
                           </Label>
                           <Input
@@ -395,7 +424,10 @@ export default function ContactPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="email" className="text-white mb-2 block">
+                          <Label
+                            htmlFor="email"
+                            className="text-white mb-2 block"
+                          >
                             Email Address *
                           </Label>
                           <Input
@@ -412,7 +444,10 @@ export default function ContactPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="category" className="text-white mb-2 block">
+                        <Label
+                          htmlFor="category"
+                          className="text-white mb-2 block"
+                        >
                           Support Category *
                         </Label>
                         <select
@@ -448,7 +483,10 @@ export default function ContactPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="subject" className="text-white mb-2 block">
+                        <Label
+                          htmlFor="subject"
+                          className="text-white mb-2 block"
+                        >
                           Subject *
                         </Label>
                         <Input
@@ -464,7 +502,10 @@ export default function ContactPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="message" className="text-white mb-2 block">
+                        <Label
+                          htmlFor="message"
+                          className="text-white mb-2 block"
+                        >
                           Message *
                         </Label>
                         <Textarea
@@ -513,7 +554,9 @@ export default function ContactPage() {
               {/* Support Categories */}
               <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                 <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-white mb-6">What can we help you with?</h3>
+                  <h3 className="text-2xl font-bold text-white mb-6">
+                    What can we help you with?
+                  </h3>
                   <div className="space-y-4">
                     {supportCategories.map((category, index) => (
                       <motion.div
@@ -523,12 +566,20 @@ export default function ContactPage() {
                         transition={{ duration: 0.4, delay: index * 0.1 }}
                         viewport={{ once: true }}
                         className="flex items-start gap-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-200 cursor-pointer"
-                        onClick={() => handleSupportCategoryClick(category.action)}
+                        onClick={() =>
+                          handleSupportCategoryClick(category.action)
+                        }
                       >
-                        <div className="text-purple-400 mt-1">{category.icon}</div>
+                        <div className="text-purple-400 mt-1">
+                          {category.icon}
+                        </div>
                         <div>
-                          <h4 className="text-white font-semibold mb-1">{category.title}</h4>
-                          <p className="text-purple-200 text-sm">{category.description}</p>
+                          <h4 className="text-white font-semibold mb-1">
+                            {category.title}
+                          </h4>
+                          <p className="text-purple-200 text-sm">
+                            {category.description}
+                          </p>
                         </div>
                       </motion.div>
                     ))}
@@ -539,7 +590,9 @@ export default function ContactPage() {
               {/* FAQ Section */}
               <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                 <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-white mb-6">Need Quick Help?</h3>
+                  <h3 className="text-2xl font-bold text-white mb-6">
+                    Need Quick Help?
+                  </h3>
                   <div className="space-y-4">
                     <Button
                       variant="outline"
@@ -557,8 +610,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-
-
       {/* Response Time Guarantee */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -570,17 +621,24 @@ export default function ContactPage() {
         >
           <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
             <Clock className="w-16 h-16 text-purple-400 mx-auto mb-6" />
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Our Response Time Guarantee</h2>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Our Response Time Guarantee
+            </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              We're committed to providing fast, helpful support. Here's what you can expect:
+              We're committed to providing fast, helpful support. Here's what
+              you can expect:
             </p>
             <div className="grid md:grid-cols-2 gap-6 text-center">
               <div>
-                <div className="text-3xl font-bold text-blue-400 mb-2">{"< 24 hours"}</div>
+                <div className="text-3xl font-bold text-blue-400 mb-2">
+                  {"< 24 hours"}
+                </div>
                 <div className="text-purple-200">Email Response</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-green-400 mb-2">24/7</div>
+                <div className="text-3xl font-bold text-green-400 mb-2">
+                  24/7
+                </div>
                 <div className="text-purple-200">Email Support Available</div>
               </div>
             </div>
@@ -607,7 +665,11 @@ export default function ContactPage() {
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-white">Email Support</h3>
-                <Button variant="ghost" size="icon" onClick={() => setShowEmailModal(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowEmailModal(false)}
+                >
                   <X className="w-5 h-5 text-white" />
                 </Button>
               </div>
@@ -615,40 +677,72 @@ export default function ContactPage() {
                 <div className="flex items-center gap-3 p-4 bg-white/10 rounded-lg">
                   <Mail className="w-6 h-6 text-blue-400" />
                   <div className="flex-1">
-                    <div className="text-white font-medium">support@kiaora.com</div>
-                    <div className="text-purple-200 text-sm">General support inquiries</div>
+                    <div className="text-white font-medium">
+                      support@kiaora.com
+                    </div>
+                    <div className="text-purple-200 text-sm">
+                      General support inquiries
+                    </div>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => copyToClipboard("support@kiaora.com")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard("support@kiaora.com")}
+                  >
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-white/10 rounded-lg">
                   <Mail className="w-6 h-6 text-green-400" />
                   <div className="flex-1">
-                    <div className="text-white font-medium">hello@kiaora.com</div>
-                    <div className="text-purple-200 text-sm">General questions and information</div>
+                    <div className="text-white font-medium">
+                      hello@kiaora.com
+                    </div>
+                    <div className="text-purple-200 text-sm">
+                      General questions and information
+                    </div>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => copyToClipboard("hello@kiaora.com")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard("hello@kiaora.com")}
+                  >
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-white/10 rounded-lg">
                   <Mail className="w-6 h-6 text-purple-400" />
                   <div className="flex-1">
-                    <div className="text-white font-medium">billing@kiaora.com</div>
-                    <div className="text-purple-200 text-sm">Billing and payment issues</div>
+                    <div className="text-white font-medium">
+                      billing@kiaora.com
+                    </div>
+                    <div className="text-purple-200 text-sm">
+                      Billing and payment issues
+                    </div>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => copyToClipboard("billing@kiaora.com")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard("billing@kiaora.com")}
+                  >
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-white/10 rounded-lg">
                   <Mail className="w-6 h-6 text-pink-400" />
                   <div className="flex-1">
-                    <div className="text-white font-medium">accessibility@kiaora.com</div>
-                    <div className="text-purple-200 text-sm">Sign language and accessibility support</div>
+                    <div className="text-white font-medium">
+                      accessibility@kiaora.com
+                    </div>
+                    <div className="text-purple-200 text-sm">
+                      Sign language and accessibility support
+                    </div>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => copyToClipboard("accessibility@kiaora.com")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard("accessibility@kiaora.com")}
+                  >
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
@@ -666,7 +760,6 @@ export default function ContactPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
 
       {/* FAQ Modal */}
       <AnimatePresence>
@@ -686,39 +779,58 @@ export default function ContactPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-white">Frequently Asked Questions</h3>
-                <Button variant="ghost" size="icon" onClick={() => setShowFAQModal(false)}>
+                <h3 className="text-2xl font-bold text-white">
+                  Frequently Asked Questions
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowFAQModal(false)}
+                >
                   <X className="w-5 h-5 text-white" />
                 </Button>
               </div>
 
               <div className="space-y-6">
                 <div className="p-4 bg-white/10 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2">How do I book a celebrity?</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    How do I book a celebrity?
+                  </h4>
                   <p className="text-purple-200 text-sm">
-                    Browse our celebrity list, select your favorite, fill out the request form with your details, and
-                    complete payment. You'll receive your personalized video within the promised timeframe.
+                    Browse our celebrity list, select your favourite, fill out
+                    the request form with your details, and complete payment.
+                    You'll receive your personalized video within the promised
+                    timeframe.
                   </p>
                 </div>
                 <div className="p-4 bg-white/10 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2">What if I'm not satisfied with my video?</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    What if I'm not satisfied with my video?
+                  </h4>
                   <p className="text-purple-200 text-sm">
-                    We offer a 100% satisfaction guarantee. If you're not happy with your video, we'll work with the
-                    celebrity to make it right or provide a full refund.
+                    We offer a 100% satisfaction guarantee. If you're not happy
+                    with your video, we'll work with the celebrity to make it
+                    right or provide a full refund.
                   </p>
                 </div>
                 <div className="p-4 bg-white/10 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2">How long does delivery take?</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    How long does delivery take?
+                  </h4>
                   <p className="text-purple-200 text-sm">
-                    Most celebrities deliver within 7 days, though some may be faster. You'll see the expected delivery
-                    time on each celebrity's profile before booking.
+                    Most celebrities deliver within 7 days, though some may be
+                    faster. You'll see the expected delivery time on each
+                    celebrity's profile before booking.
                   </p>
                 </div>
                 <div className="p-4 bg-white/10 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2">Can I request specific content?</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    Can I request specific content?
+                  </h4>
                   <p className="text-purple-200 text-sm">
-                    Yes! You can provide detailed instructions about what you'd like the celebrity to say, including
-                    specific names, occasions, and personal touches.
+                    Yes! You can provide detailed instructions about what you'd
+                    like the celebrity to say, including specific names,
+                    occasions, and personal touches.
                   </p>
                 </div>
               </div>
@@ -727,9 +839,9 @@ export default function ContactPage() {
                 <Button
                   className="bg-gradient-to-r from-purple-500 to-pink-500"
                   onClick={() => {
-                    setShowFAQModal(false)
+                    setShowFAQModal(false);
                     // Navigate to full FAQ page
-                    window.location.href = "/faq"
+                    window.location.href = "/faq";
                   }}
                 >
                   View All FAQs
@@ -742,5 +854,5 @@ export default function ContactPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

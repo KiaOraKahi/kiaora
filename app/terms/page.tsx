@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   FileText,
   Scale,
@@ -16,11 +16,11 @@ import {
   UserCheck,
   Gavel,
   Building,
-} from "lucide-react"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import { useEffect, useState } from "react"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
+} from "lucide-react";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import { useEffect, useState } from "react";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
 
 const termsSections = [
   {
@@ -114,7 +114,7 @@ const termsSections = [
     content: [
       {
         subtitle: "Service Pricing",
-        text: "KOK has services with set pricings to be paid by a User for a Video from You within a range determined by KOK.",
+        text: "KOK has services with set pricing to be paid by a User for a Video from You within a range determined by KOK.",
       },
       {
         subtitle: "Celebrity Fee Structure",
@@ -236,74 +236,74 @@ const termsSections = [
       },
     ],
   },
-]
+];
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 export default function TermsPage() {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -323,12 +323,16 @@ export default function TermsPage() {
             <div className="flex items-start gap-4">
               <AlertTriangle className="w-8 h-8 text-red-400 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="text-xl font-bold text-white mb-2">IMPORTANT NOTICE</h3>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  IMPORTANT NOTICE
+                </h3>
                 <p className="text-red-200 leading-relaxed">
-                  YOU ACKNOWLEDGE THAT KIA ORA KAHI IS A SOCIAL PLATFORM THAT WANTS TO OFFER A SAFE AND POSITIVE USER
-                  EXPERIENCE. KOK WILL NOT TOLERATE ANTI-SOCIAL OR INAPPROPRIATE BEHAVIOUR AND WILL TAKE APPROPRIATE
-                  ACTION IF AN OFFENSIVE VIDEO IS RECORDED, WHICH MAY INCLUDE BUT IS NOT LIMITED TO PERMANENT REMOVAL
-                  FROM THE PLATFORM.
+                  YOU ACKNOWLEDGE THAT KIA ORA KAHI IS A SOCIAL PLATFORM THAT
+                  WANTS TO OFFER A SAFE AND POSITIVE USER EXPERIENCE. KOK WILL
+                  NOT TOLERATE ANTI-SOCIAL OR INAPPROPRIATE BEHAVIOUR AND WILL
+                  TAKE APPROPRIATE ACTION IF AN OFFENSIVE VIDEO IS RECORDED,
+                  WHICH MAY INCLUDE BUT IS NOT LIMITED TO PERMANENT REMOVAL FROM
+                  THE PLATFORM.
                 </p>
               </div>
             </div>
@@ -339,7 +343,11 @@ export default function TermsPage() {
       {/* Hero Section */}
       <section className="relative pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
               <Sparkles className="w-4 h-4 mr-2" />
               Celebrity Terms & Conditions
@@ -348,9 +356,10 @@ export default function TermsPage() {
               Terms and Conditions
             </h1>
             <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
-              Please read these terms and conditions carefully as they impose rules, obligations, and other
-              responsibilities on you in respect of the use of KOK products. We encourage you to print and/or store a
-              copy of these terms.
+              Please read these terms and conditions carefully as they impose
+              rules, obligations, and other responsibilities on you in respect
+              of the use of KOK products. We encourage you to print and/or store
+              a copy of these terms.
             </p>
             <div className="text-purple-300">
               <p>Updated 8 August 2025</p>
@@ -377,16 +386,22 @@ export default function TermsPage() {
                       <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
                         <div className="text-white">{section.icon}</div>
                       </div>
-                      <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">{section.title}</h2>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
+                        {section.title}
+                      </h2>
                     </div>
 
                     <div className="space-y-6">
                       {section.content.map((item, idx) => (
                         <div key={idx}>
                           {"subtitle" in item && item.subtitle && (
-                            <h3 className="text-xl font-semibold text-white mb-3 text-shadow">{item.subtitle}</h3>
+                            <h3 className="text-xl font-semibold text-white mb-3 text-shadow">
+                              {item.subtitle}
+                            </h3>
                           )}
-                          <p className="text-purple-200 leading-relaxed text-base">{item.text}</p>
+                          <p className="text-purple-200 leading-relaxed text-base">
+                            {item.text}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -413,28 +428,37 @@ export default function TermsPage() {
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">Key Definitions</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
+                    Key Definitions
+                  </h2>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-semibold text-white mb-2">Completed Video</h4>
+                      <h4 className="font-semibold text-white mb-2">
+                        Completed Video
+                      </h4>
                       <p className="text-purple-200 text-sm">
-                        A Video that is filmed by You and sent to a User by KOK. Does not include videos where the User
-                        requests a refund.
+                        A Video that is filmed by You and sent to a User by KOK.
+                        Does not include videos where the User requests a
+                        refund.
                       </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-white mb-2">Fee</h4>
                       <p className="text-purple-200 text-sm">
-                        The amount paid by KOK to You (70% of the service price).
+                        The amount paid by KOK to You (70% of the service
+                        price).
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-2">Offensive Video</h4>
+                      <h4 className="font-semibold text-white mb-2">
+                        Offensive Video
+                      </h4>
                       <p className="text-purple-200 text-sm">
-                        Content that is unlawful, hateful, discriminatory, defamatory, abusive, threatening, violent,
+                        Content that is unlawful, hateful, discriminatory,
+                        defamatory, abusive, threatening, violent,
                         inappropriate, or sexually suggestive.
                       </p>
                     </div>
@@ -443,20 +467,26 @@ export default function TermsPage() {
                     <div>
                       <h4 className="font-semibold text-white mb-2">Request</h4>
                       <p className="text-purple-200 text-sm">
-                        A purchase by a User to receive a personalised video from You.
+                        A purchase by a User to receive a personalised video
+                        from You.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-2">Celebrity Content</h4>
+                      <h4 className="font-semibold text-white mb-2">
+                        Celebrity Content
+                      </h4>
                       <p className="text-purple-200 text-sm">
-                        Videos, marketing materials, and other content relating to You as outlined in the agreement.
+                        Videos, marketing materials, and other content relating
+                        to You as outlined in the agreement.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-2">Products</h4>
+                      <h4 className="font-semibold text-white mb-2">
+                        Products
+                      </h4>
                       <p className="text-purple-200 text-sm">
-                        The Website, app, or other platforms operated by KOK that allow Celebrities to connect with
-                        fans.
+                        The Website, app, or other platforms operated by KOK
+                        that allow Celebrities to connect with fans.
                       </p>
                     </div>
                   </div>
@@ -482,7 +512,8 @@ export default function TermsPage() {
               Questions About Our Terms?
             </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              If you have any questions about these Terms and Conditions, please contact our team.
+              If you have any questions about these Terms and Conditions, please
+              contact our team.
             </p>
             <div className="space-y-4">
               <p className="text-purple-200">
@@ -501,5 +532,5 @@ export default function TermsPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

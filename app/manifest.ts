@@ -1,10 +1,10 @@
-import type { MetadataRoute } from "next"
+import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Kia Ora - Celebrity Messages",
     short_name: "Kia Ora",
-    description: "Book personalized messages from your favorite celebrities",
+    description: "Book personalized messages from your favourite celebrities",
     start_url: "/",
     display: "standalone",
     background_color: "#0f172a",
@@ -25,5 +25,5 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait-primary",
     scope: "/",
     lang: "en",
-  }
+  };
 }

@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { Label } from "@/components/ui/label"
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { ReviewModal } from "@/components/review-modal"
-import { TipModal } from "@/components/tip-modal"
-import VideoApprovalModal from "@/components/video-approval-modal"
-import VideoDeclineModal from "@/components/video-decline-modal"
+import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { ReviewModal } from "@/components/review-modal";
+import { TipModal } from "@/components/tip-modal";
+import VideoApprovalModal from "@/components/video-approval-modal";
+import VideoDeclineModal from "@/components/video-decline-modal";
 import {
   Download,
   Play,
@@ -29,125 +29,125 @@ import {
   ThumbsDown,
   Eye,
   MessageCircle,
-} from "lucide-react"
-import { format } from "date-fns"
-import Link from "next/link"
-import { useParams } from "next/navigation"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+} from "lucide-react";
+import { format } from "date-fns";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface OrderDetails {
-  id: string
-  orderNumber: string
-  status: string
-  approvalStatus?: string
-  approvedAt?: string | null
-  declinedAt?: string | null
-  declineReason?: string | null
-  revisionCount?: number
-  maxRevisions?: number
-  totalAmount: number
-  currency: string
-  paymentStatus: string
-  createdAt: string
-  deliveredAt: string | null
-  videoUrl: string | null
-  recipientName: string
-  occasion: string
-  personalMessage: string
-  specialInstructions: string | null
-  messageType: string
-  email: string
-  phone: string | null
-  scheduledDate: string | null
-  scheduledTime: string | null
+  id: string;
+  orderNumber: string;
+  status: string;
+  approvalStatus?: string;
+  approvedAt?: string | null;
+  declinedAt?: string | null;
+  declineReason?: string | null;
+  revisionCount?: number;
+  maxRevisions?: number;
+  totalAmount: number;
+  currency: string;
+  paymentStatus: string;
+  createdAt: string;
+  deliveredAt: string | null;
+  videoUrl: string | null;
+  recipientName: string;
+  occasion: string;
+  personalMessage: string;
+  specialInstructions: string | null;
+  messageType: string;
+  email: string;
+  phone: string | null;
+  scheduledDate: string | null;
+  scheduledTime: string | null;
   celebrity: {
-    id: string
-    name: string
-    image: string | null
-    category: string
-    verified: boolean
-  }
+    id: string;
+    name: string;
+    image: string | null;
+    category: string;
+    verified: boolean;
+  };
   user: {
-    id: string
-    name: string
-    email: string
-    image: string | null
-  }
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+  };
   booking: {
-    id: string
-    status: string
-  } | null
-  hasReviewed: boolean
+    id: string;
+    status: string;
+  } | null;
+  hasReviewed: boolean;
 }
 
 interface TipData {
-  id: string
-  amount: number
-  message: string | null
-  createdAt: string
-  paymentStatus: string
+  id: string;
+  amount: number;
+  message: string | null;
+  createdAt: string;
+  paymentStatus: string;
 }
 
 export default function OrderDetailsPage() {
-  const params = useParams()
-  const { data: session } = useSession()
-  const orderNumber = params?.orderNumber as string
-  const [order, setOrder] = useState<OrderDetails | null>(null)
-  const [tips, setTips] = useState<TipData[]>([])
-  const [totalTips, setTotalTips] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [videoLoading, setVideoLoading] = useState(false)
-  const [showApprovalModal, setShowApprovalModal] = useState(false)
-  const [showDeclineModal, setShowDeclineModal] = useState(false)
-  const router = useRouter()
+  const params = useParams();
+  const { data: session } = useSession();
+  const orderNumber = params?.orderNumber as string;
+  const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [tips, setTips] = useState<TipData[]>([]);
+  const [totalTips, setTotalTips] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (orderNumber) {
-      fetchOrderDetails()
-      fetchTips()
+      fetchOrderDetails();
+      fetchTips();
     }
-  }, [orderNumber])
+  }, [orderNumber]);
 
   const fetchOrderDetails = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
-      const response = await fetch(`/api/orders/${orderNumber}`)
-      const data = await response.json()
+      const response = await fetch(`/api/orders/${orderNumber}`);
+      const data = await response.json();
 
       if (response.ok) {
-        setOrder(data)
+        setOrder(data);
       } else {
-        setError(data.error || "Order not found")
+        setError(data.error || "Order not found");
       }
     } catch (error) {
-      console.error("Error fetching order:", error)
-      setError("Failed to load order details")
+      console.error("Error fetching order:", error);
+      setError("Failed to load order details");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchTips = async () => {
     try {
-      const response = await fetch(`/api/tips?orderNumber=${orderNumber}`)
+      const response = await fetch(`/api/tips?orderNumber=${orderNumber}`);
       if (response.ok) {
-        const data = await response.json()
-        setTips(data.tips || [])
-        setTotalTips(data.totalTips || 0)
+        const data = await response.json();
+        setTips(data.tips || []);
+        setTotalTips(data.totalTips || 0);
       }
     } catch (error) {
-      console.error("Error fetching tips:", error)
+      console.error("Error fetching tips:", error);
     }
-  }
+  };
 
   const handleApproveVideo = async () => {
-    if (!order) return
+    if (!order) return;
 
     try {
       const response = await fetch(`/api/orders/${order.orderNumber}/approve`, {
@@ -155,9 +155,9 @@ export default function OrderDetailsPage() {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
         setOrder({
@@ -165,130 +165,134 @@ export default function OrderDetailsPage() {
           approvalStatus: "APPROVED",
           approvedAt: new Date().toISOString(),
           status: "COMPLETED",
-        })
+        });
 
-        toast.success("Video approved! Payment has been released to the celebrity.")
+        toast.success(
+          "Video approved! Payment has been released to the celebrity."
+        );
       } else {
-        throw new Error(data.error || "Failed to approve video")
+        throw new Error(data.error || "Failed to approve video");
       }
     } catch (error) {
-      console.error("Error approving video:", error)
-      toast.error("Failed to approve video. Please try again.")
-      throw error
+      console.error("Error approving video:", error);
+      toast.error("Failed to approve video. Please try again.");
+      throw error;
     }
-  }
+  };
 
   const handleTipSuccess = () => {
-    fetchTips()
-  }
+    fetchTips();
+  };
 
   const handleVideoDownload = async () => {
-    if (!order?.videoUrl) return
+    if (!order?.videoUrl) return;
 
     try {
-      setVideoLoading(true)
-      const response = await fetch(order.videoUrl)
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `${order.orderNumber}-video.mp4`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      setVideoLoading(true);
+      const response = await fetch(order.videoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${order.orderNumber}-video.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error("Error downloading video:", error)
-      toast.error("Failed to download video")
+      console.error("Error downloading video:", error);
+      toast.error("Failed to download video");
     } finally {
-      setVideoLoading(false)
+      setVideoLoading(false);
     }
-  }
+  };
 
   const getStatusColor = (status: string | undefined) => {
-    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30";
 
     switch (status.toLowerCase()) {
       case "pending":
-        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
       case "confirmed":
-        return "bg-blue-500/20 text-blue-300 border-blue-500/30"
+        return "bg-blue-500/20 text-blue-300 border-blue-500/30";
       case "pending_approval":
-        return "bg-purple-500/20 text-purple-300 border-purple-500/30"
+        return "bg-purple-500/20 text-purple-300 border-purple-500/30";
       case "completed":
-        return "bg-green-500/20 text-green-300 border-green-500/30"
+        return "bg-green-500/20 text-green-300 border-green-500/30";
       case "revision_requested":
-        return "bg-orange-500/20 text-orange-300 border-orange-500/30"
+        return "bg-orange-500/20 text-orange-300 border-orange-500/30";
       case "cancelled":
-        return "bg-red-500/20 text-red-300 border-red-500/30"
+        return "bg-red-500/20 text-red-300 border-red-500/30";
       default:
-        return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
     }
-  }
+  };
 
   const getApprovalStatusColor = (status: string | undefined) => {
-    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30";
 
     switch (status.toLowerCase()) {
       case "pending_approval":
-        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
       case "approved":
-        return "bg-green-500/20 text-green-300 border-green-500/30"
+        return "bg-green-500/20 text-green-300 border-green-500/30";
       case "declined":
-        return "bg-red-500/20 text-red-300 border-red-500/30"
+        return "bg-red-500/20 text-red-300 border-red-500/30";
       case "revision_requested":
-        return "bg-orange-500/20 text-orange-300 border-orange-500/30"
+        return "bg-orange-500/20 text-orange-300 border-orange-500/30";
       default:
-        return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
     }
-  }
+  };
 
   const getPaymentStatusColor = (status: string | undefined) => {
-    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+    if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30";
 
     switch (status.toLowerCase()) {
       case "succeeded":
-        return "bg-green-500/20 text-green-300 border-green-500/30"
+        return "bg-green-500/20 text-green-300 border-green-500/30";
       case "pending":
-        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
       case "failed":
-        return "bg-red-500/20 text-red-300 border-red-500/30"
+        return "bg-red-500/20 text-red-300 border-red-500/30";
       default:
-        return "bg-gray-500/20 text-gray-300 border-gray-500/30"
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
     }
-  }
+  };
 
   const formatStatusText = (status: string | undefined) => {
-    if (!status) return "Unknown"
-    return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
-  }
+    if (!status) return "Unknown";
+    return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  };
 
-  const safeFormatDate = (dateString: string | null | undefined, formatStr: string) => {
-    if (!dateString) return "Not available"
+  const safeFormatDate = (
+    dateString: string | null | undefined,
+    formatStr: string
+  ) => {
+    if (!dateString) return "Not available";
     try {
-      return format(new Date(dateString), formatStr)
+      return format(new Date(dateString), formatStr);
     } catch {
-      return "Invalid date"
+      return "Invalid date";
     }
-  }
+  };
 
   // Check if video is ready for approval
   const isVideoReadyForApproval = () => {
     return !!(
-    order?.videoUrl && 
-    order?.status?.toLowerCase() === "pending_approval"
-  );
-  }
+      order?.videoUrl && order?.status?.toLowerCase() === "pending_approval"
+    );
+  };
 
   // Check if video has been approved
   const isVideoApproved = () => {
-    return order?.status.toLowerCase() === "completed"
-  }
+    return order?.status.toLowerCase() === "completed";
+  };
 
   // Check if tips and reviews should be allowed
   const allowTipsAndReviews = () => {
-    return isVideoApproved()
-  }
+    return isVideoApproved();
+  };
 
   if (loading) {
     return (
@@ -302,7 +306,7 @@ export default function OrderDetailsPage() {
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !order) {
@@ -318,16 +322,22 @@ export default function OrderDetailsPage() {
           <div className="container mx-auto px-4 pt-24 pb-12">
             <div className="text-center">
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-              <h1 className="text-4xl font-bold text-white mb-4">Order Not Found</h1>
-              <p className="text-purple-200 mb-6">{error || "Order not found"}</p>
+              <h1 className="text-4xl font-bold text-white mb-4">
+                Order Not Found
+              </h1>
+              <p className="text-purple-200 mb-6">
+                {error || "Order not found"}
+              </p>
               <Link href="/orders">
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500">Back to Orders</Button>
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-500">
+                  Back to Orders
+                </Button>
               </Link>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -346,23 +356,38 @@ export default function OrderDetailsPage() {
           {/* Header */}
           <div className="mb-8">
             <Link href="/orders">
-              <Button variant="outline" className="mb-4 bg-white/10 border-white/20 text-white hover:bg-white/20">
+              <Button
+                variant="outline"
+                className="mb-4 bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Orders
               </Button>
             </Link>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">Order Details</h1>
-                <p className="text-purple-200">Order #{order.orderNumber || "Unknown"}</p>
+                <h1 className="text-4xl font-bold text-white mb-2">
+                  Order Details
+                </h1>
+                <p className="text-purple-200">
+                  Order #{order.orderNumber || "Unknown"}
+                </p>
               </div>
               <div className="text-right space-y-2">
-                <Badge className={`text-lg px-4 py-2 ${getStatusColor(order.status)}`}>
+                <Badge
+                  className={`text-lg px-4 py-2 ${getStatusColor(
+                    order.status
+                  )}`}
+                >
                   {formatStatusText(order.status)}
                 </Badge>
                 {order.approvalStatus && (
                   <div>
-                    <Badge className={`text-sm px-3 py-1 ${getApprovalStatusColor(order.approvalStatus)}`}>
+                    <Badge
+                      className={`text-sm px-3 py-1 ${getApprovalStatusColor(
+                        order.approvalStatus
+                      )}`}
+                    >
                       {formatStatusText(order.approvalStatus)}
                     </Badge>
                   </div>
@@ -390,7 +415,11 @@ export default function OrderDetailsPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="relative bg-black rounded-lg overflow-hidden">
-                      <video controls className="w-full h-auto max-h-96" poster="/placeholder.svg?height=400&width=600">
+                      <video
+                        controls
+                        className="w-full h-auto max-h-96"
+                        poster="/placeholder.svg?height=400&width=600"
+                      >
                         <source src={order.videoUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
@@ -401,11 +430,14 @@ export default function OrderDetailsPage() {
                       <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-6">
                         <div className="flex items-center gap-2 mb-4">
                           <Eye className="w-5 h-5 text-purple-400" />
-                          <h3 className="text-lg font-semibold text-white">Review Your Video</h3>
+                          <h3 className="text-lg font-semibold text-white">
+                            Review Your Video
+                          </h3>
                         </div>
                         <p className="text-purple-200 text-sm mb-4">
-                          Please review your video message. Once you approve it, payment will be released to{" "}
-                          {order.celebrity?.name} and you'll be able to leave tips.
+                          Please review your video message. Once you approve it,
+                          payment will be released to {order.celebrity?.name}{" "}
+                          and you'll be able to leave tips.
                         </p>
 
                         <div className="flex gap-3">
@@ -472,20 +504,35 @@ export default function OrderDetailsPage() {
                     {/* Approval Status Messages */}
                     {order.approvedAt && (
                       <p className="text-green-200 text-sm">
-                        ✅ Approved on {safeFormatDate(order.approvedAt, "MMMM d, yyyy 'at' h:mm a")}
+                        ✅ Approved on{" "}
+                        {safeFormatDate(
+                          order.approvedAt,
+                          "MMMM d, yyyy 'at' h:mm a"
+                        )}
                       </p>
                     )}
                     {order.declinedAt && order.declineReason && (
                       <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
                         <p className="text-orange-200 text-sm font-medium mb-2">
-                          Feedback sent on {safeFormatDate(order.declinedAt, "MMMM d, yyyy 'at' h:mm a")}:
+                          Feedback sent on{" "}
+                          {safeFormatDate(
+                            order.declinedAt,
+                            "MMMM d, yyyy 'at' h:mm a"
+                          )}
+                          :
                         </p>
-                        <p className="text-orange-100 text-sm italic">"{order.declineReason}"</p>
+                        <p className="text-orange-100 text-sm italic">
+                          "{order.declineReason}"
+                        </p>
                       </div>
                     )}
                     {order.deliveredAt && isVideoApproved() && (
                       <p className="text-purple-200 text-sm">
-                        Delivered on {safeFormatDate(order.deliveredAt, "MMMM d, yyyy 'at' h:mm a")}
+                        Delivered on{" "}
+                        {safeFormatDate(
+                          order.deliveredAt,
+                          "MMMM d, yyyy 'at' h:mm a"
+                        )}
                       </p>
                     )}
                   </CardContent>
@@ -503,27 +550,41 @@ export default function OrderDetailsPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-purple-200 text-sm">
-                      Love your video? Show {order.celebrity.name} some extra appreciation with a tip!
+                      Love your video? Show {order.celebrity.name} some extra
+                      appreciation with a tip!
                     </p>
 
                     {/* Tip History */}
                     {tips.length > 0 && (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-purple-200 text-sm">Your Tips:</span>
-                          <span className="text-white font-semibold">${totalTips.toLocaleString()}</span>
+                          <span className="text-purple-200 text-sm">
+                            Your Tips:
+                          </span>
+                          <span className="text-white font-semibold">
+                            ${totalTips.toLocaleString()}
+                          </span>
                         </div>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
                           {tips.map((tip) => (
-                            <div key={tip.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                            <div
+                              key={tip.id}
+                              className="flex items-center justify-between p-2 bg-white/5 rounded"
+                            >
                               <div className="flex items-center gap-2">
                                 <Gift className="w-4 h-4 text-pink-400" />
-                                <span className="text-white text-sm">${tip.amount}</span>
+                                <span className="text-white text-sm">
+                                  ${tip.amount}
+                                </span>
                                 {tip.message && (
-                                  <span className="text-purple-200 text-xs truncate max-w-32">"{tip.message}"</span>
+                                  <span className="text-purple-200 text-xs truncate max-w-32">
+                                    "{tip.message}"
+                                  </span>
                                 )}
                               </div>
-                              <span className="text-purple-300 text-xs">{safeFormatDate(tip.createdAt, "MMM d")}</span>
+                              <span className="text-purple-300 text-xs">
+                                {safeFormatDate(tip.createdAt, "MMM d")}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -545,7 +606,8 @@ export default function OrderDetailsPage() {
                     </TipModal>
 
                     <p className="text-purple-300 text-xs text-center">
-                      💝 100% of your tip goes directly to {order.celebrity.name}
+                      💝 100% of your tip goes directly to{" "}
+                      {order.celebrity.name}
                     </p>
                   </CardContent>
                 </Card>
@@ -566,9 +628,12 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3 p-4 bg-yellow-500/20 rounded-lg">
                           <Clock className="w-6 h-6 text-yellow-400" />
                           <div>
-                            <p className="text-white font-semibold">Waiting for Celebrity Response</p>
+                            <p className="text-white font-semibold">
+                              Waiting for Celebrity Response
+                            </p>
                             <p className="text-yellow-200 text-sm">
-                              {order.celebrity?.name || "The celebrity"} will review your request and respond soon.
+                              {order.celebrity?.name || "The celebrity"} will
+                              review your request and respond soon.
                             </p>
                           </div>
                         </div>
@@ -577,9 +642,12 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3 p-4 bg-blue-500/20 rounded-lg">
                           <CheckCircle className="w-6 h-6 text-blue-400" />
                           <div>
-                            <p className="text-white font-semibold">Request Accepted!</p>
+                            <p className="text-white font-semibold">
+                              Request Accepted!
+                            </p>
                             <p className="text-blue-200 text-sm">
-                              {order.celebrity?.name || "The celebrity"} is working on your video message.
+                              {order.celebrity?.name || "The celebrity"} is
+                              working on your video message.
                             </p>
                           </div>
                         </div>
@@ -588,10 +656,12 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3 p-4 bg-purple-500/20 rounded-lg">
                           <Eye className="w-6 h-6 text-purple-400" />
                           <div>
-                            <p className="text-white font-semibold">Video Ready for Review!</p>
+                            <p className="text-white font-semibold">
+                              Video Ready for Review!
+                            </p>
                             <p className="text-purple-200 text-sm">
-                              {order.celebrity?.name || "The celebrity"} has uploaded your video. Please review it
-                              above.
+                              {order.celebrity?.name || "The celebrity"} has
+                              uploaded your video. Please review it above.
                             </p>
                           </div>
                         </div>
@@ -600,9 +670,12 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3 p-4 bg-orange-500/20 rounded-lg">
                           <MessageCircle className="w-6 h-6 text-orange-400" />
                           <div>
-                            <p className="text-white font-semibold">Revision Requested</p>
+                            <p className="text-white font-semibold">
+                              Revision Requested
+                            </p>
                             <p className="text-orange-200 text-sm">
-                              {order.celebrity?.name || "The celebrity"} is working on the changes you requested.
+                              {order.celebrity?.name || "The celebrity"} is
+                              working on the changes you requested.
                             </p>
                           </div>
                         </div>
@@ -611,10 +684,13 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3 p-4 bg-red-500/20 rounded-lg">
                           <AlertCircle className="w-6 h-6 text-red-400" />
                           <div>
-                            <p className="text-white font-semibold">Request Declined</p>
+                            <p className="text-white font-semibold">
+                              Request Declined
+                            </p>
                             <p className="text-red-200 text-sm">
-                              Unfortunately, {order.celebrity?.name || "the celebrity"} was unable to fulfill this
-                              request.
+                              Unfortunately,{" "}
+                              {order.celebrity?.name || "the celebrity"} was
+                              unable to fulfil this request.
                             </p>
                           </div>
                         </div>
@@ -635,20 +711,34 @@ export default function OrderDetailsPage() {
                 <CardContent className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">Recipient</Label>
-                      <p className="text-white">{order.recipientName || "Not specified"}</p>
+                      <Label className="text-purple-200 text-sm font-medium">
+                        Recipient
+                      </Label>
+                      <p className="text-white">
+                        {order.recipientName || "Not specified"}
+                      </p>
                     </div>
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">Occasion</Label>
-                      <p className="text-white">{order.occasion || "Not specified"}</p>
+                      <Label className="text-purple-200 text-sm font-medium">
+                        Occasion
+                      </Label>
+                      <p className="text-white">
+                        {order.occasion || "Not specified"}
+                      </p>
                     </div>
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">Message Type</Label>
-                      <p className="text-white capitalize">{order.messageType || "video"}</p>
+                      <Label className="text-purple-200 text-sm font-medium">
+                        Message Type
+                      </Label>
+                      <p className="text-white capitalize">
+                        {order.messageType || "video"}
+                      </p>
                     </div>
                     {order.scheduledDate && (
                       <div>
-                        <Label className="text-purple-200 text-sm font-medium">Scheduled For</Label>
+                        <Label className="text-purple-200 text-sm font-medium">
+                          Scheduled For
+                        </Label>
                         <p className="text-white">
                           {safeFormatDate(order.scheduledDate, "MMMM d, yyyy")}
                           {order.scheduledTime && ` at ${order.scheduledTime}`}
@@ -660,7 +750,9 @@ export default function OrderDetailsPage() {
                   <Separator className="bg-white/20" />
 
                   <div>
-                    <Label className="text-purple-200 text-sm font-medium">Personal Message</Label>
+                    <Label className="text-purple-200 text-sm font-medium">
+                      Personal Message
+                    </Label>
                     <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
                       {order.personalMessage || "No message provided"}
                     </p>
@@ -668,8 +760,12 @@ export default function OrderDetailsPage() {
 
                   {order.specialInstructions && (
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">Special Instructions</Label>
-                      <p className="text-white bg-white/5 p-3 rounded-lg mt-2">{order.specialInstructions}</p>
+                      <Label className="text-purple-200 text-sm font-medium">
+                        Special Instructions
+                      </Label>
+                      <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
+                        {order.specialInstructions}
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -690,17 +786,27 @@ export default function OrderDetailsPage() {
                   <CardContent>
                     <div className="flex items-center gap-4 mb-4">
                       <Avatar className="w-16 h-16">
-                        <AvatarImage src={order.celebrity.image || "/placeholder.svg"} />
-                        <AvatarFallback>{(order.celebrity.name || "C").charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarImage
+                          src={order.celebrity.image || "/placeholder.svg"}
+                        />
+                        <AvatarFallback>
+                          {(order.celebrity.name || "C")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg font-semibold text-white">
                             {order.celebrity.name || "Unknown Celebrity"}
                           </h3>
-                          {order.celebrity.verified && <CheckCircle className="w-5 h-5 text-blue-400" />}
+                          {order.celebrity.verified && (
+                            <CheckCircle className="w-5 h-5 text-blue-400" />
+                          )}
                         </div>
-                        <p className="text-purple-200 text-sm">{order.celebrity.category || "Entertainment"}</p>
+                        <p className="text-purple-200 text-sm">
+                          {order.celebrity.category || "Entertainment"}
+                        </p>
                       </div>
                     </div>
                     <Link href={`/celebrities/${order.celebrity.id}`}>
@@ -720,27 +826,36 @@ export default function OrderDetailsPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-purple-200">Order Number</span>
-                    <span className="text-white font-mono">{order.orderNumber || "Unknown"}</span>
+                    <span className="text-white font-mono">
+                      {order.orderNumber || "Unknown"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-purple-200">Order Date</span>
-                    <span className="text-white">{safeFormatDate(order.createdAt, "MMM d, yyyy")}</span>
+                    <span className="text-white">
+                      {safeFormatDate(order.createdAt, "MMM d, yyyy")}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-purple-200">Total Amount</span>
                     <span className="text-white font-semibold">
-                      {(order.totalAmount || 0).toLocaleString()} {(order.currency || "NZD").toUpperCase()}
+                      {(order.totalAmount || 0).toLocaleString()}{" "}
+                      {(order.currency || "NZD").toUpperCase()}
                     </span>
                   </div>
                   {totalTips > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-purple-200">Tips Given</span>
-                      <span className="text-pink-400 font-semibold">+${totalTips.toLocaleString()}</span>
+                      <span className="text-pink-400 font-semibold">
+                        +${totalTips.toLocaleString()}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between items-center">
                     <span className="text-purple-200">Payment Status</span>
-                    <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                    <Badge
+                      className={getPaymentStatusColor(order.paymentStatus)}
+                    >
                       {formatStatusText(order.paymentStatus)}
                     </Badge>
                   </div>
@@ -750,12 +865,16 @@ export default function OrderDetailsPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-purple-200">Contact Email</span>
-                      <span className="text-white text-sm">{order.email || "Not provided"}</span>
+                      <span className="text-white text-sm">
+                        {order.email || "Not provided"}
+                      </span>
                     </div>
                     {order.phone && (
                       <div className="flex justify-between items-center">
                         <span className="text-purple-200">Phone</span>
-                        <span className="text-white text-sm">{order.phone}</span>
+                        <span className="text-white text-sm">
+                          {order.phone}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -847,10 +966,10 @@ export default function OrderDetailsPage() {
           }}
           onSuccess={() => {
             // Redirect to orders page after successful decline
-            router.push("/orders")
+            router.push("/orders");
           }}
         />
       )}
     </div>
-  )
+  );
 }

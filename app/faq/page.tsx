@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Search,
   ChevronDown,
@@ -17,10 +17,10 @@ import {
   CreditCard,
   Shield,
   Sparkles,
-} from "lucide-react"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
+} from "lucide-react";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
 
 const faqCategories = [
   {
@@ -53,7 +53,7 @@ const faqCategories = [
     icon: <Shield className="w-5 h-5" />,
     color: "from-indigo-500 to-purple-500",
   },
-]
+];
 
 const faqs = [
   {
@@ -61,7 +61,7 @@ const faqs = [
     category: "general",
     question: "What is Kia Ora and how does it work?",
     answer:
-      "Kia Ora is a platform that connects fans with their favorite celebrities for personalized video messages. You browse our celebrity roster, select your favorite, provide details about what you'd like them to say, complete payment, and receive your custom video message within the promised timeframe.",
+      "Kia Ora is a platform that connects fans with their favourite celebrities for personalized video messages. You browse our celebrity roster, select your favourite, provide details about what you'd like them to say, complete payment, and receive your custom video message within the promised timeframe.",
   },
   {
     id: 2,
@@ -145,7 +145,7 @@ const faqs = [
     category: "support",
     question: "What's your privacy policy?",
     answer:
-      "We take privacy seriously. Your personal information is never shared with third parties except as necessary to fulfill your order. Celebrity messages are private between you and the celebrity unless you choose to share them.",
+      "We take privacy seriously. Your personal information is never shared with third parties except as necessary to fulfil your order. Celebrity messages are private between you and the celebrity unless you choose to share them.",
   },
   {
     id: 14,
@@ -182,89 +182,90 @@ const faqs = [
     answer:
       "No hidden fees! The price you see is what you pay, unless you choose optional add-ons like rush delivery, extended length, or commercial licensing. All fees are clearly displayed before checkout.",
   },
-]
+];
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 export default function FAQPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const filteredFAQs = faqs.filter((faq) => {
     const matchesSearch =
       faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || faq.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || faq.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const toggleFAQ = (id: number) => {
-    setExpandedFAQ(expandedFAQ === id ? null : id)
-  }
+    setExpandedFAQ(expandedFAQ === id ? null : id);
+  };
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -275,7 +276,11 @@ export default function FAQPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
               <Sparkles className="w-4 h-4 mr-2" />
               Help Center
@@ -284,7 +289,8 @@ export default function FAQPage() {
               Frequently Asked Questions
             </h1>
             <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
-              Find answers to common questions about booking celebrity messages, payments, delivery, and more.
+              Find answers to common questions about booking celebrity messages,
+              payments, delivery, and more.
             </p>
 
             {/* Search Bar */}
@@ -320,7 +326,9 @@ export default function FAQPage() {
             {faqCategories.map((category) => (
               <Button
                 key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
+                variant={
+                  selectedCategory === category.id ? "default" : "outline"
+                }
                 onClick={() => setSelectedCategory(category.id)}
                 className={
                   selectedCategory === category.id
@@ -355,7 +363,9 @@ export default function FAQPage() {
                         className="w-full p-6 text-left flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
                         onClick={() => toggleFAQ(faq.id)}
                       >
-                        <h3 className="text-lg font-semibold text-white pr-4">{faq.question}</h3>
+                        <h3 className="text-lg font-semibold text-white pr-4">
+                          {faq.question}
+                        </h3>
                         {expandedFAQ === faq.id ? (
                           <ChevronUp className="w-5 h-5 text-purple-400 flex-shrink-0" />
                         ) : (
@@ -372,7 +382,9 @@ export default function FAQPage() {
                           className="border-t border-white/10"
                         >
                           <div className="p-6 pt-4">
-                            <p className="text-purple-200 leading-relaxed">{faq.answer}</p>
+                            <p className="text-purple-200 leading-relaxed">
+                              {faq.answer}
+                            </p>
                           </div>
                         </motion.div>
                       )}
@@ -384,8 +396,12 @@ export default function FAQPage() {
           ) : (
             <div className="text-center py-20">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-2xl font-bold text-white mb-2">No results found</h3>
-              <p className="text-purple-200">Try adjusting your search terms or browse different categories</p>
+              <h3 className="text-2xl font-bold text-white mb-2">
+                No results found
+              </h3>
+              <p className="text-purple-200">
+                Try adjusting your search terms or browse different categories
+              </p>
             </div>
           )}
         </div>
@@ -402,9 +418,12 @@ export default function FAQPage() {
         >
           <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
             <MessageCircle className="w-16 h-16 text-purple-400 mx-auto mb-6" />
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Still Have Questions?</h2>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Still Have Questions?
+            </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              Can't find what you're looking for? Our support team is here to help you 24/7.
+              Can't find what you're looking for? Our support team is here to
+              help you 24/7.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -429,5 +448,5 @@ export default function FAQPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

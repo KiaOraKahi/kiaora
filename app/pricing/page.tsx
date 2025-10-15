@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle, X, Star, Zap, Crown, Gift, Sparkles } from "lucide-react"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, X, Star, Zap, Crown, Gift, Sparkles } from "lucide-react";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
 
 const pricingTiers = [
   {
@@ -26,7 +26,12 @@ const pricingTiers = [
       "Personal use license",
       "Email support",
     ],
-    notIncluded: ["Rush delivery", "4K quality", "Commercial use", "Extended length"],
+    notIncluded: [
+      "Rush delivery",
+      "4K quality",
+      "Commercial use",
+      "Extended length",
+    ],
     celebrities: "Emerging influencers, local celebrities",
   },
   {
@@ -71,7 +76,7 @@ const pricingTiers = [
     notIncluded: [],
     celebrities: "Hollywood A-listers, Grammy winners, Olympic champions",
   },
-]
+];
 
 const addOns = [
   {
@@ -98,7 +103,7 @@ const addOns = [
     description: "Beautiful digital gift presentation",
     icon: <Gift className="w-5 h-5" />,
   },
-]
+];
 
 const faqs = [
   {
@@ -114,84 +119,86 @@ const faqs = [
   {
     question: "What if the celebrity doesn't deliver?",
     answer:
-      "We have a 100% delivery guarantee. If a celebrity doesn't fulfill your request, we'll provide a full refund or help you book with another celebrity.",
+      "We have a 100% delivery guarantee. If a celebrity doesn't fulfil your request, we'll provide a full refund or help you book with another celebrity.",
   },
   {
     question: "Are there any hidden fees?",
     answer:
       "No hidden fees! The price you see is what you pay, unless you choose to add optional extras like rush delivery or extended length.",
   },
-]
+];
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<"one-time" | "subscription">("one-time")
-  const [selectedTier, setSelectedTier] = useState<string | null>(null)
+  const [billingCycle, setBillingCycle] = useState<"one-time" | "subscription">(
+    "one-time"
+  );
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
 
-  const [isMobile, setIsMobile] = useState(false)
-      
-    useEffect(() => {
-      const checkMobile = () => {
-        setIsMobile(window.innerWidth < 1024)
-      }
-  
-      checkMobile()
-      window.addEventListener("resize", checkMobile)
-      return () => window.removeEventListener("resize", checkMobile)
-    }, [])
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -203,7 +210,11 @@ export default function PricingPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
               <Sparkles className="w-4 h-4 mr-2" />
               Transparent Pricing
@@ -212,7 +223,8 @@ export default function PricingPage() {
               Simple, Fair Pricing
             </h1>
             <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
-              Choose the perfect plan for your celebrity message needs. No hidden fees, no surprises.
+              Choose the perfect plan for your celebrity message needs. No
+              hidden fees, no surprises.
             </p>
           </motion.div>
         </div>
@@ -233,7 +245,9 @@ export default function PricingPage() {
                 className={`relative ${tier.popular ? "scale-105" : ""}`}
               >
                 <Card
-                  className={`bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full overflow-hidden ${tier.popular ? "border-purple-500/50" : ""}`}
+                  className={`bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full overflow-hidden ${
+                    tier.popular ? "border-purple-500/50" : ""
+                  }`}
                 >
                   {tier.popular && (
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -245,38 +259,56 @@ export default function PricingPage() {
 
                   <CardContent className="p-8">
                     <div className="text-center mb-8">
-                      <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
+                      <h3 className="text-2xl font-bold text-white mb-2">
+                        {tier.name}
+                      </h3>
                       <p className="text-purple-200 mb-6">{tier.description}</p>
 
                       <div className="mb-6">
                         <div className="flex items-center justify-center gap-2">
-                          <span className="text-5xl font-bold text-white">${tier.price}</span>
+                          <span className="text-5xl font-bold text-white">
+                            ${tier.price}
+                          </span>
                           {tier.originalPrice && (
-                            <span className="text-2xl text-purple-300 line-through">${tier.originalPrice}</span>
+                            <span className="text-2xl text-purple-300 line-through">
+                              ${tier.originalPrice}
+                            </span>
                           )}
                         </div>
-                        <p className="text-purple-200 text-sm mt-2">per message</p>
+                        <p className="text-purple-200 text-sm mt-2">
+                          per message
+                        </p>
                       </div>
 
-                      <p className="text-purple-300 text-sm mb-6">{tier.celebrities}</p>
+                      <p className="text-purple-300 text-sm mb-6">
+                        {tier.celebrities}
+                      </p>
                     </div>
 
                     <div className="space-y-4 mb-8">
-                      <h4 className="text-white font-semibold">What's included:</h4>
+                      <h4 className="text-white font-semibold">
+                        What's included:
+                      </h4>
                       {tier.features.map((feature, idx) => (
                         <div key={idx} className="flex items-start gap-3">
                           <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                          <span className="text-purple-200 text-sm">{feature}</span>
+                          <span className="text-purple-200 text-sm">
+                            {feature}
+                          </span>
                         </div>
                       ))}
 
                       {tier.notIncluded.length > 0 && (
                         <>
-                          <h4 className="text-white font-semibold mt-6">Not included:</h4>
+                          <h4 className="text-white font-semibold mt-6">
+                            Not included:
+                          </h4>
                           {tier.notIncluded.map((feature, idx) => (
                             <div key={idx} className="flex items-start gap-3">
                               <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                              <span className="text-purple-300 text-sm">{feature}</span>
+                              <span className="text-purple-300 text-sm">
+                                {feature}
+                              </span>
                             </div>
                           ))}
                         </>
@@ -284,7 +316,11 @@ export default function PricingPage() {
                     </div>
 
                     <Button
-                      className={`w-full ${tier.popular ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600" : "bg-white/10 border border-white/20 hover:bg-white/20"} text-white`}
+                      className={`w-full ${
+                        tier.popular
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                          : "bg-white/10 border border-white/20 hover:bg-white/20"
+                      } text-white`}
                       onClick={() => setSelectedTier(tier.name)}
                     >
                       Choose {tier.name}
@@ -307,7 +343,9 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Optional Add-ons</h2>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Optional Add-ons
+            </h2>
             <p className="text-xl text-purple-200 max-w-3xl mx-auto">
               Enhance your celebrity message with these premium features.
             </p>
@@ -327,9 +365,15 @@ export default function PricingPage() {
                     <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <div className="text-white">{addOn.icon}</div>
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2">{addOn.name}</h3>
-                    <p className="text-purple-200 text-sm mb-4">{addOn.description}</p>
-                    <div className="text-2xl font-bold text-purple-300">+${addOn.price}</div>
+                    <h3 className="text-lg font-bold text-white mb-2">
+                      {addOn.name}
+                    </h3>
+                    <p className="text-purple-200 text-sm mb-4">
+                      {addOn.description}
+                    </p>
+                    <div className="text-2xl font-bold text-purple-300">
+                      +${addOn.price}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -348,8 +392,12 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Frequently Asked Questions</h2>
-            <p className="text-xl text-purple-200">Everything you need to know about our pricing.</p>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-purple-200">
+              Everything you need to know about our pricing.
+            </p>
           </motion.div>
 
           <div className="space-y-6">
@@ -363,8 +411,12 @@ export default function PricingPage() {
               >
                 <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
                   <CardContent className="p-8">
-                    <h3 className="text-xl font-bold text-white mb-4">{faq.question}</h3>
-                    <p className="text-purple-200 leading-relaxed">{faq.answer}</p>
+                    <h3 className="text-xl font-bold text-white mb-4">
+                      {faq.question}
+                    </h3>
+                    <p className="text-purple-200 leading-relaxed">
+                      {faq.answer}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -383,9 +435,12 @@ export default function PricingPage() {
           className="max-w-4xl mx-auto text-center"
         >
           <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Ready to Get Started?</h2>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Ready to Get Started?
+            </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              Choose your plan and start creating unforgettable moments with your favorite celebrities.
+              Choose your plan and start creating unforgettable moments with
+              your favourite celebrities.
             </p>
             <Button
               size="lg"
@@ -400,5 +455,5 @@ export default function PricingPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

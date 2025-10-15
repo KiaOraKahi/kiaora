@@ -1,13 +1,21 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Users, Shield, Heart, Star, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import { useEffect, useState } from "react"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Users,
+  Shield,
+  Heart,
+  Star,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import { useEffect, useState } from "react";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
 
 const guidelineSections = [
   {
@@ -82,7 +90,7 @@ const guidelineSections = [
       },
       {
         subtitle: "Content Delivery",
-        text: "Deliver high-quality, personalized content that meets the specific requirements of each booking. If you cannot fulfill a request, communicate this clearly and promptly.",
+        text: "Deliver high-quality, personalized content that meets the specific requirements of each booking. If you cannot fulfil a request, communicate this clearly and promptly.",
       },
     ],
   },
@@ -124,74 +132,74 @@ const guidelineSections = [
       },
     ],
   },
-]
+];
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 export default function CommunityGuidelinesPage() {
-  const [isMobile, setIsMobile] = useState(false)
-        
-      useEffect(() => {
-        const checkMobile = () => {
-          setIsMobile(window.innerWidth < 1024)
-        }
-    
-        checkMobile()
-        window.addEventListener("resize", checkMobile)
-        return () => window.removeEventListener("resize", checkMobile)
-      }, [])
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -204,7 +212,11 @@ export default function CommunityGuidelinesPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             <Badge className="mb-6 bg-purple-500/20 text-purple-200 border-purple-500/30">
               <Users className="w-4 h-4 mr-2" />
               Community Guidelines
@@ -213,7 +225,8 @@ export default function CommunityGuidelinesPage() {
               Building a Positive Community
             </h1>
             <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
-              These guidelines help us maintain a safe, respectful, and enjoyable environment for everyone in our community.
+              These guidelines help us maintain a safe, respectful, and
+              enjoyable environment for everyone in our community.
             </p>
             <div className="text-purple-300">
               <p>Last updated: June 24, 2025</p>
@@ -240,14 +253,20 @@ export default function CommunityGuidelinesPage() {
                       <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                         <div className="text-white">{section.icon}</div>
                       </div>
-                      <h2 className="text-3xl font-bold text-white">{section.title}</h2>
+                      <h2 className="text-3xl font-bold text-white">
+                        {section.title}
+                      </h2>
                     </div>
 
                     <div className="space-y-6">
                       {section.content.map((item, idx) => (
                         <div key={idx}>
-                          <h3 className="text-xl font-semibold text-white mb-3">{item.subtitle}</h3>
-                          <p className="text-purple-200 leading-relaxed">{item.text}</p>
+                          <h3 className="text-xl font-semibold text-white mb-3">
+                            {item.subtitle}
+                          </h3>
+                          <p className="text-purple-200 leading-relaxed">
+                            {item.text}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -270,9 +289,12 @@ export default function CommunityGuidelinesPage() {
         >
           <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-3xl p-12">
             <CheckCircle className="w-16 h-16 text-purple-400 mx-auto mb-6" />
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Questions About Guidelines?</h2>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Questions About Guidelines?
+            </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              If you have any questions about these guidelines or need to report a violation, please contact our support team.
+              If you have any questions about these guidelines or need to report
+              a violation, please contact our support team.
             </p>
             <div className="space-y-4">
               <p className="text-purple-200">
@@ -288,5 +310,5 @@ export default function CommunityGuidelinesPage() {
 
       <Footer />
     </div>
-  )
+  );
 }
