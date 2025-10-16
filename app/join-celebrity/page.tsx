@@ -571,10 +571,10 @@ export default function JoinCelebrityPage() {
             <div className="absolute inset-0 opacity-30">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.5),transparent)]" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
               Become Talent
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto px-4">
               Join thousands of celebrities and creators earning money through
               personalized video messages
             </p>
@@ -587,7 +587,8 @@ export default function JoinCelebrityPage() {
             transition={{ delay: 0.1 }}
             className="mb-8"
           >
-            <div className="flex items-center justify-between mb-4">
+            {/* Desktop Steps */}
+            <div className="hidden md:flex items-center justify-between mb-4">
               {steps.map((step, index) => {
                 const Icon = step.icon;
                 const isActive = currentStep === step.id;
@@ -632,6 +633,58 @@ export default function JoinCelebrityPage() {
                 );
               })}
             </div>
+
+            {/* Mobile Steps */}
+            <div className="md:hidden mb-4">
+              <div className="flex items-center justify-center space-x-2 mb-3">
+                {steps.map((step, index) => {
+                  const Icon = step.icon;
+                  const isActive = currentStep === step.id;
+                  const isCompleted = currentStep > step.id;
+
+                  return (
+                    <div key={step.id} className="flex items-center">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                          isCompleted
+                            ? "bg-purple-600 border-purple-600 text-white"
+                            : isActive
+                            ? "bg-purple-600/20 border-purple-500 text-purple-400"
+                            : "bg-gray-800 border-gray-600 text-gray-400"
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <Icon className="w-4 h-4" />
+                        )}
+                      </div>
+                      {index < steps.length - 1 && (
+                        <div
+                          className={`w-8 h-0.5 mx-2 transition-all duration-300 ${
+                            isCompleted ? "bg-purple-600" : "bg-gray-700"
+                          }`}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="text-center">
+                <span
+                  className={`text-sm font-medium ${
+                    currentStep === 1
+                      ? "text-purple-400"
+                      : currentStep > 1
+                      ? "text-purple-300"
+                      : "text-gray-400"
+                  }`}
+                >
+                  Step {currentStep} of {steps.length}: {steps[currentStep - 1]?.title}
+                </span>
+              </div>
+            </div>
+
             <Progress value={progress} className="h-2 bg-gray-800" />
           </motion.div>
 
@@ -642,7 +695,7 @@ export default function JoinCelebrityPage() {
             transition={{ delay: 0.2 }}
           >
             <Card className="bg-black/40 backdrop-blur-xl border-purple-500/30 shadow-2xl shadow-purple-500/20">
-              <CardContent className="p-8">
+              <CardContent className="p-4 sm:p-6 lg:p-8">
                 <AnimatePresence mode="wait">
                   {/* Step 1: Personal Information */}
                   {currentStep === 1 && (
@@ -653,11 +706,11 @@ export default function JoinCelebrityPage() {
                       exit={{ opacity: 0, x: -20 }}
                       className="space-y-6"
                     >
-                      <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">
+                      <div className="text-center mb-6 sm:mb-8">
+                        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
                           Personal Information
                         </h2>
-                        <p className="text-white">Tell us about yourself</p>
+                        <p className="text-white text-sm sm:text-base">Tell us about yourself</p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -749,11 +802,11 @@ export default function JoinCelebrityPage() {
                       exit={{ opacity: 0, x: -20 }}
                       className="space-y-6"
                     >
-                      <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">
+                      <div className="text-center mb-6 sm:mb-8">
+                        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
                           About You
                         </h2>
-                        <p className="text-gray-400">
+                        <p className="text-gray-400 text-sm sm:text-base">
                           Share your background and connect your social media
                         </p>
                       </div>
@@ -796,7 +849,7 @@ export default function JoinCelebrityPage() {
                               <Label className="text-white">
                                 Languages Spoken *
                               </Label>
-                              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
                                 {languages.map((language) => (
                                   <label
                                     key={language}
@@ -1021,11 +1074,11 @@ export default function JoinCelebrityPage() {
                       exit={{ opacity: 0, x: -20 }}
                       className="space-y-6"
                     >
-                      <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">
+                      <div className="text-center mb-6 sm:mb-8">
+                        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
                           Document Verification
                         </h2>
-                        <p className="text-gray-400">
+                        <p className="text-gray-400 text-sm sm:text-base">
                           Upload required documents for verification
                         </p>
                       </div>
@@ -1275,12 +1328,12 @@ export default function JoinCelebrityPage() {
                 </AnimatePresence>
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between pt-8 border-t border-gray-700">
+                <div className="flex flex-col sm:flex-row justify-between gap-4 pt-8 border-t border-gray-700">
                   <Button
                     onClick={prevStep}
                     disabled={currentStep === 1}
                     variant="outline"
-                    className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                    className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 w-full sm:w-auto"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Previous
@@ -1289,7 +1342,7 @@ export default function JoinCelebrityPage() {
                   {currentStep < 3 ? (
                     <Button
                       onClick={nextStep}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white w-full sm:w-auto"
                     >
                       Next
                       <ArrowRight className="w-4 h-4 ml-2" />
@@ -1298,7 +1351,7 @@ export default function JoinCelebrityPage() {
                     <Button
                       onClick={handleSubmit}
                       disabled={isSubmitting || !validateStep(3)}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white disabled:opacity-50"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white disabled:opacity-50 w-full sm:w-auto"
                     >
                       {isSubmitting ? (
                         <>
@@ -1364,17 +1417,17 @@ export default function JoinCelebrityPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 + index * 0.1 }}
                   >
-                    <Card className="bg-black/40 backdrop-blur-xl w-80 md:size-64 border-purple-500/30 shadow-lg shadow-purple-500/10  hover:border-purple-400/50 transition-all duration-300">
-                      <CardContent className="p-6 text-center">
+                    <Card className="bg-black/40 backdrop-blur-xl w-full sm:w-80 md:w-64 border-purple-500/30 shadow-lg shadow-purple-500/10 hover:border-purple-400/50 transition-all duration-300">
+                      <CardContent className="p-4 sm:p-6 text-center">
                         <div
-                          className={`w-12 h-12 bg-gradient-to-r ${benefit.gradient} rounded-lg flex items-center justify-center mx-auto mb-4`}
+                          className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r ${benefit.gradient} rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4`}
                         >
-                          <Icon className="w-6 h-6 text-white" />
+                          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-white mb-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-white mb-2">
                           {benefit.title}
                         </h3>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-gray-400 text-xs sm:text-sm">
                           {benefit.description}
                         </p>
                       </CardContent>
