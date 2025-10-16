@@ -1,26 +1,46 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Heart, MessageCircle, Users } from "lucide-react"
-import Link from "next/link"
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import {
+  Star,
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Heart,
+  MessageCircle,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
 // import { useContentByKey } from "@/hooks/useContent" // Temporarily disabled
 
 export default function Footer() {
   // Use dummy data for now to avoid API issues
-  const footerDescription = "Connect with your favorite celebrities for personalised video messages, birthday greetings, and exclusive experiences. Making dreams come true, one message at a time."
-  const footerCopyright = "© 2025 Kia Ora Kahi."
-  
+  const footerDescription =
+    "Connect with your favorite celebrities for personalised video messages, birthday greetings, and exclusive experiences. Making dreams come true, one message at a time.";
+  const footerCopyright = "© 2025 Kia Ora Kahi.";
+
   const footerSections = [
     {
       title: "Services",
       links: [
         { name: "Quick shout-outs", href: "/services?service=shoutouts" },
-        { name: "Personalised video messages", href: "/services?service=personal" },
+        {
+          name: "Personalised video messages",
+          href: "/services?service=personal",
+        },
         { name: "Roast someone", href: "/services?service=roast" },
         { name: "5min Live interaction", href: "/services?service=live" },
         { name: "Business endorsements", href: "/services?service=business" },
-        { name: "Motivational video messages", href: "/services?service=motivation" },
+        {
+          name: "Motivational video messages",
+          href: "/services?service=motivation",
+        },
       ],
     },
     {
@@ -28,7 +48,10 @@ export default function Footer() {
       links: [
         { name: "Contact Us", href: "/contact" },
         { name: "FAQ", href: "/faq" },
-        { name: "Sign Language Support", href: "/contact?support=sign-language" },
+        {
+          name: "Sign Language Support",
+          href: "/contact?support=sign-language",
+        },
       ],
     },
     {
@@ -40,31 +63,55 @@ export default function Footer() {
         { name: "Cookie Policy", href: "/cookies" },
       ],
     },
-  ]
+  ];
 
   const socialLinks = [
-    { icon: Facebook, href: "https://facebook.com/kiaorakahi", label: "Facebook" },
+    {
+      icon: Facebook,
+      href: "https://facebook.com/kiaorakahi",
+      label: "Facebook",
+    },
     { icon: Twitter, href: "https://twitter.com/kiaorakahi", label: "Twitter" },
-    { icon: Instagram, href: "https://instagram.com/kiaorakahi", label: "Instagram" },
-    { icon: Youtube, href: "https://youtube.com/@kiaorakahi", label: "YouTube" },
-    { icon: MessageCircle, href: "https://tiktok.com/@kiaorakahi", label: "TikTok" },
-    { icon: Linkedin, href: "https://linkedin.com/company/kiaorakahi", label: "LinkedIn" },
+    {
+      icon: Instagram,
+      href: "https://instagram.com/kiaorakahi",
+      label: "Instagram",
+    },
+    {
+      icon: Youtube,
+      href: "https://youtube.com/@kiaorakahi",
+      label: "YouTube",
+    },
+    {
+      icon: MessageCircle,
+      href: "https://tiktok.com/@kiaorakahi",
+      label: "TikTok",
+    },
+    {
+      icon: Linkedin,
+      href: "https://linkedin.com/company/kiaorakahi",
+      label: "LinkedIn",
+    },
     { icon: Users, href: "https://twitch.tv/kiaorakahi", label: "Twitch" },
-    { icon: MessageCircle, href: "https://discord.gg/kiaorakahi", label: "Discord" },
-  ].filter(social => social.icon) // Filter out any undefined icons
+    {
+      icon: MessageCircle,
+      href: "https://discord.gg/kiaorakahi",
+      label: "Discord",
+    },
+  ].filter((social) => social.icon); // Filter out any undefined icons
 
   try {
     return (
       <footer className="relative bg-gradient-to-b from-slate-900 to-black border-t border-white/10">
-      {/* Background Effects */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,215,0,0.1),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(138,43,226,0.1),transparent)]" />
-      </div>
+        {/* Background Effects */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,215,0,0.1),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(138,43,226,0.1),transparent)]" />
+        </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Newsletter Section */}
-        {/* <motion.div
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Newsletter Section */}
+          {/* <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -87,119 +134,131 @@ export default function Footer() {
           </div>
         </motion.div> */}
 
-        {/* Main Footer Content */}
-        <div className="py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
-            {/* Brand Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="lg:col-span-2"
-            >
-              <Link href="/" className="flex items-center space-x-2 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-purple-500 rounded-xl flex items-center justify-center">
-                  <Star className="w-6 h-6 text-black" />
-                </div>
-                <span className="text-3xl font-bold bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
-                  Kia Ora Kahi
-                </span>
-              </Link>
-              <p className="text-yellow-200 mb-6 leading-relaxed">
-                {footerDescription}
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3 text-yellow-200">
-                  <Mail className="w-5 h-5" />
-                  <span>hello@kiaora.com</span>
-                </div>
-                {/* <div className="flex items-center space-x-3 text-yellow-200">
+          {/* Main Footer Content */}
+          <div className="py-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+              {/* Brand Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                viewport={{ once: true }}
+                className="lg:col-span-2"
+              >
+                <Link href="/" className="flex items-center space-x-2 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-purple-500 rounded-xl flex items-center justify-center">
+                    <Star className="w-6 h-6 text-black" />
+                  </div>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+                    Kia Ora Kahi
+                  </span>
+                </Link>
+                <p className="text-yellow-200 mb-6 leading-relaxed">
+                  {footerDescription}
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 text-yellow-200">
+                    <Mail className="w-5 h-5" />
+                    <span>hello@kiaora.com</span>
+                  </div>{" "}
+                  <div className="flex items-center space-x-3 text-yellow-200">
+                    <Mail className="w-5 h-5" />
+                    <span> Admin email: admin@kiaorakahi.com</span>
+                  </div>
+                  {/* <div className="flex items-center space-x-3 text-yellow-200">
                   <Phone className="w-5 h-5" />
                   <span>+1 (555) 123-4567</span>
                 </div> */}
-                {/* <div className="flex items-center space-x-3 text-yellow-200">
+                  {/* <div className="flex items-center space-x-3 text-yellow-200">
                   <MapPin className="w-5 h-5" />
                   <span>Los Angeles, CA</span>
                 </div> */}
-              </div>
-            </motion.div>
-
-            {/* Footer Links */}
-            {footerSections.map((section, index) => (
-              <motion.div
-                key={section.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-white font-semibold mb-4">{section.title}</h3>
-                <ul className="space-y-3">
-                  {section.links.map((link) => (
-                    <li key={link.name}>
-                      <Link
-                        href={link.href}
-                        className="text-yellow-200 hover:text-white transition-colors duration-200"
-                      >
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                </div>
               </motion.div>
-            ))}
+
+              {/* Footer Links */}
+              {footerSections.map((section, index) => (
+                <motion.div
+                  key={section.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <h3 className="text-white font-semibold mb-4">
+                    {section.title}
+                  </h3>
+                  <ul className="space-y-3">
+                    {section.links.map((link) => (
+                      <li key={link.name}>
+                        <Link
+                          href={link.href}
+                          className="text-yellow-200 hover:text-white transition-colors duration-200"
+                        >
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
           </div>
+
+          {/* Bottom Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            viewport={{ once: true }}
+            className="py-8 border-t border-white/10"
+          >
+            <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0">
+              {/* Copyright */}
+              <div className="flex items-center space-x-2 text-yellow-200">
+                <span>{footerCopyright}</span>
+              </div>
+
+              {/* Copyright Notice */}
+              <div className="text-yellow-200 text-sm">
+                <span>
+                  All rights reserved. Made with ❤️ for the Pacific community.
+                </span>
+              </div>
+
+              {/* Social Links */}
+              <div className="flex items-center space-x-4">
+                {socialLinks && socialLinks.length > 0 ? (
+                  socialLinks.map((social) => {
+                    const IconComponent = social.icon;
+                    if (!IconComponent) return null;
+                    return (
+                      <Button
+                        key={social.label}
+                        variant="ghost"
+                        size="icon"
+                        className="text-yellow-200 hover:text-white hover:bg-white/10 transition-colors duration-200"
+                        asChild
+                      >
+                        <Link href={social.href} aria-label={social.label}>
+                          <IconComponent className="w-5 h-5" />
+                        </Link>
+                      </Button>
+                    );
+                  })
+                ) : (
+                  <div className="text-yellow-200 text-sm">
+                    Social links coming soon
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
         </div>
-
-        {/* Bottom Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          viewport={{ once: true }}
-          className="py-8 border-t border-white/10"
-        >
-          <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0">
-            {/* Copyright */}
-            <div className="flex items-center space-x-2 text-yellow-200">
-              <span>{footerCopyright}</span>
-            </div>
-
-            {/* Copyright Notice */}
-            <div className="text-yellow-200 text-sm">
-              <span>All rights reserved. Made with ❤️ for the Pacific community.</span>
-            </div>
-
-            {/* Social Links */}
-            <div className="flex items-center space-x-4">
-              {socialLinks && socialLinks.length > 0 ? socialLinks.map((social) => {
-                const IconComponent = social.icon
-                if (!IconComponent) return null
-                return (
-                  <Button
-                    key={social.label}
-                    variant="ghost"
-                    size="icon"
-                    className="text-yellow-200 hover:text-white hover:bg-white/10 transition-colors duration-200"
-                    asChild
-                  >
-                    <Link href={social.href} aria-label={social.label}>
-                      <IconComponent className="w-5 h-5" />
-                    </Link>
-                  </Button>
-                )
-              }) : (
-                <div className="text-yellow-200 text-sm">Social links coming soon</div>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </footer>
-    )
+      </footer>
+    );
   } catch (error) {
-    console.error("Footer rendering error:", error)
+    console.error("Footer rendering error:", error);
     return (
       <footer className="relative bg-gradient-to-b from-slate-900 to-black border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -208,6 +267,6 @@ export default function Footer() {
           </div>
         </div>
       </footer>
-    )
+    );
   }
 }
