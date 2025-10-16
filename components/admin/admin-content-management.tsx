@@ -228,16 +228,16 @@ export default function AdminContentManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white">Content Management</h2>
-          <p className="text-gray-400">Manage site content and text</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Content Management</h2>
+          <p className="text-sm sm:text-base text-gray-400">Manage site content and text</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
-              Add Content
+              <span className="sm:inline">Add Content</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-gray-900 border-gray-700 text-white">
@@ -263,7 +263,7 @@ export default function AdminContentManagement() {
                   className="bg-gray-800 border-gray-600 text-white"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-300">Category</label>
                   <Select value={newContent.category} onValueChange={(value) => setNewContent({ ...newContent, category: value })}>
@@ -304,11 +304,11 @@ export default function AdminContentManagement() {
                   className="bg-gray-800 border-gray-600 text-white"
                 />
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="w-full sm:w-auto">
                   Cancel
                 </Button>
-                <Button onClick={handleAddContent} className="bg-gradient-to-r from-purple-600 to-pink-600">
+                <Button onClick={handleAddContent} className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
                   Add Content
                 </Button>
               </div>
@@ -320,7 +320,7 @@ export default function AdminContentManagement() {
       {/* Search and Filters */}
       <Card className="bg-gray-900/50 border-gray-700">
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -333,7 +333,7 @@ export default function AdminContentManagement() {
               </div>
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-48 bg-gray-800 border-gray-600 text-white">
+              <SelectTrigger className="w-full sm:w-48 bg-gray-800 border-gray-600 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-600">
@@ -345,7 +345,7 @@ export default function AdminContentManagement() {
               </SelectContent>
             </Select>
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-full md:w-48 bg-gray-800 border-gray-600 text-white">
+              <SelectTrigger className="w-full sm:w-48 bg-gray-800 border-gray-600 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-600">
@@ -378,37 +378,37 @@ export default function AdminContentManagement() {
               transition={{ duration: 0.2 }}
             >
               <Card className="bg-gray-900/50 border-gray-700 hover:border-gray-600 transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        <FileText className="w-4 h-4 text-purple-400" />
-                        <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <FileText className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs sm:text-sm">
                           {item.key}
                         </Badge>
-                        <Badge className={`${getCategoryColor(item.category)} text-white`}>
+                        <Badge className={`${getCategoryColor(item.category)} text-white text-xs sm:text-sm`}>
                           {item.category}
                         </Badge>
-                        <Badge className={`${getStatusColor(item.status)} text-white`}>
+                        <Badge className={`${getStatusColor(item.status)} text-white text-xs sm:text-sm`}>
                           {item.status === "active" ? "Active" : "Inactive"}
                         </Badge>
                       </div>
-                      <div className="text-white text-lg mb-2">{item.value}</div>
+                      <div className="text-white text-base sm:text-lg mb-2 break-words">{item.value}</div>
                       {item.description && (
-                        <p className="text-gray-400 text-sm mb-3">{item.description}</p>
+                        <p className="text-gray-400 text-sm mb-3 break-words">{item.description}</p>
                       )}
-                      <div className="flex items-center gap-4 text-gray-500 text-sm">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-gray-500 text-xs sm:text-sm">
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Updated: {new Date(item.updatedAt).toLocaleString()}
+                          <Calendar className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">Updated: {new Date(item.updatedAt).toLocaleString()}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
-                          {item.type}
+                          <Tag className="w-3 h-3 flex-shrink-0" />
+                          <span>{item.type}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-2 sm:ml-4 justify-end sm:justify-start">
                       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                         <DialogTrigger asChild>
                           <Button
@@ -453,11 +453,11 @@ export default function AdminContentManagement() {
                                   className="bg-gray-800 border-gray-600 text-white"
                                 />
                               </div>
-                              <div className="flex justify-end space-x-2">
-                                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full sm:w-auto">
                                   Cancel
                                 </Button>
-                                <Button onClick={handleEditContent} className="bg-gradient-to-r from-purple-600 to-pink-600">
+                                <Button onClick={handleEditContent} className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
                                   Save Changes
                                 </Button>
                               </div>
