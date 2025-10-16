@@ -63,16 +63,12 @@ export default function Footer() {
   const createServiceLinks = () => {
     if (servicesLoading) {
       // Show loading state with generic links
-      return [
-        { name: "Loading services...", href: "/services" },
-      ];
+      return [{ name: "Loading services...", href: "/services" }];
     }
 
     if (services.length === 0) {
       // Fallback links if no services available
-      return [
-        { name: "View all services", href: "/services" },
-      ];
+      return [{ name: "View all services", href: "/services" }];
     }
 
     // Use actual service data with database IDs
@@ -92,10 +88,10 @@ export default function Footer() {
       links: [
         { name: "Contact Us", href: "/contact" },
         { name: "FAQ", href: "/faq" },
-        {
-          name: "Sign Language Support",
-          href: "/contact?support=sign-language",
-        },
+        // {
+        //   name: "Sign Language Support",
+        //   href: "/contact?support=sign-language",
+        // },
       ],
     },
     {
