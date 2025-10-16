@@ -17,31 +17,75 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 // import { useContentByKey } from "@/hooks/useContent" // Temporarily disabled
 
+interface Service {
+  id: string;
+  title: string;
+  shortDescription?: string;
+  description: string;
+}
+
 export default function Footer() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
+
+  // Fetch services from API to get actual database IDs
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setServicesLoading(true);
+        const response = await fetch("/api/services");
+        const data = await response.json();
+
+        if (response.ok && data.services) {
+          setServices(data.services);
+        } else {
+          console.error("Failed to fetch services for footer:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching services for footer:", error);
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
   // Use dummy data for now to avoid API issues
   const footerDescription =
     "Connect with your favorite celebrities for personalised video messages, birthday greetings, and exclusive experiences. Making dreams come true, one message at a time.";
   const footerCopyright = "© 2025 Kia Ora Kahi.";
 
+  // Create service links dynamically from fetched services
+  const createServiceLinks = () => {
+    if (servicesLoading) {
+      // Show loading state with generic links
+      return [
+        { name: "Loading services...", href: "/services" },
+      ];
+    }
+
+    if (services.length === 0) {
+      // Fallback links if no services available
+      return [
+        { name: "View all services", href: "/services" },
+      ];
+    }
+
+    // Use actual service data with database IDs
+    return services.map((service) => ({
+      name: service.title,
+      href: `/services?service=${service.id}`,
+    }));
+  };
+
   const footerSections = [
     {
       title: "Services",
-      links: [
-        { name: "Quick shout-outs", href: "/services?service=shoutouts" },
-        {
-          name: "Personalised video messages",
-          href: "/services?service=personal",
-        },
-        { name: "Roast someone", href: "/services?service=roast" },
-        { name: "5min Live interaction", href: "/services?service=live" },
-        { name: "Business endorsements", href: "/services?service=business" },
-        {
-          name: "Motivational video messages",
-          href: "/services?service=motivation",
-        },
-      ],
+      links: createServiceLinks(),
     },
     {
       title: "Support",

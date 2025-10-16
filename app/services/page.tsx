@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -165,6 +165,7 @@ export default function ServicesPage() {
   const [services, setServices] = useState<EnhancedServiceData[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -220,8 +221,7 @@ export default function ServicesPage() {
   useEffect(() => {
     if (services.length === 0) return; // Wait for services to load
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const serviceParam = urlParams.get("service");
+    const serviceParam = searchParams.get("service");
 
     if (serviceParam) {
       // Direct mapping since the URL param should match the service ID
@@ -240,7 +240,7 @@ export default function ServicesPage() {
         }, 500); // Increased timeout for better reliability
       }
     }
-  }, [services]);
+  }, [services, searchParams]);
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
