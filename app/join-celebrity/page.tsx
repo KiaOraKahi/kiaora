@@ -657,7 +657,7 @@ export default function JoinCelebrityPage() {
                         <h2 className="text-2xl font-bold text-white mb-2">
                           Personal Information
                         </h2>
-                        <p className="text-gray-400">Tell us about yourself</p>
+                        <p className="text-white">Tell us about yourself</p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
