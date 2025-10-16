@@ -451,7 +451,7 @@ export default function ServicesPage() {
       {selectedService && (
         <section
           id="service-details"
-          className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5"
+          className="py-10 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-white/5"
         >
           <div className="max-w-7xl mx-auto">
             <motion.div
@@ -460,22 +460,22 @@ export default function ServicesPage() {
               transition={{ duration: 0.8 }}
             >
               <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                <CardContent className="p-12">
-                  <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <CardContent className="p-4 sm:p-6 lg:p-12">
+                  <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start lg:items-center">
                     <div>
-                      <div className="flex items-center gap-4 mb-6">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
                         <div
-                          className={`w-16 h-16 rounded-full bg-gradient-to-r ${selectedServiceData?.color} flex items-center justify-center`}
+                          className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r ${selectedServiceData?.color} flex items-center justify-center flex-shrink-0`}
                         >
                           <div className="text-white">
                             {getIconComponent(selectedServiceData?.icon || "")}
                           </div>
                         </div>
-                        <div>
-                          <h2 className="text-4xl font-bold text-white">
+                        <div className="min-w-0 flex-1">
+                          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white break-words">
                             {selectedServiceData?.title}
                           </h2>
-                          <p className="text-yellow-200">
+                          <p className="text-yellow-200 text-sm sm:text-base">
                             {formatPrice(
                               selectedServiceData?.startingPrice || 0
                             )}
@@ -483,19 +483,21 @@ export default function ServicesPage() {
                         </div>
                       </div>
 
-                      <p className="text-lg text-yellow-200 mb-8 leading-relaxed">
+                      <p className="text-base sm:text-lg text-yellow-200 mb-6 sm:mb-8 leading-relaxed">
                         {selectedServiceData?.fullDescription}
                       </p>
 
                       <div className="space-y-4">
-                        <h3 className="text-2xl font-bold text-white">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white">
                           What's Included:
                         </h3>
                         <div className="grid gap-3">
                           {selectedServiceData?.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-center gap-3">
-                              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                              <span className="text-yellow-200">{feature}</span>
+                            <div key={idx} className="flex items-start gap-3">
+                              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                              <span className="text-yellow-200 text-sm sm:text-base break-words">
+                                {feature}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -504,47 +506,47 @@ export default function ServicesPage() {
 
                     <div className="space-y-6">
                       <Card className="bg-white/10 border-white/20">
-                        <CardContent className="p-6">
-                          <h3 className="text-xl font-bold text-white mb-4">
+                        <CardContent className="p-4 sm:p-6">
+                          <h3 className="text-lg sm:text-xl font-bold text-white mb-4">
                             Service Details
                           </h3>
                           <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <span className="text-yellow-200">Duration:</span>
-                              <span className="text-white font-semibold">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                              <span className="text-yellow-200 text-sm sm:text-base">Duration:</span>
+                              <span className="text-white font-semibold text-sm sm:text-base">
                                 {selectedServiceData?.duration}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-yellow-200">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                              <span className="text-yellow-200 text-sm sm:text-base">
                                 Delivery Time:
                               </span>
-                              <span className="text-white font-semibold">
+                              <span className="text-white font-semibold text-sm sm:text-base">
                                 {selectedServiceData?.deliveryTime}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-yellow-200">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                              <span className="text-yellow-200 text-sm sm:text-base">
                                 ASAP Price:
                               </span>
-                              <span className="text-orange-200 font-semibold">
+                              <span className="text-orange-200 font-semibold text-sm sm:text-base break-words">
                                 {formatPrice(
                                   selectedServiceData?.asapPrice || 0
                                 )}{" "}
                                 within {selectedServiceData?.asapDeliveryTime}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-yellow-200">Format:</span>
-                              <span className="text-white font-semibold">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                              <span className="text-yellow-200 text-sm sm:text-base">Format:</span>
+                              <span className="text-white font-semibold text-sm sm:text-base">
                                 HD Video (MP4)
                               </span>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-yellow-200">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                              <span className="text-yellow-200 text-sm sm:text-base">
                                 Usage Rights:
                               </span>
-                              <span className="text-white font-semibold">
+                              <span className="text-white font-semibold text-sm sm:text-base">
                                 Personal Use
                               </span>
                             </div>
@@ -554,11 +556,11 @@ export default function ServicesPage() {
 
                       <Button
                         size="lg"
-                        className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold py-4 text-lg"
+                        className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 hover:from-yellow-600 hover:to-purple-600 text-black font-bold py-3 sm:py-4 text-base sm:text-lg"
                         onClick={() => router.push("/celebrities")}
                       >
                         Book This Service
-                        <ArrowRight className="w-5 h-5 ml-2" />
+                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                       </Button>
                     </div>
                   </div>
