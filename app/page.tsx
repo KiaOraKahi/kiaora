@@ -1,38 +1,52 @@
-"use client"
-import { useState, useEffect, useCallback  } from "react"
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Video, Briefcase, Sparkles, Zap, Laugh, Gift, Clock, DollarSign, Star } from "lucide-react"
-import Image from "next/image"
-import { toast } from "sonner"
-import Navbar from "@/components/frontend/navbar"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
-import Footer from "@/components/frontend/footer"
-import LiveChatWidget from "@/components/frontend/live-chat-widget"
-import { useRouter } from "next/navigation"
-import { formatPrice, heroGreetings } from "@/lib/services-data"
-import type { EnhancedServiceData, ServicesApiResponse } from "@/types/services"
+"use client";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  MessageCircle,
+  Video,
+  Briefcase,
+  Sparkles,
+  Zap,
+  Laugh,
+  Gift,
+  Clock,
+  DollarSign,
+  Star,
+} from "lucide-react";
+import Image from "next/image";
+import { toast } from "sonner";
+import Navbar from "@/components/frontend/navbar";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
+import Footer from "@/components/frontend/footer";
+import LiveChatWidget from "@/components/frontend/live-chat-widget";
+import { useRouter } from "next/navigation";
+import { formatPrice, heroGreetings } from "@/lib/services-data";
+import type {
+  EnhancedServiceData,
+  ServicesApiResponse,
+} from "@/types/services";
 
 // Icon mapping helper
 const getIconComponent = (iconName: string) => {
   switch (iconName) {
     case "Zap":
-      return <Zap className="w-8 h-8" />
+      return <Zap className="w-8 h-8" />;
     case "MessageCircle":
-      return <MessageCircle className="w-8 h-8" />
+      return <MessageCircle className="w-8 h-8" />;
     case "Laugh":
-      return <Laugh className="w-8 h-8" />
+      return <Laugh className="w-8 h-8" />;
     case "Video":
-      return <Video className="w-8 h-8" />
+      return <Video className="w-8 h-8" />;
     case "Briefcase":
-      return <Briefcase className="w-8 h-8" />
+      return <Briefcase className="w-8 h-8" />;
     case "Gift":
-      return <Gift className="w-8 h-8" />
+      return <Gift className="w-8 h-8" />;
     default:
-      return <Sparkles className="w-8 h-8" />
+      return <Sparkles className="w-8 h-8" />;
   }
-}
+};
 
 interface Celebrity {
   id: string;
@@ -54,28 +68,28 @@ interface CelebritiesResponse {
   };
 }
 
-
 const talents = [];
 
-
 const hasTalentWithImage = (service: EnhancedServiceData) => {
-  return service.talents.some(talent => talent?.image && talent.image !== "/placeholder.svg");
+  return service.talents.some(
+    (talent) => talent?.image && talent.image !== "/placeholder.svg"
+  );
 };
 
-const categories = ["All", "Actors", "Musicians", "Motivators", "Influencers"]
+const categories = ["All", "Actors", "Musicians", "Motivators", "Influencers"];
 
 // Animated Hero Title Component
 const AnimatedHeroTitle = () => {
-  const greetings = heroGreetings
-  const [currentGreeting, setCurrentGreeting] = useState(0)
+  const greetings = heroGreetings;
+  const [currentGreeting, setCurrentGreeting] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentGreeting((prev) => (prev + 1) % greetings.length)
-    }, 3000)
+      setCurrentGreeting((prev) => (prev + 1) % greetings.length);
+    }, 3000);
 
-    return () => clearInterval(interval)
-  }, [greetings.length])
+    return () => clearInterval(interval);
+  }, [greetings.length]);
 
   return (
     <motion.h1
@@ -111,75 +125,75 @@ const AnimatedHeroTitle = () => {
         {greetings[currentGreeting]}
       </motion.span>
     </motion.h1>
-  )
-}
+  );
+};
 
 // Subtle starfield component with fewer, more elegant stars
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
     // Remove any existing starfield
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 export default function KiaOraHomepage() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [currentServiceIndex, setCurrentServiceIndex] = useState(0)
-  const [currentTalentIndex, setCurrentTalentIndex] = useState(0)
-  const [services, setServices] = useState<EnhancedServiceData[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fallbackDataUsed, setFallbackDataUsed] = useState(false)
-  const router = useRouter()
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentServiceIndex, setCurrentServiceIndex] = useState(0);
+  const [currentTalentIndex, setCurrentTalentIndex] = useState(0);
+  const [services, setServices] = useState<EnhancedServiceData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fallbackDataUsed, setFallbackDataUsed] = useState(false);
+  const router = useRouter();
 
   const [talents, setTalents] = useState<Celebrity[]>([]);
 
@@ -215,79 +229,88 @@ export default function KiaOraHomepage() {
   // Check if mobile
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Fetch services data from API
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        setLoading(true)
-        const response = await fetch("/api/services")
+        setLoading(true);
+        const response = await fetch("/api/services");
 
         if (!response.ok) {
-          throw new Error("Failed to fetch services")
+          throw new Error("Failed to fetch services");
         }
 
-        const data: ServicesApiResponse = await response.json()
-        setServices(data.services)
-        console.log("Services:", data.services)
-        setFallbackDataUsed(data.fallbackDataUsed)
+        const data: ServicesApiResponse = await response.json();
+        setServices(data.services);
+        console.log("Services:", data.services);
+        setFallbackDataUsed(data.fallbackDataUsed);
 
         if (data.fallbackDataUsed) {
-          console.log("Using fallback data - no services in database yet")
+          console.log("Using fallback data - no services in database yet");
           toast.info("Using demo data", {
-            description: "Real service data will appear once services are added to the database",
-          })
+            description:
+              "Real service data will appear once services are added to the database",
+          });
         }
       } catch (error) {
-        console.error("Error fetching services:", error)
+        console.error("Error fetching services:", error);
         toast.error("Failed to load services", {
           description: "Please refresh the page to try again",
-        })
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchServices()
-  }, [])
+    fetchServices();
+  }, []);
 
   // Rotate through talent images to show variety
   useEffect(() => {
     const talentInterval = setInterval(() => {
-      setCurrentTalentIndex((prev) => (prev + 1) % 3)
-    }, 4000)
+      setCurrentTalentIndex((prev) => (prev + 1) % 3);
+    }, 4000);
 
     return () => {
-      clearInterval(talentInterval)
-    }
-  }, [])
+      clearInterval(talentInterval);
+    };
+  }, []);
 
   useEffect(() => {
-    setIsLoaded(true)
+    setIsLoaded(true);
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % Math.ceil(talents.length / 3))
-    }, 4000)
+      setCurrentSlide((prev) => (prev + 1) % Math.ceil(talents.length / 3));
+    }, 4000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredTalents =
-    selectedCategory === "All" ? talents : talents.filter((talent) => talent.category === selectedCategory.slice(0, -1))
+    selectedCategory === "All"
+      ? talents
+      : talents.filter(
+          (talent) => talent.category === selectedCategory.slice(0, -1)
+        );
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % Math.ceil(talents.length / 3))
-  }
+    setCurrentSlide((prev) => (prev + 1) % Math.ceil(talents.length / 3));
+  };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + Math.ceil(talents.length / 3)) % Math.ceil(talents.length / 3))
-  }
+    setCurrentSlide(
+      (prev) =>
+        (prev - 1 + Math.ceil(talents.length / 3)) %
+        Math.ceil(talents.length / 3)
+    );
+  };
 
   const handleBookNow = (talent: any) => {
     toast.success("Booking Started!", {
@@ -296,8 +319,8 @@ export default function KiaOraHomepage() {
         label: "View Details",
         onClick: () => (window.location.href = `/celebrities/${talent.id}`),
       },
-    })
-  }
+    });
+  };
 
   if (loading) {
     return (
@@ -307,7 +330,7 @@ export default function KiaOraHomepage() {
           <p className="text-yellow-200">Loading services...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -352,7 +375,12 @@ export default function KiaOraHomepage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, rotate: -8 }}
                 animate={{ opacity: 1, scale: 1, rotate: -8 }}
-                transition={{ delay: 1.5, duration: 0.8, type: "spring", stiffness: 200 }}
+                transition={{
+                  delay: 1.5,
+                  duration: 0.8,
+                  type: "spring",
+                  stiffness: 200,
+                }}
                 className="flex justify-center mb-4"
               >
                 <div className="relative">
@@ -386,99 +414,103 @@ export default function KiaOraHomepage() {
               >
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
                 <span>
-                  Connect with your favourite celebrity or social media personality to receive a bespoke video message
-                  especially for you or as a special gift for someone else
+                  Connect with your favourite celebrity or social media
+                  personality to receive a bespoke video message especially for
+                  you or as a special gift for someone else
                 </span>
                 <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
               </motion.div>
             </motion.div>
 
             {/* Premium Services Circles */}
-<motion.div
-  initial={{ opacity: 0, scale: 0.8 }}
-  animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.8 }}
-  transition={{ duration: 1, delay: 0.4 }}
-  className="relative mb-12"
->
-  <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
-    <h2 className="text-2xl font-bold text-white mb-8">Our Celebrities</h2>
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
-     {talents.slice(0, 6).map((talent, index) => {
-  console.log("talent : ", talent);
-  return (
-    <motion.div
-      key={talent.id}
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 1 }}
-      className="flex flex-col items-center group cursor-pointer"
-      onClick={() => router.push(`/celebrities/${talent.id}`)}   // ✅ direct to detail page
-    >
-      {/* Talent Circle */}
-      <div className="relative mb-4">
-        <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden">
-          <div className="absolute inset-1 rounded-full overflow-hidden">
-            <Image
-              src={talent.image}
-              alt={talent.name}
-              fill
-              className="object-cover rounded-full"
-              sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
-              priority={index < 3}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  talent.name
-                )}&background=8b5cf6&color=fff&size=400`;
-              }}
-            />
-          </div>
-        </div>
-        {/* Sparkle Effect */}
-        <motion.div
-          className="absolute -inset-2 rounded-full"
-          animate={{
-            boxShadow: [
-              "0 0 0 0 rgba(255, 215, 0, 0)",
-              "0 0 0 4px rgba(255, 215, 0, 0.3)",
-              "0 0 0 0 rgba(255, 215, 0, 0)",
-            ],
-          }}
-          transition={{
-            duration: 5,
-            repeat: Number.POSITIVE_INFINITY,
-            delay: index * 1,
-          }}
-        />
-      </div>
-      {/* Talent Info */}
-      <div className="text-center">
-        <h3 className="text-white font-bold text-sm mb-1 group-hover:text-purple-300 transition-colors">
-          {talent.name}
-        </h3>
-        <p className="text-purple-200 text-xs mb-1">{talent.category}</p>
-        <div className="flex items-center justify-center gap-1 mb-1">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.8 }}
+              transition={{ duration: 1, delay: 0.4 }}
+              className="relative mb-12"
+            >
+              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
+                <h2 className="text-2xl font-bold text-white mb-8">
+                  Our Celebrities
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+                  {talents.slice(0, 6).map((talent, index) => {
+                    console.log("talent : ", talent);
+                    return (
+                      <motion.div
+                        key={talent.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 1 }}
+                        className="flex flex-col items-center group cursor-pointer"
+                        onClick={() => router.push(`/celebrities/${talent.id}`)} // ✅ direct to detail page
+                      >
+                        {/* Talent Circle */}
+                        <div className="relative mb-4">
+                          <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden">
+                            <div className="absolute inset-1 rounded-full overflow-hidden">
+                              <Image
+                                src={talent.image}
+                                alt={talent.name}
+                                fill
+                                className="object-cover rounded-full"
+                                sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
+                                priority={index < 3}
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                    talent.name
+                                  )}&background=8b5cf6&color=fff&size=400`;
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {/* Sparkle Effect */}
+                          <motion.div
+                            className="absolute -inset-2 rounded-full"
+                            animate={{
+                              boxShadow: [
+                                "0 0 0 0 rgba(255, 215, 0, 0)",
+                                "0 0 0 4px rgba(255, 215, 0, 0.3)",
+                                "0 0 0 0 rgba(255, 215, 0, 0)",
+                              ],
+                            }}
+                            transition={{
+                              duration: 5,
+                              repeat: Number.POSITIVE_INFINITY,
+                              delay: index * 1,
+                            }}
+                          />
+                        </div>
+                        {/* Talent Info */}
+                        <div className="text-center">
+                          <h3 className="text-white font-bold text-sm mb-1 group-hover:text-purple-300 transition-colors">
+                            {talent.name}
+                          </h3>
+                          <p className="text-purple-200 text-xs mb-1">
+                            {talent.category}
+                          </p>
+                          {/* <div className="flex items-center justify-center gap-1 mb-1">
           <Star className="w-3 h-3 text-yellow-400 fill-current" />
           <span className="text-white text-xs font-semibold">{talent.rating}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-white font-bold text-sm">
-            ${talent.price}
-          </span>
-          {talent.badge && (
-            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-              {talent.badge}
-            </Badge>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-})}
-
-    </div>
-  </div>
-</motion.div>
+        </div> */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-white flex-1 font-bold text-center  text-sm">
+                              ${talent.price}
+                            </span>
+                            {talent?.badge && (
+                              <Badge className="bg-gradient-to-r  from-purple-500 to-pink-500 text-white text-xs">
+                                {talent.badge}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
           </div>
         </section>
 
@@ -496,7 +528,8 @@ export default function KiaOraHomepage() {
                 Our Services
               </h2>
               <p className="text-lg sm:text-xl text-yellow-200 max-w-3xl mx-auto">
-                From shout-outs to live interactions, we offer personalised experiences for every occasion
+                From shout-outs to live interactions, we offer personalised
+                experiences for every occasion
               </p>
             </motion.div>
 
@@ -512,7 +545,7 @@ export default function KiaOraHomepage() {
                   whileTap={{ scale: 0.95 }}
                   className="group touch-manipulation cursor-pointer"
                   onClick={() => {
-                    router.push(`/services?service=${service.id}`)
+                    router.push(`/services?service=${service.id}`);
                   }}
                 >
                   <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 h-full">
@@ -521,7 +554,9 @@ export default function KiaOraHomepage() {
                       <div
                         className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}
                       >
-                        <div className="text-white">{getIconComponent(service.icon)}</div>
+                        <div className="text-white">
+                          {getIconComponent(service.icon)}
+                        </div>
                       </div>
 
                       {/* Popular Badge */}
@@ -532,10 +567,14 @@ export default function KiaOraHomepage() {
                       )}
 
                       {/* Service Title */}
-                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">{service.title}</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
+                        {service.title}
+                      </h3>
 
                       {/* Service Description */}
-                      <p className="text-yellow-200 leading-relaxed mb-6">{service.description}</p>
+                      <p className="text-yellow-200 leading-relaxed mb-6">
+                        {service.description}
+                      </p>
 
                       {/* Pricing Information */}
                       <div className="space-y-3 mb-6">
@@ -544,7 +583,9 @@ export default function KiaOraHomepage() {
                             <DollarSign className="w-4 h-4" />
                             Starting Price:
                           </span>
-                          <span className="text-white font-semibold">{formatPrice(service.startingPrice)}</span>
+                          <span className="text-white font-semibold">
+                            {formatPrice(service.startingPrice)}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-yellow-300 flex items-center gap-2">
@@ -555,19 +596,26 @@ export default function KiaOraHomepage() {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-yellow-300">Delivery:</span>
-                          <span className="text-white">{service.deliveryTime}</span>
+                          <span className="text-white">
+                            {service.deliveryTime}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between text-sm border-t border-white/10 pt-3">
-                          <span className="text-orange-300 font-semibold">ASAP Price:</span>
+                          <span className="text-orange-300 font-semibold">
+                            ASAP Price:
+                          </span>
                           <span className="text-orange-200 font-semibold">
-                            {formatPrice(service.asapPrice)} within {service.asapDeliveryTime}
+                            {formatPrice(service.asapPrice)} within{" "}
+                            {service.asapDeliveryTime}
                           </span>
                         </div>
                       </div>
 
                       {/* Sample Talents Preview */}
                       <div className="mb-4">
-                        <h4 className="text-white font-semibold mb-3 text-sm">Featured Talents</h4>
+                        <h4 className="text-white font-semibold mb-3 text-sm">
+                          Featured Talents
+                        </h4>
                         <div className="flex -space-x-2">
                           {service.talents.slice(0, 3).map((talent, idx) => (
                             <div
@@ -584,7 +632,9 @@ export default function KiaOraHomepage() {
                             </div>
                           ))}
                           <div className="w-8 h-8 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
-                            <span className="text-xs text-white font-semibold">+</span>
+                            <span className="text-xs text-white font-semibold">
+                              +
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -602,5 +652,5 @@ export default function KiaOraHomepage() {
       {/* Live Chat Widget */}
       <LiveChatWidget />
     </div>
-  )
+  );
 }
