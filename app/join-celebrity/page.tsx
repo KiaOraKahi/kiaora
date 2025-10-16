@@ -1,15 +1,21 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Upload,
   Check,
@@ -27,124 +33,124 @@ import {
   Loader2,
   CheckCircle,
   Video,
-} from "lucide-react"
-import { toast } from "sonner"
-import { uploadFile } from "@/lib/upload-client"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
+} from "lucide-react";
+import { toast } from "sonner";
+import { uploadFile } from "@/lib/upload-client";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
 
 interface SocialMedia {
-  instagram: string
-  twitter: string
-  tiktok: string
-  youtube: string
-  other: string
-  merchandise: string
+  instagram: string;
+  twitter: string;
+  tiktok: string;
+  youtube: string;
+  other: string;
+  merchandise: string;
 }
 
 interface FormData {
   // Personal Information
-  fullName: string
-  email: string
-  phone: string
-  dateOfBirth: string
-  nationality: string
+  fullName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  nationality: string;
 
   // Professional Information
-  category: string
-  experience: string
-  achievements: string
-  motivation: string
-  profession: string
-  availability: string
-  basePrice: number
-  rushPrice: number
-  followerCount: string
+  category: string;
+  experience: string;
+  achievements: string;
+  motivation: string;
+  profession: string;
+  availability: string;
+  basePrice: number;
+  rushPrice: number;
+  followerCount: string;
 
   // Social Media
-  socialMedia: SocialMedia
+  socialMedia: SocialMedia;
 
   // Additional Info
-  languages: string[]
-  specialRequests: string
-  agreedToTerms: boolean
+  languages: string[];
+  specialRequests: string;
+  agreedToTerms: boolean;
 
   // Documents
-  hasProfilePhoto: boolean
-  hasIdDocument: boolean
-  hasIdDocumentBack: boolean
-  hasVideoIntroduction: boolean
-  keepVideoPrivate: boolean
-  profilePhotoUrl?: string
-  idDocumentUrl?: string
-  idDocumentBackUrl?: string
-  videoIntroductionUrl?: string
+  hasProfilePhoto: boolean;
+  hasIdDocument: boolean;
+  hasIdDocumentBack: boolean;
+  hasVideoIntroduction: boolean;
+  keepVideoPrivate: boolean;
+  profilePhotoUrl?: string;
+  idDocumentUrl?: string;
+  idDocumentBackUrl?: string;
+  videoIntroductionUrl?: string;
 }
 
 interface UploadedFile {
-  filename: string
-  url: string
-  type: string
-  size: number
+  filename: string;
+  url: string;
+  type: string;
+  size: number;
 }
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
-      return star
-    }
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 const steps = [
   { id: 1, title: "Personal Info", icon: User },
   { id: 2, title: "About You", icon: Briefcase },
   { id: 3, title: "Documents", icon: FileText },
-]
+];
 
 const categories = [
   "Actor/Actress",
@@ -158,7 +164,7 @@ const categories = [
   "TV Personality",
   "Model",
   "Other",
-]
+];
 
 const languages = [
   "Te Reo Māori",
@@ -172,14 +178,18 @@ const languages = [
   "Nieuan",
   "French",
   "English",
-]
+];
 
 export default function JoinCelebrityPage() {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile>>({})
-  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({})
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<
+    Record<string, UploadedFile>
+  >({});
+  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>(
+    {}
+  );
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
@@ -215,118 +225,138 @@ export default function JoinCelebrityPage() {
     idDocumentUrl: undefined,
     idDocumentBackUrl: undefined,
     // videoIntroductionUrl: undefined,
-  })
+  });
 
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(false);
 
   // Function to validate video duration
   const validateVideoDuration = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
-      const video = document.createElement('video')
-      video.preload = 'metadata'
-      
+      const video = document.createElement("video");
+      video.preload = "metadata";
+
       video.onloadedmetadata = () => {
-        const duration = video.duration
-        const isValid = duration >= 15 && duration <= 30 // 15-30 seconds
-        resolve(isValid)
-      }
-      
+        const duration = video.duration;
+        const isValid = duration >= 15 && duration <= 30; // 15-30 seconds
+        resolve(isValid);
+      };
+
       video.onerror = () => {
-        resolve(false) // If we can't read metadata, reject
-      }
-      
-      video.src = URL.createObjectURL(file)
-    })
-  }
+        resolve(false); // If we can't read metadata, reject
+      };
+
+      video.src = URL.createObjectURL(file);
+    });
+  };
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const updateFormData = (field: string, value: any) => {
     if (field.includes(".")) {
-      const [parent, child] = field.split(".")
+      const [parent, child] = field.split(".");
       setFormData((prev) => ({
         ...prev,
         [parent]: {
           ...(prev[parent as keyof FormData] as Record<string, any>),
           [child]: value,
         },
-      }))
+      }));
     } else {
-      setFormData((prev) => ({ ...prev, [field]: value }))
+      setFormData((prev) => ({ ...prev, [field]: value }));
     }
-  }
+  };
 
   const handleFileUpload = async (file: File, type: string) => {
-    setUploadingFiles((prev) => ({ ...prev, [type]: true }))
+    setUploadingFiles((prev) => ({ ...prev, [type]: true }));
     try {
       // Special validation for video introduction
       if (type === "video") {
-        const isValidDuration = await validateVideoDuration(file)
+        const isValidDuration = await validateVideoDuration(file);
         if (!isValidDuration) {
-          toast.error("Video must be between 15-30 seconds long. Please upload a video with the correct duration.")
-          setUploadingFiles((prev) => ({ ...prev, [type]: false }))
-          return
+          toast.error(
+            "Video must be between 15-30 seconds long. Please upload a video with the correct duration."
+          );
+          setUploadingFiles((prev) => ({ ...prev, [type]: false }));
+          return;
         }
       }
 
-      console.log(`🚀 Starting upload for ${type} file: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`)
-      
+      console.log(
+        `🚀 Starting upload for ${type} file: ${file.name} (${(
+          file.size /
+          (1024 * 1024)
+        ).toFixed(2)}MB)`
+      );
+
       // Use the smart upload function that handles large files
-      const result = await uploadFile(file, type)
-      
+      const result = await uploadFile(file, type);
+
       // Convert UploadResult to UploadedFile format
       const uploadedFile: UploadedFile = {
-        filename: result.pathname ? result.pathname.split('/').pop() || file.name : file.name,
+        filename: result.pathname
+          ? result.pathname.split("/").pop() || file.name
+          : file.name,
         url: result.url,
         type: file.type,
-        size: result.size
-      }
-      
-      setUploadedFiles((prev) => ({ ...prev, [type]: uploadedFile }))
-      
+        size: result.size,
+      };
+
+      setUploadedFiles((prev) => ({ ...prev, [type]: uploadedFile }));
+
       // Update the appropriate boolean flag and URL based on type
       if (type === "profile") {
-        updateFormData("hasProfilePhoto", true)
-        updateFormData("profilePhotoUrl", result.url)
+        updateFormData("hasProfilePhoto", true);
+        updateFormData("profilePhotoUrl", result.url);
       } else if (type === "id") {
-        updateFormData("hasIdDocument", true)
-        updateFormData("idDocumentUrl", result.url)
+        updateFormData("hasIdDocument", true);
+        updateFormData("idDocumentUrl", result.url);
       } else if (type === "id-back") {
-        updateFormData("hasIdDocumentBack", true)
-        updateFormData("idDocumentBackUrl", result.url)
+        updateFormData("hasIdDocumentBack", true);
+        updateFormData("idDocumentBackUrl", result.url);
       }
       // else if (type === "video") {
       //   updateFormData("hasVideoIntroduction", true)
       //   updateFormData("videoIntroductionUrl", result.url)
       // }
-      
-      toast.success(`${type === "video" ? "Video introduction" : type} uploaded successfully!`)
-      console.log(`✅ ${type} upload completed:`, result.url)
+
+      toast.success(
+        `${
+          type === "video" ? "Video introduction" : type
+        } uploaded successfully!`
+      );
+      console.log(`✅ ${type} upload completed:`, result.url);
     } catch (error) {
-      console.error(`❌ ${type} upload failed:`, error)
-      
+      console.error(`❌ ${type} upload failed:`, error);
+
       // Show specific error messages based on the error type
       if (error instanceof Error) {
-        if (error.message.includes('BLOB_READ_WRITE_TOKEN') || error.message.includes('not configured')) {
-          toast.error("File upload is not configured. Please contact support.", {
-            description: "The file upload service needs to be set up by an administrator."
-          })
-        } else if (error.message.includes('File size too large')) {
+        if (
+          error.message.includes("BLOB_READ_WRITE_TOKEN") ||
+          error.message.includes("not configured")
+        ) {
+          toast.error(
+            "File upload is not configured. Please contact support.",
+            {
+              description:
+                "The file upload service needs to be set up by an administrator.",
+            }
+          );
+        } else if (error.message.includes("File size too large")) {
           toast.error("File too large", {
-            description: error.message
-          })
-        } else if (error.message.includes('Invalid file type')) {
+            description: error.message,
+          });
+        } else if (error.message.includes("Invalid file type")) {
           toast.error("Invalid file type", {
-            description: error.message
-          })
+            description: error.message,
+          });
         } else {
           // toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}`, {
           //   description: "Please try again or contact support if the problem persists."
@@ -336,43 +366,57 @@ export default function JoinCelebrityPage() {
         // toast.error(`Failed to upload ${type === "video" ? "video introduction" : type}. Please try again.`)
       }
     } finally {
-      setUploadingFiles((prev) => ({ ...prev, [type]: false }))
+      setUploadingFiles((prev) => ({ ...prev, [type]: false }));
     }
-  }
+  };
 
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!(formData.fullName && formData.email && formData.phone && formData.dateOfBirth)
+        return !!(
+          formData.fullName &&
+          formData.email &&
+          formData.phone &&
+          formData.dateOfBirth
+        );
       case 2:
-        return !!(formData.category && formData.experience.length >= 50 && formData.languages.length > 0)
+        return !!(
+          formData.category &&
+          formData.experience.length >= 50 &&
+          formData.languages.length > 0
+        );
       case 3:
         // return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasIdDocumentBack && formData.hasVideoIntroduction && formData.agreedToTerms
-        return formData.hasProfilePhoto && formData.hasIdDocument && formData.hasIdDocumentBack && formData.agreedToTerms
+        return (
+          formData.hasProfilePhoto &&
+          formData.hasIdDocument &&
+          formData.hasIdDocumentBack &&
+          formData.agreedToTerms
+        );
       default:
-        return false
+        return false;
     }
-  }
+  };
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 3))
+      setCurrentStep((prev) => Math.min(prev + 1, 3));
     } else {
-      toast.error("Please complete all required fields before proceeding.")
+      toast.error("Please complete all required fields before proceeding.");
     }
-  }
+  };
 
   const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1))
-  }
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
 
   const handleSubmit = async () => {
     if (!validateStep(3)) {
-      toast.error("Please complete all required fields.")
-      return
+      toast.error("Please complete all required fields.");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       // Prepare submission data with all required fields
       const submissionData = {
@@ -384,35 +428,33 @@ export default function JoinCelebrityPage() {
         basePrice: formData.basePrice || 299.0,
         rushPrice: formData.rushPrice || 399.0,
         followerCount: formData.followerCount || "0",
-      }
+      };
 
       const response = await fetch("/api/celebrity/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submissionData),
-      })
+      });
 
-    
+      const result = await response.json();
 
-      const result = await response.json()
-
-        console.log("result : ", result);
+      console.log("result : ", result);
 
       if (response.ok) {
-        setIsSubmitted(true)
-        toast.success("Application submitted successfully!")
+        setIsSubmitted(true);
+        toast.success("Application submitted successfully!");
       } else {
-        toast.error(result.error || "Submission failed")
+        toast.error(result.error || "Submission failed");
       }
     } catch (error) {
-      console.error("Submission error:", error)
-      toast.error("Submission failed " + error + " Please try again.")
+      console.error("Submission error:", error);
+      toast.error("Submission failed " + error + " Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const progress = (currentStep / 3) * 100
+  const progress = (currentStep / 3) * 100;
 
   if (isSubmitted) {
     return (
@@ -473,8 +515,9 @@ export default function JoinCelebrityPage() {
                   transition={{ delay: 0.4 }}
                   className="text-gray-300 text-lg mb-8"
                 >
-                  Thank you for applying to become talent on Kia Ora Kahi! Our team will review your application within
-                  1-3 business days and get back to you via email.
+                  Thank you for applying to become talent on Kia Ora Kahi! Our
+                  team will review your application within 1-3 business days and
+                  get back to you via email.
                 </motion.p>
 
                 <motion.div
@@ -484,11 +527,15 @@ export default function JoinCelebrityPage() {
                   className="space-y-4"
                 >
                   <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-                    <h3 className="text-white font-semibold mb-2">What happens next?</h3>
+                    <h3 className="text-white font-semibold mb-2">
+                      What happens next?
+                    </h3>
                     <ul className="text-gray-300 text-sm space-y-1">
                       <li>• Our team reviews your application and documents</li>
                       <li>• We may contact you for additional information</li>
-                      <li>• Upon approval, we'll help you set up your profile</li>
+                      <li>
+                        • Upon approval, we'll help you set up your profile
+                      </li>
                     </ul>
                   </div>
                   <Button
@@ -504,7 +551,7 @@ export default function JoinCelebrityPage() {
         </div>
         <Footer />
       </div>
-    )
+    );
   }
 
   return (
@@ -528,7 +575,8 @@ export default function JoinCelebrityPage() {
               Become Talent
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Join thousands of celebrities and creators earning money through personalized video messages
+              Join thousands of celebrities and creators earning money through
+              personalized video messages
             </p>
           </motion.div>
 
@@ -541,9 +589,9 @@ export default function JoinCelebrityPage() {
           >
             <div className="flex items-center justify-between mb-4">
               {steps.map((step, index) => {
-                const Icon = step.icon
-                const isActive = currentStep === step.id
-                const isCompleted = currentStep > step.id
+                const Icon = step.icon;
+                const isActive = currentStep === step.id;
+                const isCompleted = currentStep > step.id;
 
                 return (
                   <div key={step.id} className="flex items-center">
@@ -552,15 +600,23 @@ export default function JoinCelebrityPage() {
                         isCompleted
                           ? "bg-purple-600 border-purple-600 text-white"
                           : isActive
-                            ? "bg-purple-600/20 border-purple-500 text-purple-400"
-                            : "bg-gray-800 border-gray-600 text-gray-400"
+                          ? "bg-purple-600/20 border-purple-500 text-purple-400"
+                          : "bg-gray-800 border-gray-600 text-gray-400"
                       }`}
                     >
-                      {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
                     </div>
                     <span
                       className={`ml-2 text-sm font-medium ${
-                        isActive ? "text-purple-400" : isCompleted ? "text-purple-300" : "text-gray-400"
+                        isActive
+                          ? "text-purple-400"
+                          : isCompleted
+                          ? "text-purple-300"
+                          : "text-gray-400"
                       }`}
                     >
                       {step.title}
@@ -573,14 +629,18 @@ export default function JoinCelebrityPage() {
                       />
                     )}
                   </div>
-                )
+                );
               })}
             </div>
             <Progress value={progress} className="h-2 bg-gray-800" />
           </motion.div>
 
           {/* Form Steps */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             <Card className="bg-black/40 backdrop-blur-xl border-purple-500/30 shadow-2xl shadow-purple-500/20">
               <CardContent className="p-8">
                 <AnimatePresence mode="wait">
@@ -594,7 +654,9 @@ export default function JoinCelebrityPage() {
                       className="space-y-6"
                     >
                       <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">Personal Information</h2>
+                        <h2 className="text-2xl font-bold text-white mb-2">
+                          Personal Information
+                        </h2>
                         <p className="text-gray-400">Tell us about yourself</p>
                       </div>
 
@@ -606,7 +668,9 @@ export default function JoinCelebrityPage() {
                           <Input
                             id="fullName"
                             value={formData.fullName}
-                            onChange={(e) => updateFormData("fullName", e.target.value)}
+                            onChange={(e) =>
+                              updateFormData("fullName", e.target.value)
+                            }
                             className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                             placeholder="Enter your full name"
                           />
@@ -620,7 +684,9 @@ export default function JoinCelebrityPage() {
                             id="email"
                             type="email"
                             value={formData.email}
-                            onChange={(e) => updateFormData("email", e.target.value)}
+                            onChange={(e) =>
+                              updateFormData("email", e.target.value)
+                            }
                             className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                             placeholder="Enter your email"
                           />
@@ -633,7 +699,9 @@ export default function JoinCelebrityPage() {
                           <Input
                             id="phone"
                             value={formData.phone}
-                            onChange={(e) => updateFormData("phone", e.target.value)}
+                            onChange={(e) =>
+                              updateFormData("phone", e.target.value)
+                            }
                             className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                             placeholder="Enter your phone number"
                           />
@@ -647,7 +715,9 @@ export default function JoinCelebrityPage() {
                             id="dateOfBirth"
                             type="date"
                             value={formData.dateOfBirth}
-                            onChange={(e) => updateFormData("dateOfBirth", e.target.value)}
+                            onChange={(e) =>
+                              updateFormData("dateOfBirth", e.target.value)
+                            }
                             className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                           />
                         </div>
@@ -659,7 +729,9 @@ export default function JoinCelebrityPage() {
                           <Input
                             id="nationality"
                             value={formData.nationality}
-                            onChange={(e) => updateFormData("nationality", e.target.value)}
+                            onChange={(e) =>
+                              updateFormData("nationality", e.target.value)
+                            }
                             className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                             placeholder="Enter your nationality (optional)"
                           />
@@ -678,14 +750,20 @@ export default function JoinCelebrityPage() {
                       className="space-y-6"
                     >
                       <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">About You</h2>
-                        <p className="text-gray-400">Share your background and connect your social media</p>
+                        <h2 className="text-2xl font-bold text-white mb-2">
+                          About You
+                        </h2>
+                        <p className="text-gray-400">
+                          Share your background and connect your social media
+                        </p>
                       </div>
 
                       <div className="space-y-8">
                         {/* Professional Information */}
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-white">Professional Information</h3>
+                          <h3 className="text-lg font-semibold text-white">
+                            Professional Information
+                          </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                               <Label htmlFor="category" className="text-white">
@@ -693,7 +771,9 @@ export default function JoinCelebrityPage() {
                               </Label>
                               <Select
                                 value={formData.category}
-                                onValueChange={(value) => updateFormData("category", value)}
+                                onValueChange={(value) =>
+                                  updateFormData("category", value)
+                                }
                               >
                                 <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white focus:border-purple-500">
                                   <SelectValue placeholder="Select your category" />
@@ -713,39 +793,58 @@ export default function JoinCelebrityPage() {
                             </div>
 
                             <div className="space-y-2">
-                              <Label className="text-white">Languages Spoken *</Label>
+                              <Label className="text-white">
+                                Languages Spoken *
+                              </Label>
                               <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
                                 {languages.map((language) => (
-                                  <label key={language} className="flex items-center space-x-2 cursor-pointer">
+                                  <label
+                                    key={language}
+                                    className="flex items-center space-x-2 cursor-pointer"
+                                  >
                                     <input
                                       type="checkbox"
-                                      checked={formData.languages.includes(language)}
+                                      checked={formData.languages.includes(
+                                        language
+                                      )}
                                       onChange={(e) => {
                                         if (e.target.checked) {
-                                          updateFormData("languages", [...formData.languages, language])
+                                          updateFormData("languages", [
+                                            ...formData.languages,
+                                            language,
+                                          ]);
                                         } else {
                                           updateFormData(
                                             "languages",
-                                            formData.languages.filter((l) => l !== language),
-                                          )
+                                            formData.languages.filter(
+                                              (l) => l !== language
+                                            )
+                                          );
                                         }
                                       }}
                                       className="rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                                     />
-                                    <span className="text-sm text-white">{language}</span>
+                                    <span className="text-sm text-white">
+                                      {language}
+                                    </span>
                                   </label>
                                 ))}
                               </div>
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="experience" className="text-white">
+                              <Label
+                                htmlFor="experience"
+                                className="text-white"
+                              >
                                 Tell us about yourself * (minimum 50 characters)
                               </Label>
                               <Textarea
                                 id="experience"
                                 value={formData.experience}
-                                onChange={(e) => updateFormData("experience", e.target.value)}
+                                onChange={(e) =>
+                                  updateFormData("experience", e.target.value)
+                                }
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
                                 placeholder="Share your background, experience, what makes you unique, and why you'd like to create personalized videos for fans..."
                               />
@@ -760,9 +859,12 @@ export default function JoinCelebrityPage() {
 
                         {/* Social Media */}
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-white">Social Media (Optional)</h3>
+                          <h3 className="text-lg font-semibold text-white">
+                            Social Media (Optional)
+                          </h3>
                           <p className="text-gray-400 text-sm">
-                            Connect your social media to help us verify your identity
+                            Connect your social media to help us verify your
+                            identity
                           </p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -772,7 +874,12 @@ export default function JoinCelebrityPage() {
                               <Input
                                 id="instagram"
                                 value={formData.socialMedia.instagram}
-                                onChange={(e) => updateFormData("socialMedia.instagram", e.target.value)}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "socialMedia.instagram",
+                                    e.target.value
+                                  )
+                                }
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                                 placeholder="@username"
                               />
@@ -785,7 +892,12 @@ export default function JoinCelebrityPage() {
                               <Input
                                 id="twitter"
                                 value={formData.socialMedia.twitter}
-                                onChange={(e) => updateFormData("socialMedia.twitter", e.target.value)}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "socialMedia.twitter",
+                                    e.target.value
+                                  )
+                                }
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                                 placeholder="@username"
                               />
@@ -798,7 +910,12 @@ export default function JoinCelebrityPage() {
                               <Input
                                 id="tiktok"
                                 value={formData.socialMedia.tiktok}
-                                onChange={(e) => updateFormData("socialMedia.tiktok", e.target.value)}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "socialMedia.tiktok",
+                                    e.target.value
+                                  )
+                                }
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                                 placeholder="@username"
                               />
@@ -811,7 +928,12 @@ export default function JoinCelebrityPage() {
                               <Input
                                 id="youtube"
                                 value={formData.socialMedia.youtube}
-                                onChange={(e) => updateFormData("socialMedia.youtube", e.target.value)}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "socialMedia.youtube",
+                                    e.target.value
+                                  )
+                                }
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                                 placeholder="Channel name or URL"
                               />
@@ -824,20 +946,33 @@ export default function JoinCelebrityPage() {
                               <Input
                                 id="other"
                                 value={formData.socialMedia.other}
-                                onChange={(e) => updateFormData("socialMedia.other", e.target.value)}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "socialMedia.other",
+                                    e.target.value
+                                  )
+                                }
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                                 placeholder="LinkedIn, Twitch, etc."
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="merchandise" className="text-white">
+                              <Label
+                                htmlFor="merchandise"
+                                className="text-white"
+                              >
                                 Merchandise Link
                               </Label>
                               <Input
                                 id="merchandise"
                                 value={formData.socialMedia.merchandise}
-                                onChange={(e) => updateFormData("socialMedia.merchandise", e.target.value)}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "socialMedia.merchandise",
+                                    e.target.value
+                                  )
+                                }
                                 className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                                 placeholder="Link to your merchandise store"
                               />
@@ -849,15 +984,25 @@ export default function JoinCelebrityPage() {
 
                         {/* Additional Information */}
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-white">Additional Information</h3>
+                          <h3 className="text-lg font-semibold text-white">
+                            Additional Information
+                          </h3>
                           <div className="space-y-2">
-                            <Label htmlFor="specialRequests" className="text-white">
+                            <Label
+                              htmlFor="specialRequests"
+                              className="text-white"
+                            >
                               Special Requests or Notes
                             </Label>
                             <Textarea
                               id="specialRequests"
                               value={formData.specialRequests}
-                              onChange={(e) => updateFormData("specialRequests", e.target.value)}
+                              onChange={(e) =>
+                                updateFormData(
+                                  "specialRequests",
+                                  e.target.value
+                                )
+                              }
                               className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
                               placeholder="Any special requirements, limitations, or notes..."
                             />
@@ -877,8 +1022,12 @@ export default function JoinCelebrityPage() {
                       className="space-y-6"
                     >
                       <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">Document Verification</h2>
-                        <p className="text-gray-400">Upload required documents for verification</p>
+                        <h2 className="text-2xl font-bold text-white mb-2">
+                          Document Verification
+                        </h2>
+                        <p className="text-gray-400">
+                          Upload required documents for verification
+                        </p>
                       </div>
 
                       <div className="space-y-6">
@@ -886,11 +1035,16 @@ export default function JoinCelebrityPage() {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <Camera className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Profile Photo *</h3>
-                            {formData.hasProfilePhoto && <CheckCircle className="w-5 h-5 text-green-400" />}
+                            <h3 className="text-lg font-semibold text-white">
+                              Profile Photo *
+                            </h3>
+                            {formData.hasProfilePhoto && (
+                              <CheckCircle className="w-5 h-5 text-green-400" />
+                            )}
                           </div>
                           <p className="text-gray-400 text-sm">
-                            Upload a clear, professional headshot that will be used on your profile
+                            Upload a clear, professional headshot that will be
+                            used on your profile
                           </p>
                           <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
                             <input
@@ -898,27 +1052,38 @@ export default function JoinCelebrityPage() {
                               id="profile-photo"
                               accept="image/*"
                               onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "profile")
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file, "profile");
                               }}
                               className="hidden"
                             />
-                            <label htmlFor="profile-photo" className="cursor-pointer">
+                            <label
+                              htmlFor="profile-photo"
+                              className="cursor-pointer"
+                            >
                               {uploadingFiles.profile ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
+                                  <span className="text-white">
+                                    Uploading...
+                                  </span>
                                 </div>
                               ) : formData.hasProfilePhoto ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">Profile photo uploaded</span>
+                                  <span className="text-green-400">
+                                    Profile photo uploaded
+                                  </span>
                                 </div>
                               ) : (
                                 <div className="flex flex-col items-center gap-2">
                                   <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload profile photo</span>
-                                  <span className="text-gray-400 text-sm">PNG, JPG, WEBP up to 5MB</span>
+                                  <span className="text-white">
+                                    Click to upload profile photo
+                                  </span>
+                                  <span className="text-gray-400 text-sm">
+                                    PNG, JPG, WEBP up to 5MB
+                                  </span>
                                 </div>
                               )}
                             </label>
@@ -929,11 +1094,17 @@ export default function JoinCelebrityPage() {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <IdCard className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Government ID (Front) *</h3>
-                            {formData.hasIdDocument && <CheckCircle className="w-5 h-5 text-green-400" />}
+                            <h3 className="text-lg font-semibold text-white">
+                              Government ID (Front) *
+                            </h3>
+                            {formData.hasIdDocument && (
+                              <CheckCircle className="w-5 h-5 text-green-400" />
+                            )}
                           </div>
                           <p className="text-gray-400 text-sm">
-                            Upload a clear photo of the front of your government-issued ID (passport, driver's license, etc.)
+                            Upload a clear photo of the front of your
+                            government-issued ID (passport, driver's license,
+                            etc.)
                           </p>
                           <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
                             <input
@@ -941,27 +1112,38 @@ export default function JoinCelebrityPage() {
                               id="id-document"
                               accept="image/*,application/pdf"
                               onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "id")
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file, "id");
                               }}
                               className="hidden"
                             />
-                            <label htmlFor="id-document" className="cursor-pointer">
+                            <label
+                              htmlFor="id-document"
+                              className="cursor-pointer"
+                            >
                               {uploadingFiles.id ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
+                                  <span className="text-white">
+                                    Uploading...
+                                  </span>
                                 </div>
                               ) : formData.hasIdDocument ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">ID document uploaded</span>
+                                  <span className="text-green-400">
+                                    ID document uploaded
+                                  </span>
                                 </div>
                               ) : (
                                 <div className="flex flex-col items-center gap-2">
                                   <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload government ID (front)</span>
-                                  <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
+                                  <span className="text-white">
+                                    Click to upload government ID (front)
+                                  </span>
+                                  <span className="text-gray-400 text-sm">
+                                    PNG, JPG, PDF up to 5MB
+                                  </span>
                                 </div>
                               )}
                             </label>
@@ -972,11 +1154,17 @@ export default function JoinCelebrityPage() {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <IdCard className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Government ID (Back) *</h3>
-                            {formData.hasIdDocumentBack && <CheckCircle className="w-5 h-5 text-green-400" />}
+                            <h3 className="text-lg font-semibold text-white">
+                              Government ID (Back) *
+                            </h3>
+                            {formData.hasIdDocumentBack && (
+                              <CheckCircle className="w-5 h-5 text-green-400" />
+                            )}
                           </div>
                           <p className="text-gray-400 text-sm">
-                            Upload a clear photo of the back of your government-issued ID (passport, driver's license, etc.)
+                            Upload a clear photo of the back of your
+                            government-issued ID (passport, driver's license,
+                            etc.)
                           </p>
                           <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
                             <input
@@ -984,42 +1172,57 @@ export default function JoinCelebrityPage() {
                               id="id-document-back"
                               accept="image/*,application/pdf"
                               onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) handleFileUpload(file, "id-back")
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file, "id-back");
                               }}
                               className="hidden"
                             />
-                            <label htmlFor="id-document-back" className="cursor-pointer">
+                            <label
+                              htmlFor="id-document-back"
+                              className="cursor-pointer"
+                            >
                               {uploadingFiles["id-back"] ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                                  <span className="text-white">Uploading...</span>
+                                  <span className="text-white">
+                                    Uploading...
+                                  </span>
                                 </div>
                               ) : formData.hasIdDocumentBack ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-400">ID document back uploaded</span>
+                                  <span className="text-green-400">
+                                    ID document back uploaded
+                                  </span>
                                 </div>
                               ) : (
                                 <div className="flex flex-col items-center gap-2">
                                   <Upload className="w-8 h-8 text-gray-400" />
-                                  <span className="text-white">Click to upload government ID (back)</span>
-                                  <span className="text-gray-400 text-sm">PNG, JPG, PDF up to 5MB</span>
+                                  <span className="text-white">
+                                    Click to upload government ID (back)
+                                  </span>
+                                  <span className="text-gray-400 text-sm">
+                                    PNG, JPG, PDF up to 5MB
+                                  </span>
                                 </div>
                               )}
                             </label>
                           </div>
-                        </div> 
+                        </div>
 
                         {/* Privacy Notice */}
                         <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
                           <div className="flex items-start gap-3">
                             <Shield className="w-5 h-5 text-purple-400 mt-0.5" />
                             <div>
-                              <h4 className="text-white font-semibold mb-1">Privacy & Security</h4>
+                              <h4 className="text-white font-semibold mb-1">
+                                Privacy & Security
+                              </h4>
                               <p className="text-gray-300 text-sm">
-                                All uploaded documents are encrypted and stored securely. They will only be used for
-                                verification purposes and will not be shared with third parties.
+                                All uploaded documents are encrypted and stored
+                                securely. They will only be used for
+                                verification purposes and will not be shared
+                                with third parties.
                               </p>
                             </div>
                           </div>
@@ -1031,7 +1234,12 @@ export default function JoinCelebrityPage() {
                             <input
                               type="checkbox"
                               checked={formData.agreedToTerms}
-                              onChange={(e) => updateFormData("agreedToTerms", e.target.checked)}
+                              onChange={(e) =>
+                                updateFormData(
+                                  "agreedToTerms",
+                                  e.target.checked
+                                )
+                              }
                               className="mt-1 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                             />
                             <div>
@@ -1040,14 +1248,23 @@ export default function JoinCelebrityPage() {
                               </div>
                               <div className="text-gray-300 text-xs mt-1">
                                 By clicking here, you agree to the{" "}
-                                <a href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                                <a
+                                  href="/terms"
+                                  target="_blank"
+                                  className="text-purple-400 hover:text-purple-300 underline"
+                                >
                                   Kia Ora Kahi Terms and Conditions
                                 </a>{" "}
                                 and acknowledge you have read the{" "}
-                                <a href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                                <a
+                                  href="/privacy"
+                                  target="_blank"
+                                  className="text-purple-400 hover:text-purple-300 underline"
+                                >
                                   Kia Ora Kahi Privacy Policy
                                 </a>{" "}
-                                to learn how we collect, use and share your data.
+                                to learn how we collect, use and share your
+                                data.
                               </div>
                             </div>
                           </label>
@@ -1108,34 +1325,38 @@ export default function JoinCelebrityPage() {
             transition={{ delay: 0.3 }}
             className="mt-16"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-6 pb-4">
               {[
-                {
-                  icon: Crown,
-                  title: "Premium Platform",
-                  description: "Join an exclusive platform for verified celebrities and creators",
-                  gradient: "from-pink-500 to-purple-500"
-                },
+                // {
+                //   icon: Crown,
+                //   title: "Premium Platform",
+                //   description:
+                //     "Join an exclusive platform for verified celebrities and creators",
+                //   gradient: "from-pink-500 to-purple-500",
+                // },
                 {
                   icon: Zap,
                   title: "Easy Setup",
-                  description: "Quick onboarding process with dedicated support team",
-                  gradient: "from-purple-500 to-pink-500"
+                  description:
+                    "Quick onboarding process with dedicated support team",
+                  gradient: "from-purple-500 to-pink-500",
                 },
                 {
                   icon: Shield,
                   title: "Secure & Safe",
-                  description: "Advanced security measures to protect your privacy and earnings",
-                  gradient: "from-purple-500 to-pink-500"
+                  description:
+                    "Advanced security measures to protect your privacy and earnings",
+                  gradient: "from-purple-500 to-pink-500",
                 },
                 {
                   icon: TrendingUp,
                   title: "Grow Your Brand",
-                  description: "Expand your reach and connect with fans in a meaningful way",
-                  gradient: "from-purple-500 to-pink-500"
+                  description:
+                    "Expand your reach and connect with fans in a meaningful way",
+                  gradient: "from-purple-500 to-pink-500",
                 },
               ].map((benefit, index) => {
-                const Icon = benefit.icon
+                const Icon = benefit.icon;
                 return (
                   <motion.div
                     key={benefit.title}
@@ -1143,17 +1364,23 @@ export default function JoinCelebrityPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 + index * 0.1 }}
                   >
-                    <Card className="bg-black/40 backdrop-blur-xl border-purple-500/30 shadow-lg shadow-purple-500/10 h-full hover:border-purple-400/50 transition-all duration-300">
+                    <Card className="bg-black/40 backdrop-blur-xl w-80 md:size-64 border-purple-500/30 shadow-lg shadow-purple-500/10  hover:border-purple-400/50 transition-all duration-300">
                       <CardContent className="p-6 text-center">
-                        <div className={`w-12 h-12 bg-gradient-to-r ${benefit.gradient} rounded-lg flex items-center justify-center mx-auto mb-4`}>
+                        <div
+                          className={`w-12 h-12 bg-gradient-to-r ${benefit.gradient} rounded-lg flex items-center justify-center mx-auto mb-4`}
+                        >
                           <Icon className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-white mb-2">{benefit.title}</h3>
-                        <p className="text-gray-400 text-sm">{benefit.description}</p>
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          {benefit.title}
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                          {benefit.description}
+                        </p>
                       </CardContent>
                     </Card>
                   </motion.div>
-                )
+                );
               })}
             </div>
           </motion.div>
@@ -1161,5 +1388,5 @@ export default function JoinCelebrityPage() {
         <Footer />
       </div>
     </div>
-  )
+  );
 }
