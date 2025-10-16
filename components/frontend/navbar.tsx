@@ -1,13 +1,24 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Menu, X, Star, User, LogOut, Settings, Crown, House, LayoutDashboard, ShoppingCart } from "lucide-react"
-import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
-import { AuthModal } from "@/components/auth/auth-modal"
-import SearchAutocomplete from "@/components/frontend/search-autocomplete"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import {
+  Menu,
+  X,
+  Star,
+  User,
+  LogOut,
+  Settings,
+  Crown,
+  House,
+  LayoutDashboard,
+  ShoppingCart,
+} from "lucide-react";
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { AuthModal } from "@/components/auth/auth-modal";
+import SearchAutocomplete from "@/components/frontend/search-autocomplete";
 import Image from "next/image";
 
 import {
@@ -17,24 +28,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin")
-  const { data: session, status } = useSession()
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">(
+    "signin"
+  );
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
+      setIsScrolled(window.scrollY > 20);
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // const navItems = [
   //   { name: "Home", href: "/" },
@@ -43,30 +56,25 @@ export default function Navbar() {
   //   { name: "Become Talent", href: "/join-celebrity" },
   // ]
 
+  const navItems = [
+    { name: "Home", href: "/" },
+    { name: "Celebrities", href: "/celebrities" },
+    ...(session ? [{ name: "Become Talent", href: "/join-celebrity" }] : []),
+  ];
 
-   const navItems = [
-      { name: "Home", href: "/" },
-      { name: "Celebrities", href: "/celebrities" },
-      ...(session
-        ? [{ name: "Become Talent", href: "/join-celebrity" }]
-        : []),
-    ]
-  
-
-    
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" })
-  }
+    await signOut({ callbackUrl: "/" });
+  };
 
   const handleSignInClick = () => {
-    setAuthModalTab("signin")
-    setShowAuthModal(true)
-  }
+    setAuthModalTab("signin");
+    setShowAuthModal(true);
+  };
 
   const handleSignUpClick = () => {
-    setAuthModalTab("signup")
-    setShowAuthModal(true)
-  }
+    setAuthModalTab("signup");
+    setShowAuthModal(true);
+  };
 
   return (
     <>
@@ -93,18 +101,16 @@ export default function Navbar() {
                   <Star className="w-5 h-5 text-white" />
                 </div> */}
 
-
                 <div className="w-18 h-18 relative rounded-lg overflow-hidden">
-                <Image
-                  src="/logo.webp" // file should be inside /public/
-                  alt="Kia Ora Kahi"
-                  fill
-                  className="object-cover rounded-lg"
-                  sizes="60px"
-                  priority
-                />
-              </div>
-
+                  <Image
+                    src="/logo.webp" // file should be inside /public/
+                    alt="Kia Ora Kahi"
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="60px"
+                    priority
+                  />
+                </div>
 
                 {/* <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
                   Kia Ora Kahi
@@ -137,9 +143,15 @@ export default function Navbar() {
               ) : session ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Button
+                      variant="ghost"
+                      className="relative h-10 w-10 rounded-full"
+                    >
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
+                        <AvatarImage
+                          src={session.user?.image || ""}
+                          alt={session.user?.name || ""}
+                        />
                         <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                           {session.user?.name?.charAt(0) || "U"}
                         </AvatarFallback>
@@ -156,8 +168,12 @@ export default function Navbar() {
                   >
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none text-white">{session.user?.name}</p>
-                        <p className="text-xs leading-none text-white/60">{session.user?.email}</p>
+                        <p className="text-sm font-medium leading-none text-white">
+                          {session.user?.name}
+                        </p>
+                        <p className="text-xs leading-none text-white/60">
+                          {session.user?.email}
+                        </p>
                         {session.user?.role === "CELEBRITY" && (
                           <span className="inline-flex items-center gap-1 text-xs text-yellow-400">
                             <Crown className="w-3 h-3" />
@@ -166,28 +182,51 @@ export default function Navbar() {
                         )}
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-white/10" />
-                                          <DropdownMenuItem className="text-white hover:bg-white/10">
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      <Link href="/orders">My Orders</Link>
+                    <DropdownMenuSeparator className="bg-white/50 cursor-pointer" />
+                    <DropdownMenuItem
+                      asChild
+                      className="text-white hover:bg-white/50 cursor-pointer"
+                    >
+                      <Link href="/orders">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        My Orders
+                      </Link>
                     </DropdownMenuItem>
                     {session.user?.role === "CELEBRITY" ? (
-                      <DropdownMenuItem className="text-white hover:bg-white/10">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <Link href="/celebrity-dashboard">Dashboard</Link>
+                      <DropdownMenuItem
+                        asChild
+                        className="text-white hover:bg-white/50 cursor-pointer"
+                      >
+                        <Link href="/celebrity-dashboard">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
                       </DropdownMenuItem>
                     ) : session.user?.role === "ADMIN" ? (
-                      <DropdownMenuItem className="text-white hover:bg-white/10">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <Link href="/admin">Dashboard</Link>
+                      <DropdownMenuItem
+                        asChild
+                        className="text-white hover:bg-white/50 cursor-pointer"
+                      >
+                        <Link href="/admin">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem className="text-white hover:bg-white/10">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <Link href="/dashboard">Dashboard</Link>
+                      <DropdownMenuItem
+                        asChild
+                        className="text-white hover:bg-white/50 cursor-pointer"
+                      >
+                        <Link href="/dashboard">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer" onClick={handleSignOut}>
+                    <DropdownMenuItem
+                      className="text-white hover:bg-white/50 cursor-pointer cursor-pointer"
+                      onClick={handleSignOut}
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Sign out</span>
                     </DropdownMenuItem>
@@ -197,7 +236,7 @@ export default function Navbar() {
                 <>
                   <Button
                     variant="outline"
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    className="bg-white/50 cursor-pointer border-white/20 text-white hover:bg-white/20"
                     onClick={handleSignInClick}
                   >
                     <User className="w-4 h-4 mr-2" />
@@ -220,13 +259,19 @@ export default function Navbar() {
               className="lg:hidden text-white"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </Button>
           </div>
 
           {/* Mobile Menu */}
           <motion.div
-            className={`lg:hidden overflow-hidden ${isMobileMenuOpen ? "max-h-96" : "max-h-0"}`}
+            className={`lg:hidden overflow-hidden ${
+              isMobileMenuOpen ? "max-h-96" : "max-h-0"
+            }`}
             initial={false}
             animate={{
               height: isMobileMenuOpen ? "auto" : 0,
@@ -239,7 +284,7 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                  className="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/50 cursor-pointer rounded-lg transition-colors duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -250,21 +295,30 @@ export default function Navbar() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
+                        <AvatarImage
+                          src={session.user?.image || ""}
+                          alt={session.user?.name || ""}
+                        />
                         <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm">
                           {session.user?.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{session.user?.name}</p>
-                        <p className="text-xs text-white/60 truncate">{session.user?.email}</p>
+                        <p className="text-sm font-medium text-white truncate">
+                          {session.user?.name}
+                        </p>
+                        <p className="text-xs text-white/60 truncate">
+                          {session.user?.email}
+                        </p>
                       </div>
-                      {session.user?.role === "CELEBRITY" && <Crown className="w-4 h-4 text-yellow-400" />}
+                      {session.user?.role === "CELEBRITY" && (
+                        <Crown className="w-4 h-4 text-yellow-400" />
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Link
                         href="/dashboard"
-                        className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                        className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/50 cursor-pointer rounded-lg transition-colors duration-200"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <LayoutDashboard className="w-4 h-4 mr-2 inline" />
@@ -272,7 +326,7 @@ export default function Navbar() {
                       </Link>
                       <Link
                         href="/orders"
-                        className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                        className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/50 cursor-pointer rounded-lg transition-colors duration-200"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <ShoppingCart className="w-4 h-4 mr-2 inline" />
@@ -281,7 +335,7 @@ export default function Navbar() {
                       {session.user?.role === "CELEBRITY" && (
                         <Link
                           href="/celebrity-dashboard"
-                          className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                          className="block w-full px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/50 cursor-pointer rounded-lg transition-colors duration-200"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Crown className="w-4 h-4 mr-2 inline" />
@@ -291,7 +345,7 @@ export default function Navbar() {
                     </div>
                     <Button
                       variant="outline"
-                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="w-full bg-white/50 cursor-pointer border-white/20 text-white hover:bg-white/20"
                       onClick={handleSignOut}
                     >
                       <LogOut className="w-4 h-4 mr-2" />
@@ -302,10 +356,10 @@ export default function Navbar() {
                   <>
                     <Button
                       variant="outline"
-                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="w-full bg-white/50 cursor-pointer border-white/20 text-white hover:bg-white/20"
                       onClick={() => {
-                        handleSignInClick()
-                        setIsMobileMenuOpen(false)
+                        handleSignInClick();
+                        setIsMobileMenuOpen(false);
                       }}
                     >
                       <User className="w-4 h-4 mr-2" />
@@ -314,8 +368,8 @@ export default function Navbar() {
                     <Button
                       className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                       onClick={() => {
-                        handleSignUpClick()
-                        setIsMobileMenuOpen(false)
+                        handleSignUpClick();
+                        setIsMobileMenuOpen(false);
                       }}
                     >
                       Get Started
@@ -328,7 +382,11 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authModalTab} />
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        defaultTab={authModalTab}
+      />
     </>
-  )
+  );
 }

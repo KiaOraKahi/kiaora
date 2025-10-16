@@ -1,17 +1,23 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession, signOut } from "next-auth/react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
+import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import {
   Search,
   Filter,
@@ -46,65 +52,67 @@ import {
   Plus,
   Minus,
   LogOut,
-} from "lucide-react"
-import { format } from "date-fns"
-import Link from "next/link"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
-import { TipModal } from "@/components/tip-modal"
-import { ProfileImageUpload } from "@/components/profile-image-upload"
-import VideoPlayer from "@/components/frontend/video-player"
+} from "lucide-react";
+import { format } from "date-fns";
+import Link from "next/link";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
+import { TipModal } from "@/components/tip-modal";
+import { ProfileImageUpload } from "@/components/profile-image-upload";
+import VideoPlayer from "@/components/frontend/video-player";
+import { useToast } from "@/components/frontend/toast-provider";
+import { toast } from "sonner";
 
 interface Order {
-  id: string
-  orderNumber: string
-  status: string
-  paymentStatus: string
-  totalAmount: number
-  createdAt: string
-  recipientName: string
-  occasion: string
-  scheduledDate: string
-  scheduledTime: string
-  bookingStatus: string
-  celebrityName: string
-  celebrityImage: string
-  celebrityCategory: string
-  approvalStatus?: string
-  videoUrl?: string
-  tipAmount?: number
+  id: string;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  totalAmount: number;
+  createdAt: string;
+  recipientName: string;
+  occasion: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  bookingStatus: string;
+  celebrityName: string;
+  celebrityImage: string;
+  celebrityCategory: string;
+  approvalStatus?: string;
+  videoUrl?: string;
+  tipAmount?: number;
 }
 
 interface Payment {
-  id: string
-  orderNumber: string
-  amount: number
-  status: string
-  date: string
-  type: "booking" | "tip" | "refund"
-  description: string
-  celebrityName: string
+  id: string;
+  orderNumber: string;
+  amount: number;
+  status: string;
+  date: string;
+  type: "booking" | "tip" | "refund";
+  description: string;
+  celebrityName: string;
 }
 
 interface UserProfile {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  avatar?: string
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
   preferences: {
-    notifications: boolean
-    marketing: boolean
-    language: string
-    timezone: string
-  }
+    notifications: boolean;
+    marketing: boolean;
+    language: string;
+    timezone: string;
+  };
 }
 
 // Mock data for demonstration
-const mockOrders: Order[] = []
+const mockOrders: Order[] = [];
 
-const mockPayments: Payment[] = []
+const mockPayments: Payment[] = [];
 
 const mockProfile: UserProfile = {
   id: "1",
@@ -118,61 +126,61 @@ const mockProfile: UserProfile = {
     language: "en",
     timezone: "America/New_York",
   },
-}
+};
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 const statusColors = {
   pending: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
@@ -181,36 +189,36 @@ const statusColors = {
   completed: "bg-green-500/20 text-green-300 border-green-500/30",
   cancelled: "bg-red-500/20 text-red-300 border-red-500/30",
   failed: "bg-red-500/20 text-red-300 border-red-500/30",
-}
+};
 
 const paymentStatusColors = {
   pending: "bg-yellow-500/20 text-yellow-300",
   paid: "bg-green-500/20 text-green-300",
   failed: "bg-red-500/20 text-red-300",
   refunded: "bg-gray-500/20 text-gray-300",
-}
+};
 
 const approvalStatusColors = {
   pending_approval: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   approved: "bg-green-500/20 text-green-300 border-green-500/30",
   declined: "bg-red-500/20 text-red-300 border-red-500/30",
-}
+};
 
 export default function UserDashboard() {
-  const { data: session, status } = useSession()
-  const [activeTab, setActiveTab] = useState("requests")
-  const [orders, setOrders] = useState<Order[]>(mockOrders)
-  const [payments, setPayments] = useState<Payment[]>(mockPayments)
-  const [profile, setProfile] = useState<UserProfile>(mockProfile)
-  const [loading, setLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [isEditingProfile, setIsEditingProfile] = useState(false)
-  const [editedProfile, setEditedProfile] = useState<UserProfile>(mockProfile)
-  const [isMobile, setIsMobile] = useState(false)
-  const [videoModal, setVideoModal] = useState<{ 
-    isOpen: boolean; 
-    videoUrl?: string; 
+  const { data: session, status } = useSession();
+  const [activeTab, setActiveTab] = useState("requests");
+  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [payments, setPayments] = useState<Payment[]>(mockPayments);
+  const [profile, setProfile] = useState<UserProfile>(mockProfile);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<UserProfile>(mockProfile);
+  const [isMobile, setIsMobile] = useState(false);
+  const [videoModal, setVideoModal] = useState<{
+    isOpen: boolean;
+    videoUrl?: string;
     celebrityName?: string;
     isReview?: boolean;
     orderNumber?: string;
@@ -219,37 +227,37 @@ export default function UserDashboard() {
     videoUrl: undefined,
     celebrityName: undefined,
     isReview: false,
-    orderNumber: undefined
-  })
+    orderNumber: undefined,
+  });
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Fetch user profile when session is available
   useEffect(() => {
     if (session?.user?.id) {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("/api/user/profile")
+          const response = await fetch("/api/user/profile");
           if (response.ok) {
-            const userProfile = await response.json()
-            setProfile(userProfile)
-            setEditedProfile(userProfile)
+            const userProfile = await response.json();
+            setProfile(userProfile);
+            setEditedProfile(userProfile);
           }
         } catch (error) {
-          console.error("Error fetching user profile:", error)
+          console.error("Error fetching user profile:", error);
         }
-      }
-      fetchUserProfile()
+      };
+      fetchUserProfile();
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   // Fetch user orders and payments when session is available
   useEffect(() => {
@@ -257,36 +265,38 @@ export default function UserDashboard() {
       const fetchUserData = async () => {
         try {
           // Fetch orders
-          const ordersResponse = await fetch("/api/user/orders")
+          const ordersResponse = await fetch("/api/user/orders");
           if (ordersResponse.ok) {
-            const userOrders = await ordersResponse.json()
-            setOrders(userOrders)
+            const userOrders = await ordersResponse.json();
+            setOrders(userOrders);
           }
-          
+
           // Fetch payments
-          const paymentsResponse = await fetch("/api/user/payments")
+          const paymentsResponse = await fetch("/api/user/payments");
           if (paymentsResponse.ok) {
-            const userPayments = await paymentsResponse.json()
-            setPayments(userPayments)
+            const userPayments = await paymentsResponse.json();
+            setPayments(userPayments);
           }
         } catch (error) {
-          console.error("Error fetching user data:", error)
+          console.error("Error fetching user data:", error);
         }
-      }
-      fetchUserData()
+      };
+      fetchUserData();
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   const filteredOrders = orders.filter((order) => {
-    const matchesSearch = searchTerm === "" || 
+    const matchesSearch =
+      searchTerm === "" ||
       order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.celebrityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.recipientName.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter
-    
-    return matchesSearch && matchesStatus
-  })
+      order.recipientName.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" || order.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const handleProfileSave = async () => {
     try {
@@ -296,38 +306,43 @@ export default function UserDashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(editedProfile),
-      })
+      });
 
       if (response.ok) {
-        const updatedProfile = await response.json()
-        setProfile(updatedProfile)
-        setEditedProfile(updatedProfile)
-        setIsEditingProfile(false)
-        toast.success("Profile updated successfully!")
+        const updatedProfile = await response.json();
+        setProfile(updatedProfile);
+        setEditedProfile(updatedProfile);
+        setIsEditingProfile(false);
+        console.log("Profile updated successfully!");
       } else {
-        const error = await response.json()
-        toast.error(error.error || "Failed to update profile")
+        const error = await response.json();
+        console.error(error.error || "Failed to update profile");
       }
     } catch (error) {
-      console.error("Error updating profile:", error)
-      toast.error("Failed to update profile. Please try again.")
+      console.error("Error updating profile:", error);
+      console.error("Failed to update profile. Please try again.");
     }
-  }
+  };
 
   const handleProfileCancel = () => {
-    setEditedProfile(profile)
-    setIsEditingProfile(false)
-  }
+    setEditedProfile(profile);
+    setIsEditingProfile(false);
+  };
 
-  const handleWatchVideo = (videoUrl: string, celebrityName: string, isReview: boolean = false, orderNumber?: string) => {
+  const handleWatchVideo = (
+    videoUrl: string,
+    celebrityName: string,
+    isReview: boolean = false,
+    orderNumber?: string
+  ) => {
     setVideoModal({
       isOpen: true,
       videoUrl,
       celebrityName,
       isReview,
-      orderNumber
-    })
-  }
+      orderNumber,
+    });
+  };
 
   const handleCloseVideo = () => {
     setVideoModal({
@@ -335,9 +350,9 @@ export default function UserDashboard() {
       videoUrl: undefined,
       celebrityName: undefined,
       isReview: false,
-      orderNumber: undefined
-    })
-  }
+      orderNumber: undefined,
+    });
+  };
 
   if (status === "loading") {
     return (
@@ -348,7 +363,7 @@ export default function UserDashboard() {
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
         </div>
       </div>
-    )
+    );
   }
 
   if (!session) {
@@ -358,58 +373,68 @@ export default function UserDashboard() {
         <SubtleLuxuryStarfield />
         <div className="relative z-10 text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Please Sign In</h1>
-          <p className="text-purple-200">You need to be signed in to access your dashboard.</p>
+          <p className="text-purple-200">
+            You need to be signed in to access your dashboard.
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       <SubtleLuxuryStarfield />
-      
+
       <div className="relative z-10">
         {isMobile ? <MobileNavbar /> : <Navbar />}
-        
+
         <div className="container mx-auto px-4 py-8 pt-24">
           {/* Header */}
           <div className="mb-8">
-            
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
               <div className="flex items-center gap-4">
-                <Avatar className="w-16 h-16">
+                <Avatar className="w-12 h-12 lg:w-16 lg:h-16">
                   <AvatarImage src={profile.avatar} alt={profile.name} />
-                  <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl">
+                  <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-lg lg:text-xl">
                     {profile.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <h1 className="text-4xl font-bold text-white">Welcome back, {profile.name}!</h1>
-                  <p className="text-purple-200">Manage your celebrity video bookings and account</p>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-2xl lg:text-4xl font-bold text-white truncate">
+                    Welcome back, {profile.name}!
+                  </h1>
+                  <p className="text-purple-200 text-sm lg:text-base">
+                    Manage your celebrity video bookings and account
+                  </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                onClick={() => signOut({ callbackUrl: "/" })}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
+              <div className="flex justify-end lg:justify-start">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 hover:text-red-200 lg:size-default"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
             </div>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
               <Card className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30">
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-white">{orders.length}</div>
+                  <div className="text-2xl font-bold text-white">
+                    {orders.length}
+                  </div>
                   <div className="text-purple-200 text-sm">Total Orders</div>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30">
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-white">
-                    {orders.filter(o => o.status === "completed").length}
+                    {orders.filter((o) => o.status === "completed").length}
                   </div>
                   <div className="text-blue-200 text-sm">Completed</div>
                 </CardContent>
@@ -417,7 +442,7 @@ export default function UserDashboard() {
               <Card className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30">
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-white">
-                    {orders.filter(o => o.status === "in_progress").length}
+                    {orders.filter((o) => o.status === "in_progress").length}
                   </div>
                   <div className="text-yellow-200 text-sm">In Progress</div>
                 </CardContent>
@@ -434,17 +459,30 @@ export default function UserDashboard() {
           </div>
 
           {/* Main Dashboard Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3 bg-white/10 border-white/20 text-white mb-8">
-              <TabsTrigger value="requests" className="data-[state=active]:bg-purple-500 text-white">
+              <TabsTrigger
+                value="requests"
+                className="data-[state=active]:bg-purple-500 text-white"
+              >
                 <Package className="w-4 h-4 mr-2" />
                 My Requests
               </TabsTrigger>
-              <TabsTrigger value="payments" className="data-[state=active]:bg-purple-500 text-white">
+              <TabsTrigger
+                value="payments"
+                className="data-[state=active]:bg-purple-500 text-white"
+              >
                 <CreditCard className="w-4 h-4 mr-2" />
                 Payment History
               </TabsTrigger>
-              <TabsTrigger value="profile" className="data-[state=active]:bg-purple-500 text-white">
+              <TabsTrigger
+                value="profile"
+                className="data-[state=active]:bg-purple-500 text-white"
+              >
                 <Settings className="w-4 h-4 mr-2" />
                 Profile Settings
               </TabsTrigger>
@@ -468,7 +506,10 @@ export default function UserDashboard() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <Select
+                        value={statusFilter}
+                        onValueChange={setStatusFilter}
+                      >
                         <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
                           <Filter className="w-4 h-4 mr-2" />
                           <SelectValue />
@@ -477,7 +518,9 @@ export default function UserDashboard() {
                           <SelectItem value="all">All Status</SelectItem>
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="in_progress">
+                            In Progress
+                          </SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
@@ -492,7 +535,9 @@ export default function UserDashboard() {
                 <Card className="bg-slate-900 border-white/20">
                   <CardContent className="p-12 text-center">
                     <Package className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">No Orders Found</h3>
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      No Orders Found
+                    </h3>
                     <p className="text-purple-200 mb-6">
                       {searchTerm || statusFilter !== "all"
                         ? "No orders match your current filters."
@@ -532,15 +577,35 @@ export default function UserDashboard() {
 
                               <div>
                                 <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-semibold text-white">{order.orderNumber}</h3>
-                                  <Badge className={statusColors[order.status as keyof typeof statusColors]}>
+                                  <h3 className="text-lg font-semibold text-white">
+                                    {order.orderNumber}
+                                  </h3>
+                                  <Badge
+                                    className={
+                                      statusColors[
+                                        order.status as keyof typeof statusColors
+                                      ]
+                                    }
+                                  >
                                     {order.status.replace("_", " ")}
                                   </Badge>
-                                  <Badge className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}>
+                                  <Badge
+                                    className={
+                                      paymentStatusColors[
+                                        order.paymentStatus as keyof typeof paymentStatusColors
+                                      ]
+                                    }
+                                  >
                                     {order.paymentStatus}
                                   </Badge>
                                   {order.approvalStatus && (
-                                    <Badge className={approvalStatusColors[order.approvalStatus as keyof typeof approvalStatusColors]}>
+                                    <Badge
+                                      className={
+                                        approvalStatusColors[
+                                          order.approvalStatus as keyof typeof approvalStatusColors
+                                        ]
+                                      }
+                                    >
                                       {order.approvalStatus.replace("_", " ")}
                                     </Badge>
                                   )}
@@ -557,7 +622,12 @@ export default function UserDashboard() {
                                   </div>
                                   <div className="flex items-center gap-1">
                                     <Calendar className="w-4 h-4" />
-                                    <span>{format(new Date(order.scheduledDate), "MMM d, yyyy")}</span>
+                                    <span>
+                                      {format(
+                                        new Date(order.scheduledDate),
+                                        "MMM d, yyyy"
+                                      )}
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-1">
                                     <Clock className="w-4 h-4" />
@@ -578,57 +648,79 @@ export default function UserDashboard() {
                               <div className="text-right">
                                 <div className="flex items-center gap-1 text-purple-300 mb-1">
                                   <DollarSign className="w-4 h-4" />
-                                  <span className="font-semibold">${order.totalAmount}</span>
+                                  <span className="font-semibold">
+                                    ${order.totalAmount}
+                                  </span>
                                 </div>
                                 <div className="text-xs text-purple-200">
-                                  {format(new Date(order.createdAt), "MMM d, yyyy")}
+                                  {format(
+                                    new Date(order.createdAt),
+                                    "MMM d, yyyy"
+                                  )}
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-2">
                                 {/* Show Watch button for completed videos */}
-                                {order.status === "completed" && order.videoUrl && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-green-300 hover:text-white hover:bg-green-500/20"
-                                    onClick={() => handleWatchVideo(order.videoUrl!, order.celebrityName, false, order.orderNumber)}
-                                  >
-                                    <Play className="w-4 h-4 mr-1" />
-                                    Watch
-                                  </Button>
-                                )}
-                                
-                                {/* Show Review button for pending approval videos */}
-                                {order.status === "pending_approval" && order.videoUrl && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-orange-300 hover:text-white hover:bg-orange-500/20"
-                                    onClick={() => handleWatchVideo(order.videoUrl!, order.celebrityName, true, order.orderNumber)}
-                                  >
-                                    <Eye className="w-4 h-4 mr-1" />
-                                    Review & Approve
-                                  </Button>
-                                )}
-                                
-                                {/* Show Tip button for completed and approved videos */}
-                                {order.status === "completed" && order.approvalStatus === "approved" && (
-                                  <TipModal
-                                    orderNumber={order.orderNumber}
-                                    celebrityName={order.celebrityName}
-                                    celebrityImage={order.celebrityImage}
-                                  >
+                                {order.status === "completed" &&
+                                  order.videoUrl && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="text-pink-300 hover:text-white hover:bg-pink-500/20"
+                                      className="text-green-300 hover:text-white hover:bg-green-500/20"
+                                      onClick={() =>
+                                        handleWatchVideo(
+                                          order.videoUrl!,
+                                          order.celebrityName,
+                                          false,
+                                          order.orderNumber
+                                        )
+                                      }
                                     >
-                                      <Heart className="w-4 h-4 mr-1" />
-                                      Tip
+                                      <Play className="w-4 h-4 mr-1" />
+                                      Watch
                                     </Button>
-                                  </TipModal>
-                                )}
+                                  )}
+
+                                {/* Show Review button for pending approval videos */}
+                                {order.status === "pending_approval" &&
+                                  order.videoUrl && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-orange-300 hover:text-white hover:bg-orange-500/20"
+                                      onClick={() =>
+                                        handleWatchVideo(
+                                          order.videoUrl!,
+                                          order.celebrityName,
+                                          true,
+                                          order.orderNumber
+                                        )
+                                      }
+                                    >
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      Review & Approve
+                                    </Button>
+                                  )}
+
+                                {/* Show Tip button for completed and approved videos */}
+                                {order.status === "completed" &&
+                                  order.approvalStatus === "approved" && (
+                                    <TipModal
+                                      orderNumber={order.orderNumber}
+                                      celebrityName={order.celebrityName}
+                                      celebrityImage={order.celebrityImage}
+                                    >
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-pink-300 hover:text-white hover:bg-pink-500/20"
+                                      >
+                                        <Heart className="w-4 h-4 mr-1" />
+                                        Tip
+                                      </Button>
+                                    </TipModal>
+                                  )}
 
                                 <Link href={`/orders/${order.orderNumber}`}>
                                   <Button
@@ -661,7 +753,9 @@ export default function UserDashboard() {
                   {payments.length === 0 ? (
                     <div className="text-center py-8">
                       <CreditCard className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                      <p className="text-purple-200">No payment history found.</p>
+                      <p className="text-purple-200">
+                        No payment history found.
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -673,13 +767,15 @@ export default function UserDashboard() {
                           className="flex items-center justify-between p-4 bg-white/5 rounded-lg"
                         >
                           <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              payment.type === "tip" 
-                                ? "bg-pink-500/20 text-pink-300" 
-                                : payment.type === "refund"
-                                ? "bg-red-500/20 text-red-300"
-                                : "bg-purple-500/20 text-purple-300"
-                            }`}>
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                payment.type === "tip"
+                                  ? "bg-pink-500/20 text-pink-300"
+                                  : payment.type === "refund"
+                                  ? "bg-red-500/20 text-red-300"
+                                  : "bg-purple-500/20 text-purple-300"
+                              }`}
+                            >
                               {payment.type === "tip" ? (
                                 <Heart className="w-5 h-5" />
                               ) : payment.type === "refund" ? (
@@ -689,19 +785,29 @@ export default function UserDashboard() {
                               )}
                             </div>
                             <div>
-                              <div className="text-white font-semibold">{payment.description}</div>
+                              <div className="text-white font-semibold">
+                                {payment.description}
+                              </div>
                               <div className="text-purple-300 text-sm">
-                                {payment.orderNumber} • {format(new Date(payment.date), "MMM d, yyyy")}
+                                {payment.orderNumber} •{" "}
+                                {format(new Date(payment.date), "MMM d, yyyy")}
                               </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className={`text-lg font-bold ${
-                              payment.type === "refund" ? "text-red-400" : "text-green-400"
-                            }`}>
-                              {payment.type === "refund" ? "-" : "+"}${payment.amount}
+                            <div
+                              className={`text-lg font-bold ${
+                                payment.type === "refund"
+                                  ? "text-red-400"
+                                  : "text-green-400"
+                              }`}
+                            >
+                              {payment.type === "refund" ? "-" : "+"}$
+                              {payment.amount}
                             </div>
-                            <div className="text-purple-300 text-sm capitalize">{payment.status}</div>
+                            <div className="text-purple-300 text-sm capitalize">
+                              {payment.status}
+                            </div>
                           </div>
                         </motion.div>
                       ))}
@@ -716,7 +822,9 @@ export default function UserDashboard() {
               <Card className="bg-slate-900 border-white/20">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-white">Profile Settings</CardTitle>
+                    <CardTitle className="text-white">
+                      Profile Settings
+                    </CardTitle>
                     {!isEditingProfile ? (
                       <Button
                         onClick={() => setIsEditingProfile(true)}
@@ -751,7 +859,10 @@ export default function UserDashboard() {
                   {/* Avatar Section */}
                   <div className="flex items-center gap-6">
                     <Avatar className="w-24 h-24">
-                      <AvatarImage src={editedProfile.avatar} alt={editedProfile.name} />
+                      <AvatarImage
+                        src={editedProfile.avatar}
+                        alt={editedProfile.name}
+                      />
                       <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-3xl">
                         {editedProfile.name.charAt(0)}
                       </AvatarFallback>
@@ -759,7 +870,12 @@ export default function UserDashboard() {
                     {isEditingProfile && (
                       <ProfileImageUpload
                         currentImage={editedProfile.avatar}
-                        onImageUpdate={(imageUrl) => setEditedProfile({ ...editedProfile, avatar: imageUrl })}
+                        onImageUpdate={(imageUrl) =>
+                          setEditedProfile({
+                            ...editedProfile,
+                            avatar: imageUrl,
+                          })
+                        }
                         disabled={false}
                       />
                     )}
@@ -770,56 +886,90 @@ export default function UserDashboard() {
                   {/* Personal Information */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label className="text-white text-sm font-medium mb-2 block">Full Name</label>
+                      <label className="text-white text-sm font-medium mb-2 block">
+                        Full Name
+                      </label>
                       {isEditingProfile ? (
                         <Input
                           value={editedProfile.name}
-                          onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
+                          onChange={(e) =>
+                            setEditedProfile({
+                              ...editedProfile,
+                              name: e.target.value,
+                            })
+                          }
                           className="bg-white/10 border-white/20 text-white"
                         />
                       ) : (
-                        <div className="p-3 bg-white/5 rounded-lg text-white">{profile.name}</div>
+                        <div className="p-3 bg-white/5 rounded-lg text-white">
+                          {profile.name}
+                        </div>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-white text-sm font-medium mb-2 block">Email</label>
+                      <label className="text-white text-sm font-medium mb-2 block">
+                        Email
+                      </label>
                       {isEditingProfile ? (
                         <Input
                           type="email"
                           value={editedProfile.email}
-                          onChange={(e) => setEditedProfile({ ...editedProfile, email: e.target.value })}
+                          onChange={(e) =>
+                            setEditedProfile({
+                              ...editedProfile,
+                              email: e.target.value,
+                            })
+                          }
                           className="bg-white/10 border-white/20 text-white"
                         />
                       ) : (
-                        <div className="p-3 bg-white/5 rounded-lg text-white">{profile.email}</div>
+                        <div className="p-3 bg-white/5 rounded-lg text-white">
+                          {profile.email}
+                        </div>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-white text-sm font-medium mb-2 block">Phone</label>
+                      <label className="text-white text-sm font-medium mb-2 block">
+                        Phone
+                      </label>
                       {isEditingProfile ? (
                         <Input
                           type="tel"
                           value={editedProfile.phone || ""}
-                          onChange={(e) => setEditedProfile({ ...editedProfile, phone: e.target.value })}
+                          onChange={(e) =>
+                            setEditedProfile({
+                              ...editedProfile,
+                              phone: e.target.value,
+                            })
+                          }
                           className="bg-white/10 border-white/20 text-white"
                           placeholder="+1 (555) 123-4567"
                         />
                       ) : (
-                        <div className="p-3 bg-white/5 rounded-lg text-white">{profile.phone || "Not provided"}</div>
+                        <div className="p-3 bg-white/5 rounded-lg text-white">
+                          {profile.phone || "Not provided"}
+                        </div>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-white text-sm font-medium mb-2 block">Language</label>
+                      <label className="text-white text-sm font-medium mb-2 block">
+                        Language
+                      </label>
                       {isEditingProfile ? (
                         <Select
                           value={editedProfile.preferences.language}
-                          onValueChange={(value) => setEditedProfile({
-                            ...editedProfile,
-                            preferences: { ...editedProfile.preferences, language: value }
-                          })}
+                          onValueChange={(value) =>
+                            setEditedProfile({
+                              ...editedProfile,
+                              preferences: {
+                                ...editedProfile.preferences,
+                                language: value,
+                              },
+                            })
+                          }
                         >
                           <SelectTrigger className="bg-white/10 border-white/20 text-white">
                             <SelectValue />
@@ -832,7 +982,9 @@ export default function UserDashboard() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <div className="p-3 bg-white/5 rounded-lg text-white capitalize">{profile.preferences.language}</div>
+                        <div className="p-3 bg-white/5 rounded-lg text-white capitalize">
+                          {profile.preferences.language}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -841,30 +993,60 @@ export default function UserDashboard() {
 
                   {/* Preferences */}
                   <div>
-                    <h3 className="text-white font-semibold mb-4">Preferences</h3>
+                    <h3 className="text-white font-semibold mb-4">
+                      Preferences
+                    </h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Bell className="w-5 h-5 text-purple-400" />
                           <div>
-                            <div className="text-white font-medium">Email Notifications</div>
-                            <div className="text-purple-300 text-sm">Receive updates about your orders</div>
+                            <div className="text-white font-medium">
+                              Email Notifications
+                            </div>
+                            <div className="text-purple-300 text-sm">
+                              Receive updates about your orders
+                            </div>
                           </div>
                         </div>
                         {isEditingProfile ? (
                           <Button
-                            variant={editedProfile.preferences.notifications ? "default" : "outline"}
-                            onClick={() => setEditedProfile({
-                              ...editedProfile,
-                              preferences: { ...editedProfile.preferences, notifications: !editedProfile.preferences.notifications }
-                            })}
-                            className={editedProfile.preferences.notifications ? "bg-purple-600" : "bg-white/10 border-white/20 text-white"}
+                            variant={
+                              editedProfile.preferences.notifications
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              setEditedProfile({
+                                ...editedProfile,
+                                preferences: {
+                                  ...editedProfile.preferences,
+                                  notifications:
+                                    !editedProfile.preferences.notifications,
+                                },
+                              })
+                            }
+                            className={
+                              editedProfile.preferences.notifications
+                                ? "bg-purple-600"
+                                : "bg-white/10 border-white/20 text-white"
+                            }
                           >
-                            {editedProfile.preferences.notifications ? "Enabled" : "Disabled"}
+                            {editedProfile.preferences.notifications
+                              ? "Enabled"
+                              : "Disabled"}
                           </Button>
                         ) : (
-                          <Badge className={profile.preferences.notifications ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-300"}>
-                            {profile.preferences.notifications ? "Enabled" : "Disabled"}
+                          <Badge
+                            className={
+                              profile.preferences.notifications
+                                ? "bg-green-500/20 text-green-300"
+                                : "bg-gray-500/20 text-gray-300"
+                            }
+                          >
+                            {profile.preferences.notifications
+                              ? "Enabled"
+                              : "Disabled"}
                           </Badge>
                         )}
                       </div>
@@ -873,24 +1055,52 @@ export default function UserDashboard() {
                         <div className="flex items-center gap-3">
                           <Mail className="w-5 h-5 text-purple-400" />
                           <div>
-                            <div className="text-white font-medium">Marketing Communications</div>
-                            <div className="text-purple-300 text-sm">Receive promotional emails and offers</div>
+                            <div className="text-white font-medium">
+                              Marketing Communications
+                            </div>
+                            <div className="text-purple-300 text-sm">
+                              Receive promotional emails and offers
+                            </div>
                           </div>
                         </div>
                         {isEditingProfile ? (
                           <Button
-                            variant={editedProfile.preferences.marketing ? "default" : "outline"}
-                            onClick={() => setEditedProfile({
-                              ...editedProfile,
-                              preferences: { ...editedProfile.preferences, marketing: !editedProfile.preferences.marketing }
-                            })}
-                            className={editedProfile.preferences.marketing ? "bg-purple-600" : "bg-white/10 border-white/20 text-white"}
+                            variant={
+                              editedProfile.preferences.marketing
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              setEditedProfile({
+                                ...editedProfile,
+                                preferences: {
+                                  ...editedProfile.preferences,
+                                  marketing:
+                                    !editedProfile.preferences.marketing,
+                                },
+                              })
+                            }
+                            className={
+                              editedProfile.preferences.marketing
+                                ? "bg-purple-600"
+                                : "bg-white/10 border-white/20 text-white"
+                            }
                           >
-                            {editedProfile.preferences.marketing ? "Enabled" : "Disabled"}
+                            {editedProfile.preferences.marketing
+                              ? "Enabled"
+                              : "Disabled"}
                           </Button>
                         ) : (
-                          <Badge className={profile.preferences.marketing ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-300"}>
-                            {profile.preferences.marketing ? "Enabled" : "Disabled"}
+                          <Badge
+                            className={
+                              profile.preferences.marketing
+                                ? "bg-green-500/20 text-green-300"
+                                : "bg-gray-500/20 text-gray-300"
+                            }
+                          >
+                            {profile.preferences.marketing
+                              ? "Enabled"
+                              : "Disabled"}
                           </Badge>
                         )}
                       </div>
@@ -907,11 +1117,18 @@ export default function UserDashboard() {
                         <div className="flex items-center gap-3">
                           <Lock className="w-5 h-5 text-purple-400" />
                           <div>
-                            <div className="text-white font-medium">Change Password</div>
-                            <div className="text-purple-300 text-sm">Update your account password</div>
+                            <div className="text-white font-medium">
+                              Change Password
+                            </div>
+                            <div className="text-purple-300 text-sm">
+                              Update your account password
+                            </div>
                           </div>
                         </div>
-                        <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                        <Button
+                          variant="outline"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                        >
                           Change
                         </Button>
                       </div>
@@ -920,11 +1137,18 @@ export default function UserDashboard() {
                         <div className="flex items-center gap-3">
                           <Shield className="w-5 h-5 text-purple-400" />
                           <div>
-                            <div className="text-white font-medium">Two-Factor Authentication</div>
-                            <div className="text-purple-300 text-sm">Add an extra layer of security</div>
+                            <div className="text-white font-medium">
+                              Two-Factor Authentication
+                            </div>
+                            <div className="text-purple-300 text-sm">
+                              Add an extra layer of security
+                            </div>
                           </div>
                         </div>
-                        <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                        <Button
+                          variant="outline"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                        >
                           Enable
                         </Button>
                       </div>
@@ -944,13 +1168,21 @@ export default function UserDashboard() {
         isOpen={videoModal.isOpen}
         onClose={handleCloseVideo}
         videoUrl={videoModal.videoUrl}
-        title={videoModal.isReview ? `Review Video from ${videoModal.celebrityName}` : `Video from ${videoModal.celebrityName}`}
+        title={
+          videoModal.isReview
+            ? `Review Video from ${videoModal.celebrityName}`
+            : `Video from ${videoModal.celebrityName}`
+        }
         celebrity={videoModal.celebrityName}
-        description={videoModal.isReview ? "Please review this video and approve or request changes" : "Your personalized video message"}
+        description={
+          videoModal.isReview
+            ? "Please review this video and approve or request changes"
+            : "Your personalized video message"
+        }
         autoPlay={true}
         isReview={videoModal.isReview}
         orderNumber={videoModal.orderNumber}
       />
     </div>
-  )
-} 
+  );
+}
