@@ -577,23 +577,35 @@ export default function CelebrityPayoutDashboard() {
       )}
 
       {/* Detailed Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-white/10 border-white/20 p-1">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Overview
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+        <TabsList className="flex overflow-x-auto scrollbar-hide bg-white/10 border-white/20 h-auto p-1 gap-1 sm:gap-2">
+          <TabsTrigger 
+            value="overview" 
+            className="text-white data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
+          >
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="payouts" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-            <DollarSign className="w-4 h-4 mr-2" />
-            Payouts
+          <TabsTrigger 
+            value="payouts" 
+            className="text-white data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
+          >
+            <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Payouts</span>
           </TabsTrigger>
-          <TabsTrigger value="tips" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-            <Gift className="w-4 h-4 mr-2" />
-            Tips
+          <TabsTrigger 
+            value="tips" 
+            className="text-white data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
+          >
+            <Gift className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Tips</span>
           </TabsTrigger>
-          <TabsTrigger value="pending" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-            <Clock className="w-4 h-4 mr-2" />
-            Pending
+          <TabsTrigger 
+            value="pending" 
+            className="text-white data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
+          >
+            <Clock className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Pending</span>
           </TabsTrigger>
         </TabsList>
 

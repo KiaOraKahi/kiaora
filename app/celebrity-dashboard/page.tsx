@@ -612,7 +612,13 @@ export default function CelebrityDashboard() {
 
   // Social sharing functions
   const shareToSocial = (platform: string) => {
-    if (!profile) return;
+    if (!profile) {
+      toast.error("Profile not found!", {
+        description: "Unable to share profile. Please refresh the page.",
+      });
+      return;
+    }
+    
     const profileUrl = `${window.location.origin}/celebrities/${profile.id}`;
     const shareText = `Check out ${profile.name} on Kia Ora! Get personalized video messages from your favourite celebrity.`;
 
@@ -644,37 +650,72 @@ export default function CelebrityDashboard() {
         break;
       case "instagram":
         // Instagram doesn't support direct URL sharing, so we'll copy to clipboard
-        navigator.clipboard.writeText(`${shareText} ${profileUrl}`);
-        toast.success("Copied to Clipboard!", {
-          description: "Share text copied! You can now paste it on Instagram.",
-        });
+        try {
+          navigator.clipboard.writeText(`${shareText} ${profileUrl}`);
+          toast.success("Copied to Clipboard!", {
+            description: "Share text copied! You can now paste it on Instagram.",
+          });
+        } catch (error) {
+          toast.error("Copy Failed!", {
+            description: "Failed to copy text. Please try again!",
+          });
+        }
         return;
       default:
+        toast.error("Invalid Platform!", {
+          description: "Please select a valid sharing platform.",
+        });
         return;
     }
 
     if (shareUrl) {
-      window.open(shareUrl, "_blank", "width=600,height=400");
-      toast.success("Shared Successfully!", {
-        description: `Profile shared on ${
-          platform.charAt(0).toUpperCase() + platform.slice(1)
-        }!`,
-      });
+      try {
+        window.open(shareUrl, "_blank", "width=600,height=400");
+        toast.success("Shared Successfully!", {
+          description: `Profile shared on ${
+            platform.charAt(0).toUpperCase() + platform.slice(1)
+          }!`,
+        });
+      } catch (error) {
+        toast.error("Share Failed!", {
+          description: "Failed to open sharing window. Please try again!",
+        });
+      }
     }
   };
 
   const copyProfileLink = async () => {
-    if (!profile) return;
+    if (!profile) {
+      toast.error("Profile not found!", {
+        description: "Unable to copy profile link. Please refresh the page.",
+      });
+      return;
+    }
+    
     const profileUrl = `${window.location.origin}/celebrities/${profile.id}`;
+    
     try {
       await navigator.clipboard.writeText(profileUrl);
       toast.success("Link Copied!", {
         description: "Profile link copied to clipboard!",
       });
     } catch (error) {
-      toast.error("Copy Failed!", {
-        description: "Failed to copy link. Please try again!",
-      });
+      // Fallback for browsers that don't support clipboard API
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = profileUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        toast.success("Link Copied!", {
+          description: "Profile link copied to clipboard!",
+        });
+      } catch (fallbackError) {
+        toast.error("Copy Failed!", {
+          description: "Failed to copy link. Please manually copy the URL from the address bar.",
+        });
+      }
     }
   };
 
@@ -1267,52 +1308,55 @@ export default function CelebrityDashboard() {
               onValueChange={setActiveTab}
               className="space-y-6"
             >
-              <TabsList className="bg-white/10 border border-white/20 p-1">
+              <TabsList className="flex overflow-x-auto scrollbar-hide bg-white/10 border-white/20 h-auto p-1 gap-1 sm:gap-2">
                 <TabsTrigger
                   value="overview"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                  className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Overview
+                  <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Overview</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="payments"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                  className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Payments
+                  <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Payments</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="requests"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                  className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Pending Requests ({bookingRequests.length})
+                  <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Pending Requests ({bookingRequests.length})</span>
+                  <span className="sm:hidden">({bookingRequests.length})</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="orders"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                  className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
-                  <Package className="w-4 h-4 mr-2" />
-                  Orders ({allOrders.length})
+                  <Package className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Orders ({allOrders.length})</span>
+                  <span className="sm:hidden">({allOrders.length})</span>
                 </TabsTrigger>
-                {/* <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-                <Star className="w-4 h-4 mr-2" />
-                Reviews ({reviewStats?.totalReviews || 0})
+                {/* <TabsTrigger value="reviews" className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap">
+                <Star className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Reviews ({reviewStats?.totalReviews || 0})</span>
+                <span className="sm:hidden">({reviewStats?.totalReviews || 0})</span>
               </TabsTrigger> */}
                 <TabsTrigger
                   value="calendar"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                  className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Calendar
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Calendar</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="profile"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                  className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
+                  <User className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Profile</span>
                 </TabsTrigger>
               </TabsList>
 

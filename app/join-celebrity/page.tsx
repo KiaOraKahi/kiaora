@@ -680,7 +680,8 @@ export default function JoinCelebrityPage() {
                       : "text-gray-400"
                   }`}
                 >
-                  Step {currentStep} of {steps.length}: {steps[currentStep - 1]?.title}
+                  Step {currentStep} of {steps.length}:{" "}
+                  {steps[currentStep - 1]?.title}
                 </span>
               </div>
             </div>
@@ -710,7 +711,9 @@ export default function JoinCelebrityPage() {
                         <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
                           Personal Information
                         </h2>
-                        <p className="text-white text-sm sm:text-base">Tell us about yourself</p>
+                        <p className="text-white text-sm sm:text-base">
+                          Tell us about yourself
+                        </p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -898,10 +901,10 @@ export default function JoinCelebrityPage() {
                                 onChange={(e) =>
                                   updateFormData("experience", e.target.value)
                                 }
-                                className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
+                                className="bg-gray-900/50 border-gray-700 text-white! placeholder:text-gray-400 focus:border-purple-500 min-h-[120px]"
                                 placeholder="Share your background, experience, what makes you unique, and why you'd like to create personalized videos for fans..."
                               />
-                              <div className="text-right text-sm text-gray-400">
+                              <div className="text-right text-sm ">
                                 {formData.experience.length}/50 characters
                               </div>
                             </div>
