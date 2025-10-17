@@ -102,6 +102,7 @@ export default function AdminServiceManagement() {
   const [loading, setLoading] = useState(true)
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [editFormData, setEditFormData] = useState({
     title: "",
     shortDescription: "",
@@ -113,6 +114,21 @@ export default function AdminServiceManagement() {
     duration: "",
     deliveryTime: "",
     asapDeliveryTime: "",
+    popular: false,
+    isActive: true,
+    features: [""]
+  })
+  const [createFormData, setCreateFormData] = useState({
+    title: "",
+    shortDescription: "",
+    fullDescription: "",
+    icon: "Briefcase",
+    color: "from-purple-500 to-pink-500",
+    startingPrice: 299,
+    asapPrice: 399,
+    duration: "30-60 seconds",
+    deliveryTime: "3-7 days",
+    asapDeliveryTime: "24-48 hours",
     popular: false,
     isActive: true,
     features: [""]
@@ -223,6 +239,50 @@ export default function AdminServiceManagement() {
     }
   }
 
+  const handleCreateService = async () => {
+    try {
+      const response = await fetch("/api/admin/services", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...createFormData,
+          features: createFormData.features.filter((f) => f.trim() !== ""),
+        }),
+      })
+
+      if (response.ok) {
+        toast.success("Service created successfully!")
+        setShowCreateModal(false)
+        resetCreateForm()
+        fetchServices() // Refresh the list
+      } else {
+        const error = await response.json()
+        toast.error(error.message || "Failed to create service")
+      }
+    } catch (error) {
+      console.error("Error creating service:", error)
+      toast.error("Error creating service")
+    }
+  }
+
+  const resetCreateForm = () => {
+    setCreateFormData({
+      title: "",
+      shortDescription: "",
+      fullDescription: "",
+      icon: "Briefcase",
+      color: "from-purple-500 to-pink-500",
+      startingPrice: 299,
+      asapPrice: 399,
+      duration: "30-60 seconds",
+      deliveryTime: "3-7 days",
+      asapDeliveryTime: "24-48 hours",
+      popular: false,
+      isActive: true,
+      features: [""]
+    })
+  }
+
   const handleDeleteService = async (serviceId: string) => {
     if (!confirm("Are you sure you want to delete this service?")) {
       return
@@ -267,6 +327,27 @@ export default function AdminServiceManagement() {
     }))
   }
 
+  const addCreateFeature = () => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      features: [...prev.features, ""],
+    }))
+  }
+
+  const removeCreateFeature = (index: number) => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index),
+    }))
+  }
+
+  const updateCreateFeature = (index: number, value: string) => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      features: prev.features.map((f, i) => (i === index ? value : f)),
+    }))
+  }
+
   const getColorClass = (colorValue: string) => {
     const colorOption = colorOptions.find(option => option.value === colorValue)
     return colorOption ? colorOption.color : "bg-gradient-to-r from-gray-500 to-gray-600"
@@ -280,7 +361,10 @@ export default function AdminServiceManagement() {
           <h2 className="text-2xl font-bold text-white">Service Management</h2>
           <p className="text-gray-400">Manage your platform services and offerings</p>
         </div>
-        <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+        <Button 
+          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          onClick={() => setShowCreateModal(true)}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create Service
         </Button>
@@ -626,6 +710,271 @@ export default function AdminServiceManagement() {
               >
                 Cancel
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Service Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">Create New Service</h2>
+                <Button
+                  onClick={() => {
+                    setShowCreateModal(false)
+                    resetCreateForm()
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              {/* Form Fields */}
+              <div className="space-y-4">
+                {/* Title */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Service Title
+                  </label>
+                  <Input
+                    value={createFormData.title}
+                    onChange={(e) => setCreateFormData({...createFormData, title: e.target.value})}
+                    className="bg-gray-800 border-gray-700 text-white"
+                    placeholder="Enter service title"
+                  />
+                </div>
+
+                {/* Short Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Short Description
+                  </label>
+                  <Input
+                    value={createFormData.shortDescription}
+                    onChange={(e) => setCreateFormData({...createFormData, shortDescription: e.target.value})}
+                    className="bg-gray-800 border-gray-700 text-white"
+                    placeholder="Brief description for cards"
+                  />
+                </div>
+
+                {/* Full Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Full Description
+                  </label>
+                  <Textarea
+                    value={createFormData.fullDescription}
+                    onChange={(e) => setCreateFormData({...createFormData, fullDescription: e.target.value})}
+                    className="bg-gray-800 border-gray-700 text-white min-h-[100px]"
+                    placeholder="Detailed description"
+                  />
+                </div>
+
+                {/* Icon and Color */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Icon
+                    </label>
+                    <Select
+                      value={createFormData.icon}
+                      onValueChange={(value) => setCreateFormData({...createFormData, icon: value})}
+                    >
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        {iconOptions.map((option) => {
+                          const IconComponent = option.icon
+                          return (
+                            <SelectItem key={option.value} value={option.value} className="text-white hover:bg-gray-700">
+                              <div className="flex items-center gap-2">
+                                <IconComponent className="w-4 h-4" />
+                                {option.label}
+                              </div>
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Color Theme
+                    </label>
+                    <Select
+                      value={createFormData.color}
+                      onValueChange={(value) => setCreateFormData({...createFormData, color: value})}
+                    >
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        {colorOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value} className="text-white hover:bg-gray-700">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-4 h-4 rounded ${option.color}`} />
+                              {option.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Pricing */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Starting Price ($)
+                    </label>
+                    <Input
+                      type="number"
+                      value={createFormData.startingPrice}
+                      onChange={(e) => setCreateFormData({...createFormData, startingPrice: Number(e.target.value)})}
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      ASAP Price ($)
+                    </label>
+                    <Input
+                      type="number"
+                      value={createFormData.asapPrice}
+                      onChange={(e) => setCreateFormData({...createFormData, asapPrice: Number(e.target.value)})}
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Duration and Delivery */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Duration
+                    </label>
+                    <Input
+                      value={createFormData.duration}
+                      onChange={(e) => setCreateFormData({...createFormData, duration: e.target.value})}
+                      className="bg-gray-800 border-gray-700 text-white"
+                      placeholder="e.g., 30-60 seconds"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Delivery Time
+                    </label>
+                    <Input
+                      value={createFormData.deliveryTime}
+                      onChange={(e) => setCreateFormData({...createFormData, deliveryTime: e.target.value})}
+                      className="bg-gray-800 border-gray-700 text-white"
+                      placeholder="e.g., 3-7 days"
+                    />
+                  </div>
+                </div>
+
+                {/* ASAP Delivery Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    ASAP Delivery Time
+                  </label>
+                  <Input
+                    value={createFormData.asapDeliveryTime}
+                    onChange={(e) => setCreateFormData({...createFormData, asapDeliveryTime: e.target.value})}
+                    className="bg-gray-800 border-gray-700 text-white"
+                    placeholder="e.g., 24-48 hours"
+                  />
+                </div>
+
+                {/* Features */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Features
+                  </label>
+                  <div className="space-y-2">
+                    {createFormData.features.map((feature, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={feature}
+                          onChange={(e) => updateCreateFeature(index, e.target.value)}
+                          className="bg-gray-800 border-gray-700 text-white flex-1"
+                          placeholder="Enter feature"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500 text-red-400 hover:bg-red-500/10"
+                          onClick={() => removeCreateFeature(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
+                      onClick={addCreateFeature}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Feature
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Checkboxes */}
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={createFormData.popular}
+                      onChange={(e) => setCreateFormData({...createFormData, popular: e.target.checked})}
+                      className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-gray-300">Popular</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={createFormData.isActive}
+                      onChange={(e) => setCreateFormData({...createFormData, isActive: e.target.checked})}
+                      className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-gray-300">Active</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex gap-3 pt-6">
+                <Button
+                  onClick={handleCreateService}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Create Service
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowCreateModal(false)
+                    resetCreateForm()
+                  }}
+                  variant="outline"
+                  className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
         </div>
