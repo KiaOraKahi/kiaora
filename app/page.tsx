@@ -495,9 +495,9 @@ export default function KiaOraHomepage() {
           <span className="text-white text-xs font-semibold">{talent.rating}</span>
         </div> */}
                           <div className="flex items-center gap-2">
-                            <span className="text-white flex-1 font-bold text-center  text-sm">
+                            {/* <span className="text-white flex-1 font-bold text-center  text-sm">
                               ${talent.price}
-                            </span>
+                            </span> */}
                             {talent?.badge && (
                               <Badge className="bg-gradient-to-r  from-purple-500 to-pink-500 text-white text-xs">
                                 {talent.badge}
