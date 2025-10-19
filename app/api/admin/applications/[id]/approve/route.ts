@@ -1,37 +1,49 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { sendApplicationStatusEmail } from "@/lib/email"
-import bcrypt from "bcryptjs"
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { sendApplicationStatusEmail } from "@/lib/email";
+import bcrypt from "bcryptjs";
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     // Check if user is admin
     if (!session?.user?.id || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const applicationId = params.id
-    const body = await request.json()
-    const { approveType } = body
+    const applicationId = params.id;
+    const body = await request.json();
+    const { approveType } = body;
     // Get the application
     const application = await prisma.celebrityApplication.findUnique({
       where: { id: applicationId },
-    })
+    });
 
     if (!application) {
-      return NextResponse.json({ error: "Application not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 }
+      );
     }
 
     if (application.status !== "PENDING") {
-      return NextResponse.json({ error: "Application already processed" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Application already processed" },
+        { status: 400 }
+      );
     }
 
-    console.log("🔍 Processing application approval for:", application.fullName)
-    console.log("📸 Profile photo URL:", application.profilePhotoUrl)
+    console.log(
+      "🔍 Processing application approval for:",
+      application.fullName
+    );
+    console.log("📸 Profile photo URL:", application.profilePhotoUrl);
     console.log("📊 Application data:", {
       category: application.category,
       experience: application.experience,
@@ -40,19 +52,22 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       rushPrice: application.rushPrice,
       languages: application.languages,
       availability: application.availability,
-      followerCount: application.followerCount
-    })
+      followerCount: application.followerCount,
+    });
 
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
       // Check if user already exists
       let user = await tx.user.findUnique({
         where: { email: application.email },
-      })
+      });
 
       if (!user) {
         // Create new user account with the uploaded profile photo
-        const hashedPassword = await bcrypt.hash(Math.random().toString(36), 10)
+        const hashedPassword = await bcrypt.hash(
+          Math.random().toString(36),
+          10
+        );
 
         user = await tx.user.create({
           data: {
@@ -63,8 +78,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             password: hashedPassword,
             image: application.profilePhotoUrl,
           },
-        })
-        console.log("✅ Created new user with image:", user.image)
+        });
+        console.log("✅ Created new user with image:", user.image);
       } else {
         // Update existing user to celebrity role and set profile image
         user = await tx.user.update({
@@ -74,34 +89,43 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             isVerified: true,
             image: application.profilePhotoUrl,
           },
-        })
-        console.log("✅ Updated existing user with image:", user.image)
+        });
+        console.log("✅ Updated existing user with image:", user.image);
       }
 
-             // Create celebrity profile with ALL required fields
-       const celebrity = await tx.celebrity.create({
-         data: {
-           userId: user.id,
-           bio: `${application.profession || application.category} with ${application.experience}`,
-           longBio: application.achievements || application.experience,
-           category: application.category,
-           price: application.basePrice || 299.0, // Use the single price field
-           rating: 4.5,
-           averageRating: 4.5,
-           totalReviews: 0,
-           completionRate: 95,
-           responseTime: application.availability || "24 hours",
-           isActive: true,
-           isVIP:approveType=== "VIP" ? true : false, 
-           verified: true,
-           featured: false,
-           tags: application.languages || ["English"],
-           achievements: application.achievements ? [application.achievements] : [application.experience],
-           nextAvailable: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-           coverImage: application.profilePhotoUrl || null,
-         },
-       })
-      console.log("✅ Created celebrity profile with image:", celebrity.coverImage)
+      // Create celebrity profile with ALL required fields
+      const celebrity = await tx.celebrity.create({
+        data: {
+          userId: user.id,
+          bio: `${application.profession || application.category} with ${
+            application.experience
+          }`,
+          longBio: application.achievements || application.experience,
+          category: application.category,
+          price: application.basePrice || 299.0, // Use the single price field
+          rating: 4.5,
+          averageRating: 4.5,
+          totalReviews: 0,
+          completionRate: 95,
+          responseTime: application.availability || "24 hours",
+          isActive: true,
+          isVIP: approveType === "VIP" ? true : false,
+          verified: true,
+          featured: false,
+          tags: application.languages || ["English"],
+          achievements: application.achievements
+            ? [application.achievements]
+            : [application.experience],
+          nextAvailable: new Date(Date.now() + 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split("T")[0],
+          coverImage: application.profilePhotoUrl || null,
+        },
+      });
+      console.log(
+        "✅ Created celebrity profile with image:",
+        celebrity.coverImage
+      );
 
       // Update application status
       await tx.celebrityApplication.update({
@@ -112,10 +136,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           reviewedBy: session.user.id,
           reviewNotes: "Application approved and celebrity profile created",
         },
-      })
+      });
 
-      return { user, celebrity }
-    })
+      return { user, celebrity };
+    });
 
     // Send approval email using the existing function
     try {
@@ -123,11 +147,11 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         application.email,
         application.fullName,
         "APPROVED",
-        `Congratulations! Your application has been approved. You can now access your celebrity dashboard and start receiving booking requests. Welcome to the Kia Ora family!`,
-      )
-      console.log("✅ Approval email sent successfully")
+        `Congratulations! Your application has been approved. You can now access your celebrity dashboard and start receiving booking requests. Welcome to the Kia Ora family!`
+      );
+      console.log("✅ Approval email sent successfully");
     } catch (emailError) {
-      console.error("❌ Failed to send approval email:", emailError)
+      console.error("❌ Failed to send approval email:", emailError);
     }
 
     return NextResponse.json({
@@ -139,21 +163,21 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         role: result.user.role,
         image: result.user.image,
       },
-             celebrity: {
-         id: result.celebrity.id,
-         category: result.celebrity.category,
-         price: result.celebrity.price,
-         image: result.celebrity.coverImage,
-       },
-    })
+      celebrity: {
+        id: result.celebrity.id,
+        category: result.celebrity.category,
+        price: result.celebrity.price,
+        image: result.celebrity.coverImage,
+      },
+    });
   } catch (error) {
-    console.error("❌ Error approving application:", error)
+    console.error("❌ Error approving application:", error);
     return NextResponse.json(
       {
         error: "Failed to approve application",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }

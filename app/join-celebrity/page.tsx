@@ -1059,7 +1059,7 @@ export default function JoinCelebrityPage() {
                                   e.target.value
                                 )
                               }
-                              className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500"
+                              className="bg-gray-900/50 border-gray-700 text-white!  focus:border-purple-500"
                               placeholder="Any special requirements, limitations, or notes..."
                             />
                           </div>
