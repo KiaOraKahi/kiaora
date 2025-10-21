@@ -59,8 +59,8 @@ const addOns = [
   {
     id: "rush",
     icon: <Zap className="w-5 h-5" />,
-    title: "Rush Delivery",
-    description: "Get your video in 24-48 hours",
+    title: "ASAP Delivery",
+    description: "Get your video in 12 hours",
     price: 99,
   },
   {

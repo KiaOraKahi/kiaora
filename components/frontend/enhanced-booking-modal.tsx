@@ -1,15 +1,21 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   X,
   CalendarIcon,
@@ -23,21 +29,21 @@ import {
   Zap,
   Camera,
   Music,
-} from "lucide-react"
-import { format } from "date-fns"
+} from "lucide-react";
+import { format } from "date-fns";
 
 interface BookingModalProps {
-  celebrity: any
-  isOpen: boolean
-  onClose: () => void
+  celebrity: any;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const addOns = [
   {
     id: "rush",
     icon: <Zap className="w-5 h-5" />,
-    title: "Rush Delivery",
-    description: "Get your video in 24-48 hours",
+    title: "ASAP delivery",
+    description: "Get your video in 12 hours",
     price: 99,
   },
   {
@@ -61,12 +67,12 @@ const addOns = [
     description: "Up to 10 minutes instead of standard",
     price: 199,
   },
-]
+];
 
 // Mock availability data
 const getAvailabilityData = (date: Date) => {
-  const dayOfWeek = date.getDay()
-  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+  const dayOfWeek = date.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
   // Simulate different availability patterns
   if (isWeekend) {
@@ -74,28 +80,36 @@ const getAvailabilityData = (date: Date) => {
       available: Math.random() > 0.3,
       slots: Math.random() > 0.5 ? ["10:00 AM", "2:00 PM"] : ["6:00 PM"],
       price: Math.floor(Math.random() * 100) + 50, // Weekend premium
-    }
+    };
   } else {
     return {
       available: Math.random() > 0.2,
-      slots: ["9:00 AM", "12:00 PM", "3:00 PM", "6:00 PM"].filter(() => Math.random() > 0.4),
+      slots: ["9:00 AM", "12:00 PM", "3:00 PM", "6:00 PM"].filter(
+        () => Math.random() > 0.4
+      ),
       price: 0, // No premium for weekdays
-    }
+    };
   }
-}
+};
 
-export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: BookingModalProps) {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [selectedDate, setSelectedDate] = useState<Date>()
-  const [selectedSlot, setSelectedSlot] = useState<string>()
-  const [selectedPricing, setSelectedPricing] = useState<"personal" | "business" | "charity">("personal")
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([])
-  const [availability, setAvailability] = useState<any>(null)
-  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [orderConfirmed, setOrderConfirmed] = useState(false)
-  const [orderId, setOrderId] = useState<string>()
+export default function EnhancedBookingModal({
+  celebrity,
+  isOpen,
+  onClose,
+}: BookingModalProps) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedSlot, setSelectedSlot] = useState<string>();
+  const [selectedPricing, setSelectedPricing] = useState<
+    "personal" | "business" | "charity"
+  >("personal");
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [availability, setAvailability] = useState<any>(null);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [orderId, setOrderId] = useState<string>();
 
   const [formData, setFormData] = useState({
     recipientName: "",
@@ -105,69 +119,73 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
     email: "",
     phone: "",
     deliveryDate: "",
-  })
+  });
 
   // Check availability when date changes
   useEffect(() => {
     if (selectedDate) {
-      setIsCheckingAvailability(true)
-      setSelectedSlot(undefined)
+      setIsCheckingAvailability(true);
+      setSelectedSlot(undefined);
 
       // Simulate API call
       setTimeout(() => {
-        const availabilityData = getAvailabilityData(selectedDate)
-        setAvailability(availabilityData)
-        setIsCheckingAvailability(false)
-      }, 1000)
+        const availabilityData = getAvailabilityData(selectedDate);
+        setAvailability(availabilityData);
+        setIsCheckingAvailability(false);
+      }, 1000);
     }
-  }, [selectedDate])
+  }, [selectedDate]);
 
   // Calculate total price
   const calculateTotal = () => {
-    const basePrice = celebrity.pricing[selectedPricing]
+    const basePrice = celebrity.pricing[selectedPricing];
     const addOnTotal = selectedAddOns.reduce((total, addOnId) => {
-      const addOn = addOns.find((a) => a.id === addOnId)
-      return total + (addOn ? addOn.price : 0)
-    }, 0)
-    const availabilityPremium = availability?.price || 0
+      const addOn = addOns.find((a) => a.id === addOnId);
+      return total + (addOn ? addOn.price : 0);
+    }, 0);
+    const availabilityPremium = availability?.price || 0;
 
-    return basePrice + addOnTotal + availabilityPremium
-  }
+    return basePrice + addOnTotal + availabilityPremium;
+  };
 
   const handleAddOnToggle = (addOnId: string) => {
-    setSelectedAddOns((prev) => (prev.includes(addOnId) ? prev.filter((id) => id !== addOnId) : [...prev, addOnId]))
-  }
+    setSelectedAddOns((prev) =>
+      prev.includes(addOnId)
+        ? prev.filter((id) => id !== addOnId)
+        : [...prev, addOnId]
+    );
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    setUploadedFiles((prev) => [...prev, ...files])
-  }
+    const files = Array.from(event.target.files || []);
+    setUploadedFiles((prev) => [...prev, ...files]);
+  };
 
   const removeFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     // Simulate booking submission
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const newOrderId = `KO-${Date.now()}`
-    setOrderId(newOrderId)
-    setOrderConfirmed(true)
-    setIsSubmitting(false)
-  }
+    const newOrderId = `KO-${Date.now()}`;
+    setOrderId(newOrderId);
+    setOrderConfirmed(true);
+    setIsSubmitting(false);
+  };
 
   const resetModal = () => {
-    setCurrentStep(1)
-    setSelectedDate(undefined)
-    setSelectedSlot(undefined)
-    setSelectedAddOns([])
-    setAvailability(null)
-    setUploadedFiles([])
-    setOrderConfirmed(false)
-    setOrderId(undefined)
+    setCurrentStep(1);
+    setSelectedDate(undefined);
+    setSelectedSlot(undefined);
+    setSelectedAddOns([]);
+    setAvailability(null);
+    setUploadedFiles([]);
+    setOrderConfirmed(false);
+    setOrderId(undefined);
     setFormData({
       recipientName: "",
       occasion: "",
@@ -176,15 +194,15 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
       email: "",
       phone: "",
       deliveryDate: "",
-    })
-  }
+    });
+  };
 
   const handleClose = () => {
-    onClose()
-    setTimeout(resetModal, 300) // Reset after modal closes
-  }
+    onClose();
+    setTimeout(resetModal, 300); // Reset after modal closes
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
@@ -209,11 +227,22 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                 <Star className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white">Book {celebrity.name}</h3>
-                <p className="text-purple-200">{orderConfirmed ? "Booking Confirmed!" : `Step ${currentStep} of 4`}</p>
+                <h3 className="text-2xl font-bold text-white">
+                  Book {celebrity.name}
+                </h3>
+                <p className="text-purple-200">
+                  {orderConfirmed
+                    ? "Booking Confirmed!"
+                    : `Step ${currentStep} of 4`}
+                </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleClose} className="text-white hover:bg-white/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              className="text-white hover:bg-white/10"
+            >
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -226,22 +255,56 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                   <div key={step} className="flex items-center flex-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                        currentStep >= step ? "bg-purple-500 text-white" : "bg-white/20 text-purple-300"
+                        currentStep >= step
+                          ? "bg-purple-500 text-white"
+                          : "bg-white/20 text-purple-300"
                       }`}
                     >
-                      {currentStep > step ? <CheckCircle className="w-5 h-5" /> : step}
+                      {currentStep > step ? (
+                        <CheckCircle className="w-5 h-5" />
+                      ) : (
+                        step
+                      )}
                     </div>
                     {step < 4 && (
-                      <div className={`flex-1 h-1 mx-2 ${currentStep > step ? "bg-purple-500" : "bg-white/20"}`} />
+                      <div
+                        className={`flex-1 h-1 mx-2 ${
+                          currentStep > step ? "bg-purple-500" : "bg-white/20"
+                        }`}
+                      />
                     )}
                   </div>
                 ))}
               </div>
               <div className="flex justify-between mt-2 text-sm">
-                <span className={currentStep >= 1 ? "text-white" : "text-purple-300"}>Details</span>
-                <span className={currentStep >= 2 ? "text-white" : "text-purple-300"}>Schedule</span>
-                <span className={currentStep >= 3 ? "text-white" : "text-purple-300"}>Add-ons</span>
-                <span className={currentStep >= 4 ? "text-white" : "text-purple-300"}>Payment</span>
+                <span
+                  className={
+                    currentStep >= 1 ? "text-white" : "text-purple-300"
+                  }
+                >
+                  Details
+                </span>
+                <span
+                  className={
+                    currentStep >= 2 ? "text-white" : "text-purple-300"
+                  }
+                >
+                  Schedule
+                </span>
+                <span
+                  className={
+                    currentStep >= 3 ? "text-white" : "text-purple-300"
+                  }
+                >
+                  Add-ons
+                </span>
+                <span
+                  className={
+                    currentStep >= 4 ? "text-white" : "text-purple-300"
+                  }
+                >
+                  Payment
+                </span>
               </div>
             </div>
           )}
@@ -249,15 +312,28 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
           <div className="p-6">
             {/* Step 1: Basic Details */}
             {currentStep === 1 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h4 className="text-xl font-bold text-white">Message Details</h4>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <h4 className="text-xl font-bold text-white">
+                  Message Details
+                </h4>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <Label className="text-white mb-2 block">Recipient Name *</Label>
+                    <Label className="text-white mb-2 block">
+                      Recipient Name *
+                    </Label>
                     <Input
                       value={formData.recipientName}
-                      onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          recipientName: e.target.value,
+                        })
+                      }
                       className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
                       placeholder="Who is this message for?"
                     />
@@ -266,7 +342,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                     <Label className="text-white mb-2 block">Occasion *</Label>
                     <Select
                       value={formData.occasion}
-                      onValueChange={(value) => setFormData({ ...formData, occasion: value })}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, occasion: value })
+                      }
                     >
                       <SelectTrigger className="bg-white/10 border-white/20 text-white">
                         <SelectValue placeholder="Select occasion" />
@@ -276,7 +354,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                         <SelectItem value="anniversary">Anniversary</SelectItem>
                         <SelectItem value="graduation">Graduation</SelectItem>
                         <SelectItem value="wedding">Wedding</SelectItem>
-                        <SelectItem value="congratulations">Congratulations</SelectItem>
+                        <SelectItem value="congratulations">
+                          Congratulations
+                        </SelectItem>
                         <SelectItem value="motivation">Motivation</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
@@ -286,23 +366,39 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
                 <div>
                   <Label className="text-white mb-2 block">Message Type</Label>
-                  <Select value={selectedPricing} onValueChange={(value: any) => setSelectedPricing(value)}>
+                  <Select
+                    value={selectedPricing}
+                    onValueChange={(value: any) => setSelectedPricing(value)}
+                  >
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-white/20">
-                      <SelectItem value="personal">Personal - ${celebrity.pricing.personal}</SelectItem>
-                      <SelectItem value="business">Business - ${celebrity.pricing.business}</SelectItem>
-                      <SelectItem value="charity">Charity - ${celebrity.pricing.charity}</SelectItem>
+                      <SelectItem value="personal">
+                        Personal - ${celebrity.pricing.personal}
+                      </SelectItem>
+                      <SelectItem value="business">
+                        Business - ${celebrity.pricing.business}
+                      </SelectItem>
+                      <SelectItem value="charity">
+                        Charity - ${celebrity.pricing.charity}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label className="text-white mb-2 block">Personal Message *</Label>
+                  <Label className="text-white mb-2 block">
+                    Personal Message *
+                  </Label>
                   <Textarea
                     value={formData.personalMessage}
-                    onChange={(e) => setFormData({ ...formData, personalMessage: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        personalMessage: e.target.value,
+                      })
+                    }
                     rows={4}
                     className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 resize-none"
                     placeholder="What would you like the celebrity to say? Include specific details, names, and any personal touches..."
@@ -310,10 +406,17 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                 </div>
 
                 <div>
-                  <Label className="text-white mb-2 block">Special Instructions</Label>
+                  <Label className="text-white mb-2 block">
+                    Special Instructions
+                  </Label>
                   <Textarea
                     value={formData.specialInstructions}
-                    onChange={(e) => setFormData({ ...formData, specialInstructions: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        specialInstructions: e.target.value,
+                      })
+                    }
                     rows={3}
                     className="bg-white/10 border-white/20 text-white placeholder:text-purple-300 resize-none"
                     placeholder="Any specific requests, pronunciation guides, or additional information..."
@@ -322,7 +425,11 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
                 <Button
                   onClick={() => setCurrentStep(2)}
-                  disabled={!formData.recipientName || !formData.occasion || !formData.personalMessage}
+                  disabled={
+                    !formData.recipientName ||
+                    !formData.occasion ||
+                    !formData.personalMessage
+                  }
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                 >
                   Continue to Scheduling
@@ -332,8 +439,14 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
             {/* Step 2: Scheduling & Availability */}
             {currentStep === 2 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h4 className="text-xl font-bold text-white">Schedule Your Message</h4>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <h4 className="text-xl font-bold text-white">
+                  Schedule Your Message
+                </h4>
 
                 <div className="grid lg:grid-cols-2 gap-8">
                   <div>
@@ -348,67 +461,85 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                   </div>
 
                   <div>
-                    <Label className="text-white mb-4 block">Available Time Slots</Label>
+                    <Label className="text-white mb-4 block">
+                      Available Time Slots
+                    </Label>
 
                     {!selectedDate && (
                       <div className="text-center py-8">
                         <CalendarIcon className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                        <p className="text-purple-200">Please select a date first</p>
+                        <p className="text-purple-200">
+                          Please select a date first
+                        </p>
                       </div>
                     )}
 
                     {selectedDate && isCheckingAvailability && (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4" />
-                        <p className="text-purple-200">Checking availability...</p>
+                        <p className="text-purple-200">
+                          Checking availability...
+                        </p>
                       </div>
                     )}
 
-                    {selectedDate && !isCheckingAvailability && availability && (
-                      <div className="space-y-4">
-                        {availability.available ? (
-                          <>
-                            <div className="flex items-center gap-2 text-green-400 mb-4">
-                              <CheckCircle className="w-5 h-5" />
-                              <span>Available on {format(selectedDate, "MMMM d, yyyy")}</span>
-                            </div>
-
-                            {availability.price > 0 && (
-                              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 mb-4">
-                                <div className="flex items-center gap-2 text-yellow-300">
-                                  <AlertCircle className="w-4 h-4" />
-                                  <span className="text-sm">Weekend Premium: +${availability.price}</span>
-                                </div>
+                    {selectedDate &&
+                      !isCheckingAvailability &&
+                      availability && (
+                        <div className="space-y-4">
+                          {availability.available ? (
+                            <>
+                              <div className="flex items-center gap-2 text-green-400 mb-4">
+                                <CheckCircle className="w-5 h-5" />
+                                <span>
+                                  Available on{" "}
+                                  {format(selectedDate, "MMMM d, yyyy")}
+                                </span>
                               </div>
-                            )}
 
-                            <div className="grid grid-cols-2 gap-3">
-                              {availability.slots.map((slot: string) => (
-                                <button
-                                  key={slot}
-                                  onClick={() => setSelectedSlot(slot)}
-                                  className={`p-3 rounded-lg border transition-all ${
-                                    selectedSlot === slot
-                                      ? "border-purple-500 bg-purple-500/20 text-white"
-                                      : "border-white/20 bg-white/10 text-purple-200 hover:bg-white/20"
-                                  }`}
-                                >
-                                  {slot}
-                                </button>
-                              ))}
+                              {availability.price > 0 && (
+                                <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 mb-4">
+                                  <div className="flex items-center gap-2 text-yellow-300">
+                                    <AlertCircle className="w-4 h-4" />
+                                    <span className="text-sm">
+                                      Weekend Premium: +${availability.price}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="grid grid-cols-2 gap-3">
+                                {availability.slots.map((slot: string) => (
+                                  <button
+                                    key={slot}
+                                    onClick={() => setSelectedSlot(slot)}
+                                    className={`p-3 rounded-lg border transition-all ${
+                                      selectedSlot === slot
+                                        ? "border-purple-500 bg-purple-500/20 text-white"
+                                        : "border-white/20 bg-white/10 text-purple-200 hover:bg-white/20"
+                                    }`}
+                                  >
+                                    {slot}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-center py-8">
+                              <div className="flex items-center justify-center gap-2 text-red-400 mb-4">
+                                <X className="w-5 h-5" />
+                                <span>
+                                  Not available on{" "}
+                                  {format(selectedDate, "MMMM d, yyyy")}
+                                </span>
+                              </div>
+                              <p className="text-purple-200 text-sm">
+                                Please select a different date
+                              </p>
                             </div>
-                          </>
-                        ) : (
-                          <div className="text-center py-8">
-                            <div className="flex items-center justify-center gap-2 text-red-400 mb-4">
-                              <X className="w-5 h-5" />
-                              <span>Not available on {format(selectedDate, "MMMM d, yyyy")}</span>
-                            </div>
-                            <p className="text-purple-200 text-sm">Please select a different date</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          )}
+                        </div>
+                      )}
                   </div>
                 </div>
 
@@ -422,7 +553,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                   </Button>
                   <Button
                     onClick={() => setCurrentStep(3)}
-                    disabled={!selectedDate || !selectedSlot || !availability?.available}
+                    disabled={
+                      !selectedDate || !selectedSlot || !availability?.available
+                    }
                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     Continue to Add-ons
@@ -433,8 +566,14 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
             {/* Step 3: Add-ons & Media Upload */}
             {currentStep === 3 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h4 className="text-xl font-bold text-white">Enhance Your Experience</h4>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <h4 className="text-xl font-bold text-white">
+                  Enhance Your Experience
+                </h4>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   {addOns.map((addOn) => (
@@ -451,18 +590,28 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                         <div className="flex items-center gap-3">
                           <div className="text-purple-400">{addOn.icon}</div>
                           <div>
-                            <h5 className="text-white font-semibold">{addOn.title}</h5>
-                            <p className="text-purple-200 text-sm">{addOn.description}</p>
+                            <h5 className="text-white font-semibold">
+                              {addOn.title}
+                            </h5>
+                            <p className="text-purple-200 text-sm">
+                              {addOn.description}
+                            </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-purple-300 font-semibold">+${addOn.price}</div>
+                          <div className="text-purple-300 font-semibold">
+                            +${addOn.price}
+                          </div>
                           <div
                             className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                              selectedAddOns.includes(addOn.id) ? "border-purple-500 bg-purple-500" : "border-white/40"
+                              selectedAddOns.includes(addOn.id)
+                                ? "border-purple-500 bg-purple-500"
+                                : "border-white/40"
                             }`}
                           >
-                            {selectedAddOns.includes(addOn.id) && <CheckCircle className="w-3 h-3 text-white" />}
+                            {selectedAddOns.includes(addOn.id) && (
+                              <CheckCircle className="w-3 h-3 text-white" />
+                            )}
                           </div>
                         </div>
                       </div>
@@ -472,12 +621,17 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
                 {/* Media Upload */}
                 <div>
-                  <Label className="text-white mb-4 block">Upload Reference Materials (Optional)</Label>
+                  <Label className="text-white mb-4 block">
+                    Upload Reference Materials (Optional)
+                  </Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
                     <Upload className="w-8 h-8 text-purple-400 mx-auto mb-4" />
-                    <p className="text-white mb-2">Upload photos, videos, or documents</p>
+                    <p className="text-white mb-2">
+                      Upload photos, videos, or documents
+                    </p>
                     <p className="text-purple-300 text-sm mb-4">
-                      Help the celebrity personalize your message with reference materials
+                      Help the celebrity personalize your message with reference
+                      materials
                     </p>
                     <input
                       type="file"
@@ -487,7 +641,10 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                       className="hidden"
                       id="file-upload"
                     />
-                    <Button asChild className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                    <Button
+                      asChild
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    >
                       <label htmlFor="file-upload" className="cursor-pointer">
                         Choose Files
                       </label>
@@ -497,11 +654,18 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                   {uploadedFiles.length > 0 && (
                     <div className="mt-4 space-y-2">
                       {uploadedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between bg-white/10 rounded-lg p-3">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-white/10 rounded-lg p-3"
+                        >
                           <div className="flex items-center gap-3">
                             <FileText className="w-4 h-4 text-purple-400" />
-                            <span className="text-white text-sm">{file.name}</span>
-                            <span className="text-purple-300 text-xs">({(file.size / 1024 / 1024).toFixed(1)} MB)</span>
+                            <span className="text-white text-sm">
+                              {file.name}
+                            </span>
+                            <span className="text-purple-300 text-xs">
+                              ({(file.size / 1024 / 1024).toFixed(1)} MB)
+                            </span>
                           </div>
                           <Button
                             variant="ghost"
@@ -537,29 +701,45 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
             {/* Step 4: Payment & Confirmation */}
             {currentStep === 4 && !orderConfirmed && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h4 className="text-xl font-bold text-white">Complete Your Booking</h4>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <h4 className="text-xl font-bold text-white">
+                  Complete Your Booking
+                </h4>
 
                 <div className="grid lg:grid-cols-2 gap-8">
                   <div>
-                    <h5 className="text-white font-semibold mb-4">Contact Information</h5>
+                    <h5 className="text-white font-semibold mb-4">
+                      Contact Information
+                    </h5>
                     <div className="space-y-4">
                       <div>
-                        <Label className="text-white mb-2 block">Email Address *</Label>
+                        <Label className="text-white mb-2 block">
+                          Email Address *
+                        </Label>
                         <Input
                           type="email"
                           value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
                           className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
                           placeholder="your@email.com"
                         />
                       </div>
                       <div>
-                        <Label className="text-white mb-2 block">Phone Number</Label>
+                        <Label className="text-white mb-2 block">
+                          Phone Number
+                        </Label>
                         <Input
                           type="tel"
                           value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
                           className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
                           placeholder="+1 (555) 123-4567"
                         />
@@ -568,7 +748,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                   </div>
 
                   <div>
-                    <h5 className="text-white font-semibold mb-4">Order Summary</h5>
+                    <h5 className="text-white font-semibold mb-4">
+                      Order Summary
+                    </h5>
                     <div className="bg-white/10 rounded-lg p-6 space-y-3">
                       <div className="flex justify-between text-purple-200">
                         <span>
@@ -578,13 +760,16 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                       </div>
 
                       {selectedAddOns.map((addOnId) => {
-                        const addOn = addOns.find((a) => a.id === addOnId)
+                        const addOn = addOns.find((a) => a.id === addOnId);
                         return addOn ? (
-                          <div key={addOnId} className="flex justify-between text-purple-200">
+                          <div
+                            key={addOnId}
+                            className="flex justify-between text-purple-200"
+                          >
                             <span>{addOn.title}</span>
                             <span>+${addOn.price}</span>
                           </div>
-                        ) : null
+                        ) : null;
                       })}
 
                       {availability?.price > 0 && (
@@ -603,7 +788,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
 
                       <div className="text-purple-300 text-sm mt-4">
                         <p>
-                          • Scheduled for {selectedDate && format(selectedDate, "MMMM d, yyyy")} at {selectedSlot}
+                          • Scheduled for{" "}
+                          {selectedDate && format(selectedDate, "MMMM d, yyyy")}{" "}
+                          at {selectedSlot}
                         </p>
                         <p>• Delivery within {celebrity.responseTime}</p>
                         <p>• 100% satisfaction guarantee</p>
@@ -649,13 +836,18 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                 className="text-center py-12"
               >
                 <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-6" />
-                <h4 className="text-3xl font-bold text-white mb-4">Booking Confirmed!</h4>
+                <h4 className="text-3xl font-bold text-white mb-4">
+                  Booking Confirmed!
+                </h4>
                 <p className="text-purple-200 mb-6 max-w-md mx-auto">
-                  Your booking has been confirmed. You'll receive updates on your order status via email.
+                  Your booking has been confirmed. You'll receive updates on
+                  your order status via email.
                 </p>
 
                 <div className="bg-white/10 rounded-lg p-6 max-w-md mx-auto mb-8">
-                  <h5 className="text-white font-semibold mb-4">Order Details</h5>
+                  <h5 className="text-white font-semibold mb-4">
+                    Order Details
+                  </h5>
                   <div className="text-purple-200 text-sm space-y-2 text-left">
                     <p>
                       <strong>Order ID:</strong> {orderId}
@@ -664,14 +856,16 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                       <strong>Celebrity:</strong> {celebrity.name}
                     </p>
                     <p>
-                      <strong>Scheduled:</strong> {selectedDate && format(selectedDate, "MMMM d, yyyy")} at{" "}
+                      <strong>Scheduled:</strong>{" "}
+                      {selectedDate && format(selectedDate, "MMMM d, yyyy")} at{" "}
                       {selectedSlot}
                     </p>
                     <p>
                       <strong>Total:</strong> ${calculateTotal()}
                     </p>
                     <p>
-                      <strong>Expected Delivery:</strong> Within {celebrity.responseTime}
+                      <strong>Expected Delivery:</strong> Within{" "}
+                      {celebrity.responseTime}
                     </p>
                   </div>
                 </div>
@@ -682,7 +876,9 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
                     <p>✓ Confirmation email sent to {formData.email}</p>
                     <p>✓ {celebrity.name} will be notified of your request</p>
                     <p>✓ You'll receive updates on order progress</p>
-                    <p>✓ Video will be delivered within {celebrity.responseTime}</p>
+                    <p>
+                      ✓ Video will be delivered within {celebrity.responseTime}
+                    </p>
                   </div>
                 </div>
 
@@ -698,5 +894,5 @@ export default function EnhancedBookingModal({ celebrity, isOpen, onClose }: Boo
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

@@ -117,7 +117,7 @@ const faqs = [
     category: "delivery",
     question: "How long does it take to receive my video?",
     answer:
-      "Delivery times vary by celebrity, typically ranging from 1-14 days. You'll see the expected delivery time on each celebrity's profile before booking. Rush delivery options are available for an additional fee.",
+      "Delivery times vary by celebrity, typically ranging from 1-14 days. You'll see the expected delivery time on each celebrity's profile before booking. asap delivery options are available for an additional fee.",
   },
   {
     id: 10,
@@ -131,7 +131,7 @@ const faqs = [
     category: "delivery",
     question: "What if my video is late?",
     answer:
-      "If your video isn't delivered within the promised timeframe, you'll automatically receive a full refund. We also offer rush delivery options if you need your video by a specific date.",
+      "If your video isn't delivered within the promised timeframe, you'll automatically receive a full refund. We also offer asap delivery options if you need your video by a specific date.",
   },
   {
     id: 12,
@@ -180,7 +180,7 @@ const faqs = [
     category: "payment",
     question: "Are there any hidden fees?",
     answer:
-      "No hidden fees! The price you see is what you pay, unless you choose optional add-ons like rush delivery, extended length, or commercial licensing. All fees are clearly displayed before checkout.",
+      "No hidden fees! The price you see is what you pay, unless you choose optional add-ons like asap delivery, extended length, or commercial licensing. All fees are clearly displayed before checkout.",
   },
 ];
 

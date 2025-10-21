@@ -55,8 +55,8 @@ const addOns = [
   {
     id: "rush",
     icon: <Zap className="w-6 h-6" />,
-    title: "Rush Delivery",
-    description: "Get your video in 24-48 hours",
+    title: "ASAP delivery",
+    description: "Get your video in 12 hours",
     price: "+$99",
   },
   {
@@ -512,7 +512,9 @@ export default function ServicesPage() {
                           </h3>
                           <div className="space-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
-                              <span className="text-yellow-200 text-sm sm:text-base">Duration:</span>
+                              <span className="text-yellow-200 text-sm sm:text-base">
+                                Duration:
+                              </span>
                               <span className="text-white font-semibold text-sm sm:text-base">
                                 {selectedServiceData?.duration}
                               </span>
@@ -537,7 +539,9 @@ export default function ServicesPage() {
                               </span>
                             </div>
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
-                              <span className="text-yellow-200 text-sm sm:text-base">Format:</span>
+                              <span className="text-yellow-200 text-sm sm:text-base">
+                                Format:
+                              </span>
                               <span className="text-white font-semibold text-sm sm:text-base">
                                 HD Video (MP4)
                               </span>
