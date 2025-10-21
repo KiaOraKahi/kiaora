@@ -291,10 +291,12 @@ export default function OrdersPage() {
                   className="group"
                 >
                   <Card className="bg-slate-900 border-white/20 hover:border-purple-500/50 transition-all duration-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        {/* Main Content */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                          {/* Avatar */}
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
                             {order.celebrityImage ? (
                               <img
                                 src={order.celebrityImage || "/placeholder.svg"}
@@ -302,49 +304,55 @@ export default function OrdersPage() {
                                 className="w-full h-full rounded-full object-cover"
                               />
                             ) : (
-                              <User className="w-8 h-8 text-white" />
+                              <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             )}
                           </div>
 
-                          <div>
-                            <div className="flex items-center gap-3 mb-1">
-                              <h3 className="text-lg font-semibold text-white">{order.orderNumber}</h3>
-                              <Badge className={statusColors[order.status as keyof typeof statusColors]}>
-                                {order.status.replace("_", " ")}
-                              </Badge>
-                              <Badge
-                                className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}
-                              >
-                                {order.paymentStatus}
-                              </Badge>
+                          {/* Order Info */}
+                          <div className="flex-1 min-w-0">
+                            {/* Header with badges */}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                              <h3 className="text-base sm:text-lg font-semibold text-white truncate">{order.orderNumber}</h3>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className={statusColors[order.status as keyof typeof statusColors]}>
+                                  {order.status.replace("_", " ")}
+                                </Badge>
+                                <Badge
+                                  className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}
+                                >
+                                  {order.paymentStatus}
+                                </Badge>
+                              </div>
                             </div>
 
-                            <div className="flex items-center gap-6 text-sm text-purple-200">
+                            {/* Details Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-sm text-purple-200">
                               <div className="flex items-center gap-1">
-                                <User className="w-4 h-4" />
-                                <span>{order.celebrityName}</span>
+                                <User className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">{order.celebrityName}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <Package className="w-4 h-4" />
-                                <span>For {order.recipientName}</span>
+                                <Package className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">For {order.recipientName}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>{format(new Date(order.scheduledDate), "MMM d, yyyy")}</span>
+                                <Calendar className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">{format(new Date(order.scheduledDate), "MMM d, yyyy")}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                <span>{order.scheduledTime}</span>
+                                <Clock className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">{order.scheduledTime}</span>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
+                        {/* Price and Action */}
+                        <div className="flex items-center justify-between sm:justify-end lg:flex-col lg:items-end gap-4 lg:gap-2">
+                          <div className="text-left sm:text-right">
                             <div className="flex items-center gap-1 text-purple-300 mb-1">
                               <DollarSign className="w-4 h-4" />
-                              <span className="font-semibold">${order.totalAmount}</span>
+                              <span className="font-semibold text-lg sm:text-xl">${order.totalAmount}</span>
                             </div>
                             <div className="text-xs text-purple-200">
                               {format(new Date(order.createdAt), "MMM d, yyyy")}
@@ -355,9 +363,10 @@ export default function OrdersPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+                              className="text-purple-300 hover:text-white hover:bg-purple-500/20 whitespace-nowrap"
                             >
-                              View Details
+                              <span className="hidden sm:inline">View Details</span>
+                              <span className="sm:hidden">Details</span>
                               <ChevronRight className="w-4 h-4 ml-1" />
                             </Button>
                           </Link>
