@@ -618,7 +618,7 @@ export default function CelebrityDashboard() {
       });
       return;
     }
-    
+
     const profileUrl = `${window.location.origin}/celebrities/${profile.id}`;
     const shareText = `Check out ${profile.name} on Kia Ora! Get personalized video messages from your favourite celebrity.`;
 
@@ -653,7 +653,8 @@ export default function CelebrityDashboard() {
         try {
           navigator.clipboard.writeText(`${shareText} ${profileUrl}`);
           toast.success("Copied to Clipboard!", {
-            description: "Share text copied! You can now paste it on Instagram.",
+            description:
+              "Share text copied! You can now paste it on Instagram.",
           });
         } catch (error) {
           toast.error("Copy Failed!", {
@@ -691,9 +692,9 @@ export default function CelebrityDashboard() {
       });
       return;
     }
-    
+
     const profileUrl = `${window.location.origin}/celebrities/${profile.id}`;
-    
+
     try {
       await navigator.clipboard.writeText(profileUrl);
       toast.success("Link Copied!", {
@@ -713,7 +714,8 @@ export default function CelebrityDashboard() {
         });
       } catch (fallbackError) {
         toast.error("Copy Failed!", {
-          description: "Failed to copy link. Please manually copy the URL from the address bar.",
+          description:
+            "Failed to copy link. Please manually copy the URL from the address bar.",
         });
       }
     }
@@ -1294,11 +1296,11 @@ export default function CelebrityDashboard() {
                 </div>
                 <Button
                   variant="outline"
-                  className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                  className="bg-red-500/20 border-red-500/30gap-2 text-red-300 hover:bg-red-500/30 hover:text-red-200"
                   onClick={() => signOut({ callbackUrl: "/" })}
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                  <LogOut className="w-4 h-4 " />
+                  <span className="hidden md:block">Sign Out</span>
                 </Button>
               </div>
             </div>
@@ -1328,7 +1330,9 @@ export default function CelebrityDashboard() {
                   className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
                   <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Pending Requests ({bookingRequests.length})</span>
+                  <span className="hidden sm:inline">
+                    Pending Requests ({bookingRequests.length})
+                  </span>
                   <span className="sm:hidden">({bookingRequests.length})</span>
                 </TabsTrigger>
                 <TabsTrigger
@@ -1336,7 +1340,9 @@ export default function CelebrityDashboard() {
                   className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
                   <Package className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Orders ({allOrders.length})</span>
+                  <span className="hidden sm:inline">
+                    Orders ({allOrders.length})
+                  </span>
                   <span className="sm:hidden">({allOrders.length})</span>
                 </TabsTrigger>
                 {/* <TabsTrigger value="reviews" className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap">
@@ -2044,11 +2050,11 @@ export default function CelebrityDashboard() {
                           key={request.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="p-6 bg-white/5 rounded-lg border border-white/10"
+                          className="p-4 sm:p-6 bg-white/5 rounded-lg border border-white/10"
                         >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-start space-x-4">
-                              <Avatar className="w-12 h-12">
+                          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+                            <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
+                              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                                 <AvatarImage
                                   src={
                                     request.customerImage || "/placeholder.svg"
@@ -2058,15 +2064,15 @@ export default function CelebrityDashboard() {
                                   {request.customerName.charAt(0)}
                                 </AvatarFallback>
                               </Avatar>
-                              <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-semibold text-white">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                                  <h3 className="text-base sm:text-lg font-semibold text-white truncate">
                                     {request.orderNumber}
                                   </h3>
                                   <Badge
-                                    className={getStatusBadgeColor(
+                                    className={`${getStatusBadgeColor(
                                       request.status
-                                    )}
+                                    )} w-fit`}
                                   >
                                     {request.status
                                       ? request.status.charAt(0).toUpperCase() +
@@ -2074,57 +2080,64 @@ export default function CelebrityDashboard() {
                                       : "Unknown"}
                                   </Badge>
                                 </div>
-                                <p className="text-purple-200 text-sm mb-1">
-                                  <strong>From:</strong> {request.customerName}
-                                </p>
-                                <p className="text-purple-200 text-sm mb-1">
-                                  <strong>For:</strong> {request.recipientName}
-                                </p>
-                                <p className="text-purple-200 text-sm mb-2">
-                                  <strong>Occasion:</strong> {request.occasion}
-                                </p>
-                                <p className="text-purple-200 text-sm">
-                                  <strong>Due:</strong>{" "}
-                                  {format(
-                                    new Date(request.deadline),
-                                    "MMM d, yyyy"
-                                  )}
-                                </p>
+                                <div className="space-y-1">
+                                  <p className="text-purple-200 text-xs sm:text-sm">
+                                    <strong>From:</strong>{" "}
+                                    {request.customerName}
+                                  </p>
+                                  <p className="text-purple-200 text-xs sm:text-sm">
+                                    <strong>For:</strong>{" "}
+                                    {request.recipientName}
+                                  </p>
+                                  <p className="text-purple-200 text-xs sm:text-sm">
+                                    <strong>Occasion:</strong>{" "}
+                                    {request.occasion}
+                                  </p>
+                                  <p className="text-purple-200 text-xs sm:text-sm">
+                                    <strong>Due:</strong>{" "}
+                                    {format(
+                                      new Date(request.deadline),
+                                      "MMM d, yyyy"
+                                    )}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="flex flex-row lg:flex-col lg:text-right justify-between lg:justify-start items-start lg:items-end gap-2 lg:gap-0 flex-shrink-0">
                               <div className="space-y-1">
-                                <p className="text-lg font-bold text-green-400">
+                                <p className="text-base sm:text-lg font-bold text-green-400">
                                   $
                                   {(
                                     request.celebrityAmount || 0
                                   ).toLocaleString()}
                                 </p>
                                 {request.tipAmount > 0 && (
-                                  <p className="text-sm font-semibold text-yellow-400">
+                                  <p className="text-xs sm:text-sm font-semibold text-yellow-400">
                                     +${request.tipAmount.toLocaleString()} tip
                                   </p>
                                 )}
-                                <p className="text-sm text-white">
+                                <p className="text-xs sm:text-sm text-white">
                                   Total: $
                                   {request.totalEarnings.toLocaleString()}
                                 </p>
                               </div>
-                              <p className="text-purple-200 text-sm mt-2">
-                                {format(
-                                  new Date(request.createdAt),
-                                  "MMM d, yyyy"
-                                )}
-                              </p>
-                              <Badge
-                                className={`mt-2 ${
-                                  request.paymentStatus === "SUCCEEDED"
-                                    ? "bg-green-500/20 text-green-300"
-                                    : "bg-orange-500/20 text-orange-300"
-                                }`}
-                              >
-                                {request.paymentStatus}
-                              </Badge>
+                              <div className="flex flex-col items-end lg:items-end gap-2">
+                                <p className="text-purple-200 text-xs sm:text-sm">
+                                  {format(
+                                    new Date(request.createdAt),
+                                    "MMM d, yyyy"
+                                  )}
+                                </p>
+                                <Badge
+                                  className={`${
+                                    request.paymentStatus === "SUCCEEDED"
+                                      ? "bg-green-500/20 text-green-300"
+                                      : "bg-orange-500/20 text-orange-300"
+                                  } text-xs`}
+                                >
+                                  {request.paymentStatus}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
 
@@ -2174,7 +2187,7 @@ export default function CelebrityDashboard() {
 
                           {request.approvalStatus?.toLowerCase() ===
                             "pending_approval" && (
-                            <div className="flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                               <Button
                                 onClick={() => {
                                   console.log(
