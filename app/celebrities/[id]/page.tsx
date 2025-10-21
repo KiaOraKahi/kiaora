@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Star,
   Clock,
@@ -23,77 +23,77 @@ import {
   MessageSquare,
   Music,
   Award,
-} from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { useParams } from "next/navigation"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import EnhancedBookingModal from "@/components/enhanced-booking-modal"
-import VideoPlayer from "@/components/frontend/video-player"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
-import { formatRating } from "@/lib/utils"
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import EnhancedBookingModal from "@/components/enhanced-booking-modal";
+import VideoPlayer from "@/components/frontend/video-player";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
+import { formatRating } from "@/lib/utils";
 
 interface Service {
-  id: string
-  name: string
-  description: string
-  basePrice: number
-  title?: string
-  startingPrice?: number
-  rushPrice?: number
-  duration: string
-  deliveryTime: string
-  icon: string
-  features: string[]
+  id: string;
+  name: string;
+  description: string;
+  basePrice: number;
+  title?: string;
+  startingPrice?: number;
+  rushPrice?: number;
+  duration: string;
+  deliveryTime: string;
+  icon: string;
+  features: string[];
 }
 
 interface Celebrity {
-  id: string
-  name: string
-  email: string
-  image: string
-  coverImage: string
-  category: string
-  isVIP:boolean
-  rating: number
-  reviewCount: number
-  price: number
-  responseTime: string
-  verified: boolean
-  featured: boolean
-  bio: string
-  longBio: string
-  tags: string[]
-  achievements: string[]
+  id: string;
+  name: string;
+  email: string;
+  image: string;
+  coverImage: string;
+  category: string;
+  isVIP: boolean;
+  rating: number;
+  reviewCount: number;
+  price: number;
+  responseTime: string;
+  verified: boolean;
+  featured: boolean;
+  bio: string;
+  longBio: string;
+  tags: string[];
+  achievements: string[];
   sampleVideos: Array<{
-    id: string
-    title: string
-    thumbnail: string
-    duration: string
-    videoUrl: string
-  }>
+    id: string;
+    title: string;
+    thumbnail: string;
+    duration: string;
+    videoUrl: string;
+  }>;
   availability: {
-    nextAvailable: string
-    averageDelivery: string
-    completionRate: number
-    totalOrders: number
-  }
+    nextAvailable: string;
+    averageDelivery: string;
+    completionRate: number;
+    totalOrders: number;
+  };
   pricing: {
-    personal: number
-    business: number
-    charity: number
-  }
+    personal: number;
+    business: number;
+    charity: number;
+  };
   reviews: Array<{
-    id: string
-    user: string
-    rating: number
-    date: string
-    comment: string
-    verified: boolean
-    occasion: string
-  }>
-  useMockData?: boolean
+    id: string;
+    user: string;
+    rating: number;
+    date: string;
+    comment: string;
+    verified: boolean;
+    occasion: string;
+  }>;
+  useMockData?: boolean;
 }
 
 // Icon mapping for services
@@ -103,167 +103,169 @@ const getServiceIcon = (iconName: string) => {
     message: <MessageSquare className="w-5 h-5" />,
     star: <Star className="w-5 h-5" />,
     music: <Music className="w-5 h-5" />,
-  }
-  return icons[iconName] || <Star className="w-5 h-5" />
-}
+  };
+  return icons[iconName] || <Star className="w-5 h-5" />;
+};
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 export default function CelebrityDetailPage() {
-  const params = useParams()
-  const celebrityId = params.id as string
-  const [celebrity, setCelebrity] = useState<Celebrity | null>(null)
-  const [services, setServices] = useState<Service[]>([])
-  const [loading, setLoading] = useState(true)
-  const [servicesLoading, setServicesLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedService, setSelectedService] = useState<Service | null>(null)
-  const [isBookingOpen, setIsBookingOpen] = useState(false)
-  const [isFavorited, setIsFavorited] = useState(false)
-  const [selectedSampleVideo, setSelectedSampleVideo] = useState<any>(null)
-  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [useMockData, setUseMockData] = useState(false)
+  const params = useParams();
+  const celebrityId = params.id as string;
+  const [celebrity, setCelebrity] = useState<Celebrity | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [servicesLoading, setServicesLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [selectedSampleVideo, setSelectedSampleVideo] = useState<any>(null);
+  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [useMockData, setUseMockData] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchCelebrity = async () => {
       try {
-        setLoading(true)
-        console.log("🔍 Fetching celebrity with ID:", celebrityId)
-        console.log("🔗 Full URL:", `/api/celebrities/${celebrityId}`)
-        
-        const response = await fetch(`/api/celebrities/${celebrityId}`)
-        const data = await response.json()
+        setLoading(true);
+        console.log("🔍 Fetching celebrity with ID:", celebrityId);
+        console.log("🔗 Full URL:", `/api/celebrities/${celebrityId}`);
 
-        console.log("📡 API Response:", { 
-          status: response.status, 
+        const response = await fetch(`/api/celebrities/${celebrityId}`);
+        const data = await response.json();
+
+        console.log("📡 API Response:", {
+          status: response.status,
           statusText: response.statusText,
           url: response.url,
-          data 
-        })
+          data,
+        });
 
         if (response.ok) {
-          setCelebrity(data)
-          setUseMockData(data.useMockData || false)
-          console.log("✅ Celebrity loaded successfully:", data.name)
+          setCelebrity(data);
+          setUseMockData(data.useMockData || false);
+          console.log("✅ Celebrity loaded successfully:", data.name);
         } else {
-          console.error("❌ API Error:", data.error)
-          console.error("❌ Full error details:", { status: response.status, data })
-          setError(data.error || "Celebrity not found")
+          console.error("❌ API Error:", data.error);
+          console.error("❌ Full error details:", {
+            status: response.status,
+            data,
+          });
+          setError(data.error || "Celebrity not found");
         }
       } catch (error) {
-        console.error("❌ Error fetching celebrity:", error)
-        setError("Failed to load celebrity details")
+        console.error("❌ Error fetching celebrity:", error);
+        setError("Failed to load celebrity details");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (celebrityId) {
-      fetchCelebrity()
+      fetchCelebrity();
     }
-  }, [celebrityId])
+  }, [celebrityId]);
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        setServicesLoading(true)
-        const response = await fetch("/api/services")
-        const data = await response.json()
+        setServicesLoading(true);
+        const response = await fetch("/api/services");
+        const data = await response.json();
 
         if (response.ok) {
-          setServices(data.services || [])
+          setServices(data.services || []);
 
-          console.error("data.services 123:", data.services)
-
+          console.error("data.services 123:", data.services);
 
           // Auto-select the first service
           if (data.services && data.services.length > 0) {
-            setSelectedService(data.services[0])
+            setSelectedService(data.services[0]);
           }
         } else {
-          console.error("Failed to fetch services:", data.error)
+          console.error("Failed to fetch services:", data.error);
         }
       } catch (error) {
-        console.error("Error fetching services:", error)
+        console.error("Error fetching services:", error);
       } finally {
-        setServicesLoading(false)
+        setServicesLoading(false);
       }
-    }
+    };
 
-    fetchServices()
-  }, [])
+    fetchServices();
+  }, []);
 
-  console.log("ce",celebrity)
+  console.log("ce", celebrity);
   const handleBookNow = () => {
     if (!selectedService) {
-      alert("Please select a service first")
-      return
+      alert("Please select a service first");
+      return;
     }
-    setIsBookingOpen(true)
-  }
+    setIsBookingOpen(true);
+  };
 
   if (loading) {
     return (
@@ -278,7 +280,7 @@ export default function CelebrityDetailPage() {
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !celebrity) {
@@ -291,9 +293,12 @@ export default function CelebrityDetailPage() {
           <div className="stars3"></div>
         </div>
         <div className="relative z-10 text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Celebrity Not Found</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Celebrity Not Found
+          </h1>
           <p className="text-purple-200 mb-6">
-            {error || "The celebrity you're looking for doesn't exist or may have been removed."}
+            {error ||
+              "The celebrity you're looking for doesn't exist or may have been removed."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/celebrities">
@@ -302,19 +307,29 @@ export default function CelebrityDetailPage() {
               </Button>
             </Link>
             <Link href="/">
-              <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+              <Button
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
                 Go Home
               </Button>
             </Link>
           </div>
           <div className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
             <p className="text-sm text-purple-300">
-              💡 Try browsing our <Link href="/celebrities" className="text-purple-400 hover:text-purple-300 underline">celebrity directory</Link> to find what you're looking for.
+              💡 Try browsing our{" "}
+              <Link
+                href="/celebrities"
+                className="text-purple-400 hover:text-purple-300 underline"
+              >
+                celebrity directory
+              </Link>{" "}
+              to find what you're looking for.
             </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Safe access to nested properties with fallbacks
@@ -323,7 +338,7 @@ export default function CelebrityDetailPage() {
     averageDelivery: "3-5 days",
     completionRate: 95,
     totalOrders: 0,
-  }
+  };
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -346,7 +361,11 @@ export default function CelebrityDetailPage() {
           {/* Cover Image */}
           <div className="relative h-96 overflow-hidden">
             <Image
-              src={celebrity.coverImage || celebrity.image || "/placeholder.svg?height=400&width=1200"}
+              src={
+                celebrity.coverImage ||
+                celebrity.image ||
+                "/placeholder.svg?height=400&width=1200"
+              }
               alt={`${celebrity.name} cover`}
               fill
               className="object-cover"
@@ -356,7 +375,10 @@ export default function CelebrityDetailPage() {
             {/* Back Button */}
             <div className="absolute top-8 left-8">
               <Link href="/celebrities">
-                <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                <Button
+                  variant="outline"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Celebrities
                 </Button>
@@ -369,9 +391,13 @@ export default function CelebrityDetailPage() {
                 variant="outline"
                 size="icon"
                 onClick={() => setIsFavorited(!isFavorited)}
-                className={`bg-white/10 border-white/20 hover:bg-white/20 ${isFavorited ? "text-red-400" : "text-white"}`}
+                className={`bg-white/10 border-white/20 hover:bg-white/20 ${
+                  isFavorited ? "text-red-400" : "text-white"
+                }`}
               >
-                <Heart className={`w-4 h-4 ${isFavorited ? "fill-current" : ""}`} />
+                <Heart
+                  className={`w-4 h-4 ${isFavorited ? "fill-current" : ""}`}
+                />
               </Button>
               <Button
                 variant="outline"
@@ -391,7 +417,10 @@ export default function CelebrityDetailPage() {
                 <div className="relative">
                   <div className="w-64 h-80 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl">
                     <Image
-                      src={celebrity.image || "/placeholder.svg?height=600&width=400"}
+                      src={
+                        celebrity.image ||
+                        "/placeholder.svg?height=600&width=400"
+                      }
                       alt={celebrity.name}
                       fill
                       className="object-cover"
@@ -409,9 +438,11 @@ export default function CelebrityDetailPage() {
                 </div>
 
                 {/* Celebrity Details */}
-                <div className="flex-1 text-white">
+                <div className="flex-1 text-white w-full">
                   <div className="flex flex-wrap items-center gap-4 mb-4">
-                    <h1 className="text-4xl lg:text-5xl font-bold">{celebrity.name}</h1>
+                    <h1 className="text-4xl lg:text-5xl font-bold">
+                      {celebrity.name}
+                    </h1>
                     <Badge className="bg-purple-500/20 text-purple-200 border-purple-500/30 text-lg px-4 py-2">
                       {celebrity.category}
                     </Badge>
@@ -423,7 +454,9 @@ export default function CelebrityDetailPage() {
                     )}
                   </div>
 
-                  <p className="text-xl text-purple-200 mb-6 max-w-3xl">{celebrity.bio}</p>
+                  <p className="text-xl text-purple-200 mb-6 max-w-3xl">
+                    {celebrity.bio}
+                  </p>
 
                   {/* Stats */}
                   {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -458,7 +491,7 @@ export default function CelebrityDetailPage() {
                   </div> */}
 
                   {/* Service Selection & Book Button */}
-                  <div className="space-y-6">
+                  <div className="space-y-6 w-full">
                     {servicesLoading ? (
                       <div className="flex items-center gap-2 text-purple-200">
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -467,7 +500,9 @@ export default function CelebrityDetailPage() {
                     ) : services.length > 0 ? (
                       <>
                         <div>
-                          <h3 className="text-lg font-semibold text-white mb-3">Select a Service</h3>
+                          <h3 className="text-lg font-semibold text-white mb-3">
+                            Select a Service
+                          </h3>
                           <div className="grid md:grid-cols-2 gap-4">
                             {services.map((service) => (
                               <div
@@ -481,28 +516,42 @@ export default function CelebrityDetailPage() {
                               >
                                 <div className="flex items-center justify-between mb-3">
                                   <div className="flex items-center gap-3">
-                                    <div className="text-purple-400">{getServiceIcon(service.icon)}</div>
+                                    <div className="text-purple-400">
+                                      {getServiceIcon(service.icon)}
+                                    </div>
                                     <div>
-                                      <h4 className="text-white font-semibold">{service.title}</h4>
-                                      <p className="text-purple-200 text-sm">{service.description}</p>
+                                      <h4 className="text-white font-semibold">
+                                        {service.title}
+                                      </h4>
+                                      <p className="text-purple-200 text-sm">
+                                        {service.description}
+                                      </p>
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-2xl font-bold text-purple-300">${service.startingPrice}</div>
-                                    <div className="text-purple-400 text-sm">{service.duration}</div>
+                                    <div className="text-2xl font-bold text-purple-300">
+                                      ${service.startingPrice}
+                                    </div>
+                                    <div className="text-purple-400 text-sm">
+                                      {service.duration}
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="flex flex-wrap gap-1">
-                                  {service.features.slice(0, 3).map((feature, index) => (
-                                    <span
-                                      key={index}
-                                      className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded"
-                                    >
-                                      {feature}
-                                    </span>
-                                  ))}
+                                  {service.features
+                                    .slice(0, 3)
+                                    .map((feature, index) => (
+                                      <span
+                                        key={index}
+                                        className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded"
+                                      >
+                                        {feature}
+                                      </span>
+                                    ))}
                                   {service.features.length > 3 && (
-                                    <span className="text-xs text-purple-300">+{service.features.length - 3} more</span>
+                                    <span className="text-xs text-purple-300">
+                                      +{service.features.length - 3} more
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -530,8 +579,12 @@ export default function CelebrityDetailPage() {
                     ) : (
                       <div className="text-center py-8">
                         <MessageCircle className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-white mb-2">No Services Available</h3>
-                        <p className="text-purple-200">Services will be available soon.</p>
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          No Services Available
+                        </h3>
+                        <p className="text-purple-200">
+                          Services will be available soon.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -552,7 +605,10 @@ export default function CelebrityDetailPage() {
                 <TabsTrigger value="services" className="data-[state=active]:bg-purple-500 text-white">
                   Services
                 </TabsTrigger> */}
-                <TabsTrigger value="samples" className="data-[state=active]:bg-purple-500 text-white">
+                <TabsTrigger
+                  value="samples"
+                  className="data-[state=active]:bg-purple-500 text-white"
+                >
                   Gallery
                 </TabsTrigger>
                 {/* <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 text-white">
@@ -706,13 +762,16 @@ export default function CelebrityDetailPage() {
                         key={video.id}
                         className="bg-white/10 border-white/20 backdrop-blur-lg overflow-hidden group cursor-pointer hover:bg-white/20 transition-all duration-300"
                         onClick={() => {
-                          setSelectedSampleVideo(video)
-                          setIsVideoPlayerOpen(true)
+                          setSelectedSampleVideo(video);
+                          setIsVideoPlayerOpen(true);
                         }}
                       >
                         <div className="relative">
                           <Image
-                            src={video.thumbnail || "/placeholder.svg?height=200&width=300"}
+                            src={
+                              video.thumbnail ||
+                              "/placeholder.svg?height=200&width=300"
+                            }
                             alt={video.title}
                             width={300}
                             height={200}
@@ -723,11 +782,17 @@ export default function CelebrityDetailPage() {
                               <Play className="w-6 h-6" />
                             </Button>
                           </div>
-                          <Badge className="absolute top-3 right-3 bg-black/60 text-white">{video.duration}</Badge>
+                          <Badge className="absolute top-3 right-3 bg-black/60 text-white">
+                            {video.duration}
+                          </Badge>
                         </div>
                         <CardContent className="p-4">
-                          <h3 className="text-white font-semibold">{video.title}</h3>
-                          <p className="text-purple-300 text-sm mt-1">Sample message</p>
+                          <h3 className="text-white font-semibold">
+                            {video.title}
+                          </h3>
+                          <p className="text-purple-300 text-sm mt-1">
+                            Sample message
+                          </p>
                         </CardContent>
                       </Card>
                     ))}
@@ -735,8 +800,12 @@ export default function CelebrityDetailPage() {
                 ) : (
                   <div className="text-center py-12">
                     <Play className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">No Sample Videos</h3>
-                    <p className="text-purple-200">Sample videos will be available soon.</p>
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      No Sample Videos
+                    </h3>
+                    <p className="text-purple-200">
+                      Sample videos will be available soon.
+                    </p>
                   </div>
                 )}
               </TabsContent>
@@ -886,5 +955,5 @@ export default function CelebrityDetailPage() {
         <Footer />
       </div>
     </div>
-  )
+  );
 }
