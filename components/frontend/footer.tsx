@@ -197,13 +197,13 @@ export default function Footer() {
                   {footerDescription}
                 </p>
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3 text-yellow-200">
+                  {/* <div className="flex items-center space-x-3 text-yellow-200">
                     <Mail className="w-5 h-5" />
                     <span>hello@kiaora.com</span>
-                  </div>{" "}
+                  </div>{" "} */}
                   <div className="flex items-center space-x-3 text-yellow-200">
                     <Mail className="w-5 h-5" />
-                    <span> Admin email: admin@kiaorakahi.com</span>
+                    <span>admin@kiaorakahi.com</span>
                   </div>
                   {/* <div className="flex items-center space-x-3 text-yellow-200">
                   <Phone className="w-5 h-5" />
