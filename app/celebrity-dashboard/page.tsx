@@ -2304,11 +2304,11 @@ export default function CelebrityDashboard() {
                           key={order.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="p-6 bg-white/5 rounded-lg border border-white/10"
+                          className="p-4 sm:p-6 bg-white/5 rounded-lg border border-white/10"
                         >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-start space-x-4">
-                              <Avatar className="w-12 h-12">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                            <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
+                              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                                 <AvatarImage
                                   src={
                                     order.customerImage || "/placeholder.svg"
@@ -2318,51 +2318,55 @@ export default function CelebrityDashboard() {
                                   {order.customerName.charAt(0)}
                                 </AvatarFallback>
                               </Avatar>
-                              <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-semibold text-white">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                                  <h3 className="text-base sm:text-lg font-semibold text-white truncate">
                                     {order.orderNumber}
                                   </h3>
-                                  <Badge
-                                    className={getStatusBadgeColor(
-                                      order.status
-                                    )}
-                                  >
-                                    {order.status
-                                      ? order.status.charAt(0).toUpperCase() +
-                                        order.status.slice(1)
-                                      : "Unknown"}
-                                  </Badge>
-                                  {/* 🔥 NEW: Approval Status Badge */}
-                                  {order.approvalStatus && (
+                                  <div className="flex flex-wrap gap-2">
                                     <Badge
-                                      className={getApprovalStatusBadgeColor(
-                                        order.approvalStatus
+                                      className={getStatusBadgeColor(
+                                        order.status
                                       )}
                                     >
-                                      {order.approvalStatus.replace("_", " ")}
+                                      {order.status
+                                        ? order.status.charAt(0).toUpperCase() +
+                                          order.status.slice(1)
+                                        : "Unknown"}
                                     </Badge>
-                                  )}
+                                    {/* 🔥 NEW: Approval Status Badge */}
+                                    {order.approvalStatus && (
+                                      <Badge
+                                        className={getApprovalStatusBadgeColor(
+                                          order.approvalStatus
+                                        )}
+                                      >
+                                        {order.approvalStatus.replace("_", " ")}
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </div>
-                                <p className="text-purple-200 text-sm mb-1">
-                                  <strong>From:</strong> {order.customerName}
-                                </p>
-                                <p className="text-purple-200 text-sm mb-1">
-                                  <strong>For:</strong> {order.recipientName}
-                                </p>
-                                <p className="text-purple-200 text-sm mb-2">
-                                  <strong>Occasion:</strong> {order.occasion}
-                                </p>
-                                <p className="text-purple-200 text-sm">
-                                  <strong>Deadline:</strong>{" "}
-                                  {format(
-                                    new Date(order.deadline),
-                                    "MMM d, yyyy"
-                                  )}
-                                </p>
+                                <div className="space-y-1">
+                                  <p className="text-purple-200 text-sm">
+                                    <strong>From:</strong> {order.customerName}
+                                  </p>
+                                  <p className="text-purple-200 text-sm">
+                                    <strong>For:</strong> {order.recipientName}
+                                  </p>
+                                  <p className="text-purple-200 text-sm">
+                                    <strong>Occasion:</strong> {order.occasion}
+                                  </p>
+                                  <p className="text-purple-200 text-sm">
+                                    <strong>Deadline:</strong>{" "}
+                                    {format(
+                                      new Date(order.deadline),
+                                      "MMM d, yyyy"
+                                    )}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="flex flex-col sm:text-right space-y-2 sm:flex-shrink-0">
                               <div className="space-y-1">
                                 <p className="text-lg font-bold text-green-400">
                                   $
@@ -2379,13 +2383,13 @@ export default function CelebrityDashboard() {
                                   Total: ${order.totalEarnings.toLocaleString()}
                                 </p>
                               </div>
-                              <p className="text-purple-200 text-sm mt-2">
+                              <p className="text-purple-200 text-sm">
                                 {format(
                                   new Date(order.createdAt),
                                   "MMM d, yyyy"
                                 )}
                               </p>
-                              <Badge className="bg-green-500/20 text-green-300 mt-2">
+                              <Badge className="bg-green-500/20 text-green-300 w-fit">
                                 Payment Status: {order.paymentStatus}
                               </Badge>
                             </div>
@@ -2457,7 +2461,7 @@ export default function CelebrityDashboard() {
                           )}
 
                           {/* Action buttons based on status */}
-                          <div className="flex gap-3">
+                          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                             {order.status === "confirmed" &&
                               !order.videoUrl && (
                                 <VideoUploadModal
@@ -2466,7 +2470,7 @@ export default function CelebrityDashboard() {
                                   customerName={order.customerName}
                                   onUploadSuccess={handleVideoUploadSuccess}
                                 >
-                                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+                                  <Button className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700">
                                     <Upload className="w-4 h-4 mr-2" />
                                     Upload Video
                                   </Button>
@@ -2475,9 +2479,9 @@ export default function CelebrityDashboard() {
                             {/* 🔥 NEW: Pending Approval Status */}
                             {order.approvalStatus === "PENDING_APPROVAL" &&
                               order.videoUrl && (
-                                <div className="flex-1 flex items-center gap-2 p-3 bg-orange-500/20 rounded-lg">
-                                  <Clock className="w-5 h-5 text-orange-400" />
-                                  <span className="text-orange-300 font-medium">
+                                <div className="w-full sm:flex-1 flex items-center gap-2 p-3 bg-orange-500/20 rounded-lg">
+                                  <Clock className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                                  <span className="text-orange-300 font-medium text-sm sm:text-base">
                                     Awaiting Customer Approval
                                   </span>
                                 </div>
@@ -2485,9 +2489,9 @@ export default function CelebrityDashboard() {
                             {/* 🔥 NEW: Approved Status */}
                             {order.approvalStatus === "APPROVED" &&
                               order.videoUrl && (
-                                <div className="flex-1 flex items-center gap-2 p-3 bg-green-500/20 rounded-lg">
-                                  <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-300 font-medium">
+                                <div className="w-full sm:flex-1 flex items-center gap-2 p-3 bg-green-500/20 rounded-lg">
+                                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                                  <span className="text-green-300 font-medium text-sm sm:text-base">
                                     Video Approved & Delivered
                                   </span>
                                 </div>
@@ -2501,10 +2505,11 @@ export default function CelebrityDashboard() {
                                   customerName={order.customerName}
                                   onUploadSuccess={handleVideoUploadSuccess}
                                 >
-                                  <Button className="flex-1 bg-yellow-600 hover:bg-yellow-700">
+                                  <Button className="w-full sm:flex-1 bg-yellow-600 hover:bg-yellow-700">
                                     <Upload className="w-4 h-4 mr-2" />
-                                    Upload Revision (
-                                    {(order.revisionCount || 0) + 1}/2)
+                                    <span className="hidden sm:inline">Upload Revision (
+                                    {(order.revisionCount || 0) + 1}/2)</span>
+                                    <span className="sm:hidden">Revision {(order.revisionCount || 0) + 1}/2</span>
                                   </Button>
                                 </VideoUploadModal>
                               )}
@@ -2512,16 +2517,16 @@ export default function CelebrityDashboard() {
                             {order.status === "completed" &&
                               !order.approvalStatus &&
                               order.videoUrl && (
-                                <div className="flex-1 flex items-center gap-2 p-3 bg-green-500/20 rounded-lg">
-                                  <CheckCircle className="w-5 h-5 text-green-400" />
-                                  <span className="text-green-300 font-medium">
+                                <div className="w-full sm:flex-1 flex items-center gap-2 p-3 bg-green-500/20 rounded-lg">
+                                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                                  <span className="text-green-300 font-medium text-sm sm:text-base">
                                     Video Delivered
                                   </span>
                                 </div>
                               )}
                             <Button
                               variant="outline"
-                              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                              className="w-full sm:w-auto bg-white/10 border-white/20 text-white hover:bg-white/20"
                               onClick={() =>
                                 router.push(`/celebrity/bookings/${order.id}`)
                               }
