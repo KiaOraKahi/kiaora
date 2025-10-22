@@ -1,41 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Play,
+  Download,
+  Heart,
+  Maximize,
   Pause,
+  Play,
+  Share2,
   Volume2,
   VolumeX,
-  Maximize,
-  Minimize,
-  SkipBack,
-  SkipForward,
-  Settings,
-  Download,
-  Share2,
-  Heart,
   X,
-} from "lucide-react"
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface VideoPlayerProps {
-  src?: string
-  poster?: string
-  title?: string
-  description?: string
-  celebrity?: string
-  duration?: string
-  isOpen: boolean
-  onClose: () => void
-  autoPlay?: boolean
-  videoUrl?: string
-  isReview?: boolean
-  orderNumber?: string
+  src?: string;
+  poster?: string;
+  title?: string;
+  description?: string;
+  celebrity?: string;
+  duration?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  autoPlay?: boolean;
+  videoUrl?: string;
+  isReview?: boolean;
+  orderNumber?: string;
 }
 
 export default function VideoPlayer({
@@ -52,173 +48,180 @@ export default function VideoPlayer({
   isReview = false,
   orderNumber,
 }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [videoDuration, setVideoDuration] = useState(0)
-  const [volume, setVolume] = useState(1)
-  const [isMuted, setIsMuted] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [showControls, setShowControls] = useState(true)
-  const [isLiked, setIsLiked] = useState(false)
-  const [playbackRate, setPlaybackRate] = useState(1)
-  const [showSettings, setShowSettings] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [showSettings, setShowSettings] = useState(false);
 
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>()
+  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Toggle play/pause
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
-        videoRef.current.pause()
+        videoRef.current.pause();
       } else {
-        videoRef.current.play()
+        videoRef.current.play();
       }
     }
-  }
+  };
 
   // Convert YouTube URL to embed URL
   const getYouTubeEmbedUrl = (url: unknown) => {
-    if (typeof url !== "string" || url.trim().length === 0) return null
+    if (typeof url !== "string" || url.trim().length === 0) return null;
 
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-    const match = url.match(regExp)
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
 
     if (match && match[2].length === 11) {
-      return `https://www.youtube.com/embed/${match[2]}?autoplay=${autoPlay ? 1 : 0}&rel=0&modestbranding=1`
+      return `https://www.youtube.com/embed/${match[2]}?autoplay=${
+        autoPlay ? 1 : 0
+      }&rel=0&modestbranding=1`;
     }
 
-    return null
-  }
+    return null;
+  };
 
-  const embedUrl = typeof videoUrl === "string" && videoUrl
-    ? getYouTubeEmbedUrl(videoUrl)
-    : null
+  const embedUrl =
+    typeof videoUrl === "string" && videoUrl
+      ? getYouTubeEmbedUrl(videoUrl)
+      : null;
 
   useEffect(() => {
     if (!embedUrl) {
-      const video = videoRef.current
-      if (!video) return
+      const video = videoRef.current;
+      if (!video) return;
 
       const handleLoadedMetadata = () => {
-        setVideoDuration(video.duration)
-      }
+        setVideoDuration(video.duration);
+      };
 
       const handleTimeUpdate = () => {
-        setCurrentTime(video.currentTime)
-      }
+        setCurrentTime(video.currentTime);
+      };
 
-      const handlePlay = () => setIsPlaying(true)
-      const handlePause = () => setIsPlaying(false)
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
 
-      video.addEventListener("loadedmetadata", handleLoadedMetadata)
-      video.addEventListener("timeupdate", handleTimeUpdate)
-      video.addEventListener("play", handlePlay)
-      video.addEventListener("pause", handlePause)
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("timeupdate", handleTimeUpdate);
+      video.addEventListener("play", handlePlay);
+      video.addEventListener("pause", handlePause);
 
       return () => {
-        video.removeEventListener("loadedmetadata", handleLoadedMetadata)
-        video.removeEventListener("timeupdate", handleTimeUpdate)
-        video.removeEventListener("play", handlePlay)
-        video.removeEventListener("pause", handlePause)
-      }
+        video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        video.removeEventListener("timeupdate", handleTimeUpdate);
+        video.removeEventListener("play", handlePlay);
+        video.removeEventListener("pause", handlePause);
+      };
     }
-  }, [embedUrl])
+  }, [embedUrl]);
 
   useEffect(() => {
     if (autoPlay && isOpen && !embedUrl) {
-      handlePlay()
+      handlePlay();
     }
-  }, [autoPlay, isOpen, embedUrl])
+  }, [autoPlay, isOpen, embedUrl]);
 
   const handlePlay = () => {
-    const video = videoRef.current
+    const video = videoRef.current;
     if (video) {
       if (isPlaying) {
-        video.pause()
+        video.pause();
       } else {
-        video.play()
+        video.play();
       }
     }
-  }
+  };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
-    const rect = e.currentTarget.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const newTime = (clickX / rect.width) * videoDuration
-    video.currentTime = newTime
-  }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const newTime = (clickX / rect.width) * videoDuration;
+    video.currentTime = newTime;
+  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = Number.parseFloat(e.target.value)
-    setVolume(newVolume)
+    const newVolume = Number.parseFloat(e.target.value);
+    setVolume(newVolume);
     if (videoRef.current) {
-      videoRef.current.volume = newVolume
+      videoRef.current.volume = newVolume;
     }
-    setIsMuted(newVolume === 0)
-  }
+    setIsMuted(newVolume === 0);
+  };
 
   const toggleMute = () => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
     if (isMuted) {
-      video.volume = volume
-      setIsMuted(false)
+      video.volume = volume;
+      setIsMuted(false);
     } else {
-      video.volume = 0
-      setIsMuted(true)
+      video.volume = 0;
+      setIsMuted(true);
     }
-  }
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      videoRef.current?.requestFullscreen()
-      setIsFullscreen(true)
+      videoRef.current?.requestFullscreen();
+      setIsFullscreen(true);
     } else {
-      document.exitFullscreen()
-      setIsFullscreen(false)
+      document.exitFullscreen();
+      setIsFullscreen(false);
     }
-  }
+  };
 
   const skip = (seconds: number) => {
-    const video = videoRef.current
+    const video = videoRef.current;
     if (video) {
-      video.currentTime = Math.max(0, Math.min(video.currentTime + seconds, videoDuration))
+      video.currentTime = Math.max(
+        0,
+        Math.min(video.currentTime + seconds, videoDuration)
+      );
     }
-  }
+  };
 
   const changePlaybackRate = (rate: number) => {
-    const video = videoRef.current
+    const video = videoRef.current;
     if (video) {
-      video.playbackRate = rate
-      setPlaybackRate(rate)
-      setShowSettings(false)
+      video.playbackRate = rate;
+      setPlaybackRate(rate);
+      setShowSettings(false);
     }
-  }
+  };
 
   const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.floor(time % 60)
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`
-  }
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
 
   const handleMouseMove = () => {
-    setShowControls(true)
+    setShowControls(true);
     if (controlsTimeoutRef.current) {
-      clearTimeout(controlsTimeoutRef.current)
+      clearTimeout(controlsTimeoutRef.current);
     }
     controlsTimeoutRef.current = setTimeout(() => {
       if (isPlaying && !embedUrl) {
-        setShowControls(false)
+        setShowControls(false);
       }
-    }, 3000)
-  }
+    }, 3000);
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
@@ -226,19 +229,19 @@ export default function VideoPlayer({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center"
+        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-6xl mx-4"
+          className="relative w-full max-w-6xl mx-2 sm:mx-4"
           onClick={(e) => e.stopPropagation()}
           onMouseMove={handleMouseMove}
         >
           {/* Video Container */}
-          <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl">
+          <div className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl">
             {/* YouTube Embed or Regular Video */}
             {embedUrl ? (
               <div className="relative w-full aspect-video">
@@ -253,7 +256,12 @@ export default function VideoPlayer({
             ) : (
               <>
                 {/* Regular Video Element */}
-                <video ref={videoRef} className="w-full aspect-video" poster={poster} preload="metadata">
+                <video
+                  ref={videoRef}
+                  className="w-full aspect-video"
+                  poster={poster}
+                  preload="metadata"
+                >
                   <source src={videoUrl || src} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
@@ -287,28 +295,53 @@ export default function VideoPlayer({
                     className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/60"
                   >
                     {/* Top Controls */}
-                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        {celebrity && <Badge className="bg-purple-500/80 text-white">{celebrity}</Badge>}
-                        <h3 className="text-white font-semibold">{title}</h3>
+                    <div className="absolute top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-4 flex items-start justify-between gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 min-w-0">
+                        {celebrity && (
+                          <Badge className="bg-purple-500/80 text-white text-xs sm:text-sm w-fit">
+                            {celebrity}
+                          </Badge>
+                        )}
+                        <h3 className="text-white font-semibold text-sm sm:text-base truncate">
+                          {title}
+                        </h3>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex z-50 absolute  right-0 items-center gap-1 sm:gap-2 flex-shrink-0">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => setIsLiked(!isLiked)}
-                          className={`text-white hover:bg-white/20 ${isLiked ? "text-red-400" : ""}`}
+                          className={`text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10 ${
+                            isLiked ? "text-red-400" : ""
+                          }`}
                         >
-                          <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
+                          <Heart
+                            className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                              isLiked ? "fill-current" : ""
+                            }`}
+                          />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                          <Share2 className="w-5 h-5" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10 hidden xs:flex"
+                        >
+                          <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                          <Download className="w-5 h-5" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10 hidden xs:flex"
+                        >
+                          <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/20">
-                          <X className="w-5 h-5" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={onClose}
+                          className="text-white  hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10"
+                        >
+                          <X className="w-4 h-4 sm:w-5 sm:h-5" />
                         </Button>
                       </div>
                     </div>
@@ -328,106 +361,63 @@ export default function VideoPlayer({
                     </div>
 
                     {/* Bottom Controls */}
-                    <div className="absolute bottom-4 left-4 right-4">
+                    <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
                       {/* Progress Bar */}
-                      <div className="w-full h-2 bg-white/20 rounded-full mb-4 cursor-pointer" onClick={handleSeek}>
-                        <div
-                          className="h-full bg-purple-500 rounded-full transition-all"
-                          style={{ width: `${(currentTime / videoDuration) * 100}%` }}
-                        />
+                      <div className="mb-2 sm:mb-4">
+                        <div className="w-full bg-white/20 rounded-full h-1 sm:h-1.5">
+                          <div
+                            className="bg-white rounded-full h-1 sm:h-1.5 transition-all duration-300"
+                            style={{
+                              width: `${
+                                videoDuration > 0
+                                  ? (currentTime / videoDuration) * 100
+                                  : 0
+                              }%`,
+                            }}
+                          />
+                        </div>
                       </div>
 
                       {/* Control Buttons */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1 sm:gap-2">
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={handlePlay}
-                            className="text-white hover:bg-white/20"
+                            onClick={togglePlay}
+                            className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10"
                           >
-                            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                            {isPlaying ? (
+                              <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
                           </Button>
-
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => skip(-10)}
-                            className="text-white hover:bg-white/20"
+                            onClick={toggleMute}
+                            className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10"
                           >
-                            <SkipBack className="w-5 h-5" />
+                            {isMuted ? (
+                              <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
                           </Button>
-
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => skip(10)}
-                            className="text-white hover:bg-white/20"
-                          >
-                            <SkipForward className="w-5 h-5" />
-                          </Button>
-
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={toggleMute}
-                              className="text-white hover:bg-white/20"
-                            >
-                              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                            </Button>
-                            <input
-                              type="range"
-                              min="0"
-                              max="1"
-                              step="0.1"
-                              value={isMuted ? 0 : volume}
-                              onChange={handleVolumeChange}
-                              className="w-20 accent-purple-500"
-                            />
-                          </div>
-
-                          <span className="text-white text-sm">
-                            {formatTime(currentTime)} / {formatTime(videoDuration)}
+                          <span className="text-white text-xs sm:text-sm font-medium">
+                            {formatTime(currentTime)} /{" "}
+                            {formatTime(videoDuration)}
                           </span>
                         </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setShowSettings(!showSettings)}
-                              className="text-white hover:bg-white/20"
-                            >
-                              <Settings className="w-5 h-5" />
-                            </Button>
-
-                            {showSettings && (
-                              <div className="absolute bottom-full right-0 mb-2 bg-black/80 backdrop-blur-sm rounded-lg p-3 min-w-32">
-                                <div className="text-white text-sm mb-2">Playback Speed</div>
-                                {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                                  <button
-                                    key={rate}
-                                    onClick={() => changePlaybackRate(rate)}
-                                    className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-white/20 ${
-                                      playbackRate === rate ? "text-purple-400" : "text-white"
-                                    }`}
-                                  >
-                                    {rate}x
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
+                        <div className="flex items-center gap-1 sm:gap-2">
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={toggleFullscreen}
-                            className="text-white hover:bg-white/20"
+                            className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10"
                           >
-                            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                            <Maximize className="w-4 h-4 sm:w-5 sm:h-5" />
                           </Button>
                         </div>
                       </div>
@@ -439,14 +429,14 @@ export default function VideoPlayer({
 
             {/* YouTube Video Controls - Simple overlay */}
             {embedUrl && (
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={onClose}
-                  className="text-white hover:bg-white/20 bg-black/50"
+                  className="text-white hover:bg-white/20 bg-black/50 w-8 h-8 sm:w-10 sm:h-10"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>
             )}
@@ -454,63 +444,77 @@ export default function VideoPlayer({
 
           {/* Video Info */}
           {description && (
-            <Card className="mt-4 bg-white/10 border-white/20 backdrop-blur-lg">
-              <CardContent className="p-4">
-                <p className="text-purple-200">{description}</p>
+            <Card className="mt-2 sm:mt-4 bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardContent className="p-3 sm:p-4">
+                <p className="text-purple-200 text-sm sm:text-base leading-relaxed">
+                  {description}
+                </p>
               </CardContent>
             </Card>
           )}
 
           {/* Review Action Buttons */}
           {isReview && orderNumber && (
-            <Card className="mt-4 bg-white/10 border-white/20 backdrop-blur-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-white font-semibold mb-2">Review Video</h4>
-                    <p className="text-purple-200 text-sm">Order: {orderNumber}</p>
+            <Card className="mt-2 sm:mt-4 bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                  <div className="text-center sm:text-left">
+                    <h4 className="text-white font-semibold mb-1 sm:mb-2 text-sm sm:text-base">
+                      Review Video
+                    </h4>
+                    <p className="text-purple-200 text-xs sm:text-sm">
+                      Order: {orderNumber}
+                    </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Button
                       variant="outline"
-                      className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30"
+                      className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 text-xs sm:text-sm py-2 sm:py-2.5 px-3 sm:px-4"
                       onClick={async () => {
                         try {
-                          const response = await fetch(`/api/orders/${orderNumber}/decline`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                          })
+                          const response = await fetch(
+                            `/api/orders/${orderNumber}/decline`,
+                            {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                            }
+                          );
                           if (response.ok) {
-                            alert('Video declined successfully. Changes requested.')
-                            onClose()
+                            alert(
+                              "Video declined successfully. Changes requested."
+                            );
+                            onClose();
                           } else {
-                            alert('Failed to decline video. Please try again.')
+                            alert("Failed to decline video. Please try again.");
                           }
                         } catch (error) {
-                          console.error('Error declining video:', error)
-                          alert('Error declining video. Please try again.')
+                          console.error("Error declining video:", error);
+                          alert("Error declining video. Please try again.");
                         }
                       }}
                     >
                       Decline & Request Changes
                     </Button>
                     <Button
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm py-2 sm:py-2.5 px-3 sm:px-4"
                       onClick={async () => {
                         try {
-                          const response = await fetch(`/api/orders/${orderNumber}/approve`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                          })
+                          const response = await fetch(
+                            `/api/orders/${orderNumber}/approve`,
+                            {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                            }
+                          );
                           if (response.ok) {
-                            alert('Video approved successfully!')
-                            onClose()
+                            alert("Video approved successfully!");
+                            onClose();
                           } else {
-                            alert('Failed to approve video. Please try again.')
+                            alert("Failed to approve video. Please try again.");
                           }
                         } catch (error) {
-                          console.error('Error approving video:', error)
-                          alert('Error approving video. Please try again.')
+                          console.error("Error approving video:", error);
+                          alert("Error approving video. Please try again.");
                         }
                       }}
                     >
@@ -524,5 +528,5 @@ export default function VideoPlayer({
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

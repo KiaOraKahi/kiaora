@@ -345,6 +345,7 @@ export default function UserDashboard() {
   };
 
   const handleCloseVideo = () => {
+    console.log("close");
     setVideoModal({
       isOpen: false,
       videoUrl: undefined,
@@ -464,27 +465,34 @@ export default function UserDashboard() {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3 bg-white/10 border-white/20 text-white mb-8">
+            <TabsList className="grid w-full grid-cols-3 bg-white/10 border-white/20 text-white mb-4 sm:mb-6 md:mb-8 h-auto p-1">
               <TabsTrigger
                 value="requests"
-                className="data-[state=active]:bg-purple-500 text-white"
+                className="data-[state=active]:bg-purple-500 text-white flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm md:text-base"
               >
-                <Package className="w-4 h-4 mr-2" />
-                My Requests
+                <Package className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline sm:inline">My Requests</span>
+                <span className="xs:hidden sm:hidden">Requests</span>
               </TabsTrigger>
               <TabsTrigger
                 value="payments"
-                className="data-[state=active]:bg-purple-500 text-white"
+                className="data-[state=active]:bg-purple-500 text-white flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm md:text-base"
               >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Payment History
+                <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline sm:inline">
+                  Payment History
+                </span>
+                <span className="xs:hidden sm:hidden">Payments</span>
               </TabsTrigger>
               <TabsTrigger
                 value="profile"
-                className="data-[state=active]:bg-purple-500 text-white"
+                className="data-[state=active]:bg-purple-500 text-white flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm md:text-base"
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Profile Settings
+                <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline sm:inline">
+                  Profile Settings
+                </span>
+                <span className="xs:hidden sm:hidden">Profile</span>
               </TabsTrigger>
             </TabsList>
 
@@ -533,25 +541,25 @@ export default function UserDashboard() {
               {/* Orders List */}
               {filteredOrders.length === 0 ? (
                 <Card className="bg-slate-900 border-white/20">
-                  <CardContent className="p-12 text-center">
-                    <Package className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">
+                  <CardContent className="p-6 sm:p-8 md:p-12 text-center">
+                    <Package className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-purple-400 mx-auto mb-3 sm:mb-4" />
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
                       No Orders Found
                     </h3>
-                    <p className="text-purple-200 mb-6">
+                    <p className="text-purple-200 mb-4 sm:mb-6 text-sm sm:text-base">
                       {searchTerm || statusFilter !== "all"
                         ? "No orders match your current filters."
                         : "You haven't placed any orders yet."}
                     </p>
                     <Link href="/celebrities">
-                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-sm sm:text-base">
                         Browse Celebrities
                       </Button>
                     </Link>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {filteredOrders.map((order) => (
                     <motion.div
                       key={order.id}
@@ -560,10 +568,12 @@ export default function UserDashboard() {
                       className="group"
                     >
                       <Card className="bg-slate-900 border-white/20 hover:border-purple-500/50 transition-all duration-200">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
+                        <CardContent className="p-3 sm:p-4 md:p-6">
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            {/* Main Content */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 flex-1">
+                              {/* Avatar */}
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                                 {order.celebrityImage ? (
                                   <img
                                     src={order.celebrityImage}
@@ -571,58 +581,67 @@ export default function UserDashboard() {
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  <User className="w-8 h-8 text-white" />
+                                  <User className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
                                 )}
                               </div>
 
-                              <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-semibold text-white">
+                              {/* Order Details */}
+                              <div className="flex-1 min-w-0">
+                                {/* Header with Order Number and Badges */}
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                                  <h3 className="text-base sm:text-lg font-semibold text-white truncate">
                                     {order.orderNumber}
                                   </h3>
-                                  <Badge
-                                    className={
-                                      statusColors[
-                                        order.status as keyof typeof statusColors
-                                      ]
-                                    }
-                                  >
-                                    {order.status.replace("_", " ")}
-                                  </Badge>
-                                  <Badge
-                                    className={
-                                      paymentStatusColors[
-                                        order.paymentStatus as keyof typeof paymentStatusColors
-                                      ]
-                                    }
-                                  >
-                                    {order.paymentStatus}
-                                  </Badge>
-                                  {order.approvalStatus && (
+                                  <div className="flex flex-wrap gap-1 sm:gap-2">
                                     <Badge
-                                      className={
-                                        approvalStatusColors[
-                                          order.approvalStatus as keyof typeof approvalStatusColors
+                                      className={`text-xs ${
+                                        statusColors[
+                                          order.status as keyof typeof statusColors
                                         ]
-                                      }
+                                      }`}
                                     >
-                                      {order.approvalStatus.replace("_", " ")}
+                                      {order.status.replace("_", " ")}
                                     </Badge>
-                                  )}
+                                    <Badge
+                                      className={`text-xs ${
+                                        paymentStatusColors[
+                                          order.paymentStatus as keyof typeof paymentStatusColors
+                                        ]
+                                      }`}
+                                    >
+                                      {order.paymentStatus}
+                                    </Badge>
+                                    {order.approvalStatus && (
+                                      <Badge
+                                        className={`text-xs ${
+                                          approvalStatusColors[
+                                            order.approvalStatus as keyof typeof approvalStatusColors
+                                          ]
+                                        }`}
+                                      >
+                                        {order.approvalStatus.replace("_", " ")}
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </div>
 
-                                <div className="flex items-center gap-6 text-sm text-purple-200 mb-2">
-                                  <div className="flex items-center gap-1">
-                                    <User className="w-4 h-4" />
-                                    <span>{order.celebrityName}</span>
+                                {/* Order Info Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm text-purple-200 mb-2">
+                                  <div className="flex items-center gap-1 truncate">
+                                    <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                    <span className="truncate">
+                                      {order.celebrityName}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 truncate">
+                                    <Package className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                    <span className="truncate">
+                                      For {order.recipientName}
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-1">
-                                    <Package className="w-4 h-4" />
-                                    <span>For {order.recipientName}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>
+                                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                    <span className="truncate">
                                       {format(
                                         new Date(order.scheduledDate),
                                         "MMM d, yyyy"
@@ -630,29 +649,32 @@ export default function UserDashboard() {
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
+                                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                                     <span>{order.scheduledTime}</span>
                                   </div>
                                 </div>
 
+                                {/* Tip Amount */}
                                 {order.tipAmount && (
-                                  <div className="flex items-center gap-2 text-sm text-pink-300">
-                                    <Heart className="w-4 h-4" />
+                                  <div className="flex items-center gap-2 text-xs sm:text-sm text-pink-300">
+                                    <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span>Tip: ${order.tipAmount}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-4">
-                              <div className="text-right">
-                                <div className="flex items-center gap-1 text-purple-300 mb-1">
-                                  <DollarSign className="w-4 h-4" />
-                                  <span className="font-semibold">
+                            {/* Price and Actions */}
+                            <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-3 sm:gap-4 lg:gap-2">
+                              {/* Price Info */}
+                              <div className="flex sm:flex-col lg:text-right">
+                                <div className="flex items-center gap-1 text-purple-300 mb-0 sm:mb-1">
+                                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  <span className="font-semibold text-sm sm:text-base">
                                     ${order.totalAmount}
                                   </span>
                                 </div>
-                                <div className="text-xs text-purple-200">
+                                <div className="text-xs text-purple-200 ml-2 sm:ml-0">
                                   {format(
                                     new Date(order.createdAt),
                                     "MMM d, yyyy"
@@ -660,14 +682,15 @@ export default function UserDashboard() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2">
+                              {/* Action Buttons */}
+                              <div className="flex flex-wrap gap-2 w-full sm:w-auto lg:w-full lg:justify-end">
                                 {/* Show Watch button for completed videos */}
                                 {order.status === "completed" &&
                                   order.videoUrl && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="text-green-300 hover:text-white hover:bg-green-500/20"
+                                      className="text-green-300 hover:text-white hover:bg-green-500/20 text-xs sm:text-sm flex-1 sm:flex-none"
                                       onClick={() =>
                                         handleWatchVideo(
                                           order.videoUrl!,
@@ -677,7 +700,7 @@ export default function UserDashboard() {
                                         )
                                       }
                                     >
-                                      <Play className="w-4 h-4 mr-1" />
+                                      <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                       Watch
                                     </Button>
                                   )}
@@ -688,7 +711,7 @@ export default function UserDashboard() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="text-orange-300 hover:text-white hover:bg-orange-500/20"
+                                      className="text-orange-300 hover:text-white hover:bg-orange-500/20 text-xs sm:text-sm flex-1 sm:flex-none"
                                       onClick={() =>
                                         handleWatchVideo(
                                           order.videoUrl!,
@@ -698,8 +721,11 @@ export default function UserDashboard() {
                                         )
                                       }
                                     >
-                                      <Eye className="w-4 h-4 mr-1" />
-                                      Review & Approve
+                                      <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                                      <span className="hidden sm:inline">
+                                        Review & Approve
+                                      </span>
+                                      <span className="sm:hidden">Review</span>
                                     </Button>
                                   )}
 
@@ -714,9 +740,9 @@ export default function UserDashboard() {
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="text-pink-300 hover:text-white hover:bg-pink-500/20"
+                                        className="text-pink-300 hover:text-white hover:bg-pink-500/20 text-xs sm:text-sm flex-1 sm:flex-none"
                                       >
-                                        <Heart className="w-4 h-4 mr-1" />
+                                        <Heart className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                         Tip
                                       </Button>
                                     </TipModal>
@@ -726,9 +752,9 @@ export default function UserDashboard() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+                                    className="text-purple-300 hover:text-white hover:bg-purple-500/20 text-xs sm:text-sm flex-1 sm:flex-none"
                                   >
-                                    <Eye className="w-4 h-4 mr-1" />
+                                    <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                     Details
                                   </Button>
                                 </Link>
