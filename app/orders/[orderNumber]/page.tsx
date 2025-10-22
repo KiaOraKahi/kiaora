@@ -103,6 +103,7 @@ export default function OrderDetailsPage() {
   const [videoLoading, setVideoLoading] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -354,28 +355,28 @@ export default function OrderDetailsPage() {
 
         <div className="container mx-auto px-4 pt-24 pb-12">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <Link href="/orders">
               <Button
                 variant="outline"
-                className="mb-4 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="mb-3 sm:mb-4 bg-white/10 border-white/20 text-white hover:bg-white/20 text-sm sm:text-base"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Back to Orders
               </Button>
             </Link>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">
                   Order Details
                 </h1>
-                <p className="text-purple-200">
+                <p className="text-purple-200 text-sm sm:text-base">
                   Order #{order.orderNumber || "Unknown"}
                 </p>
               </div>
-              <div className="text-right space-y-2">
+              <div className="flex flex-col sm:text-right space-y-2">
                 <Badge
-                  className={`text-lg px-4 py-2 ${getStatusColor(
+                  className={`text-sm sm:text-lg px-3 py-1 sm:px-4 sm:py-2 w-fit ${getStatusColor(
                     order.status
                   )}`}
                 >
@@ -384,7 +385,7 @@ export default function OrderDetailsPage() {
                 {order.approvalStatus && (
                   <div>
                     <Badge
-                      className={`text-sm px-3 py-1 ${getApprovalStatusColor(
+                      className={`text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 w-fit ${getApprovalStatusColor(
                         order.approvalStatus
                       )}`}
                     >
@@ -396,193 +397,136 @@ export default function OrderDetailsPage() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Video Section - Show when video is uploaded */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              {/* Video Section */}
               {order.videoUrl && (
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Play className="w-5 h-5" />
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <CardTitle className="text-white text-lg sm:text-xl flex items-center">
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       Your Video Message
-                      {isVideoReadyForApproval() && (
-                        <Badge className="ml-2 bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
-                          Awaiting Your Approval
-                        </Badge>
-                      )}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="relative bg-black rounded-lg overflow-hidden">
+                  <CardContent className="space-y-3 sm:space-y-4">
+                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
                       <video
                         controls
-                        className="w-full h-auto max-h-96"
-                        poster="/placeholder.svg?height=400&width=600"
+                        className="w-full h-full object-cover"
+                        src={order.videoUrl}
                       >
-                        <source src={order.videoUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
                     </div>
 
                     {/* Video Approval Section */}
-                    {isVideoReadyForApproval() && (
-                      <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-6">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Eye className="w-5 h-5 text-purple-400" />
-                          <h3 className="text-lg font-semibold text-white">
-                            Review Your Video
-                          </h3>
+                    {order.status === "delivered" &&
+                      order.approvalStatus === "pending" && (
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 sm:p-4">
+                          <div className="flex items-start space-x-2 sm:space-x-3">
+                            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mt-0.5" />
+                            <div className="flex-1">
+                              <h3 className="text-yellow-400 font-semibold text-sm sm:text-base mb-1 sm:mb-2">
+                                Video Approval Required
+                              </h3>
+                              <p className="text-yellow-200 text-xs sm:text-sm mb-3 sm:mb-4">
+                                Please review your video and let us know if you
+                                approve it or need any changes.
+                              </p>
+                              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                <Button
+                                  onClick={() => setShowApprovalModal(true)}
+                                  className="bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
+                                >
+                                  <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                  Approve Video
+                                </Button>
+                                <Button
+                                  onClick={() => setShowDeclineModal(true)}
+                                  variant="outline"
+                                  className="border-red-500 text-red-400 hover:bg-red-500/10 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
+                                >
+                                  <ThumbsDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                  Request Changes
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-purple-200 text-sm mb-4">
-                          Please review your video message. Once you approve it,
-                          payment will be released to {order.celebrity?.name}{" "}
-                          and you'll be able to leave tips.
-                        </p>
+                      )}
 
-                        <div className="flex gap-3">
-                          <Button
-                            onClick={() => setShowApprovalModal(true)}
-                            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                          >
-                            <ThumbsUp className="w-4 h-4 mr-2" />
-                            Approve Video
-                          </Button>
-                          <Button
-                            onClick={() => setShowDeclineModal(true)}
-                            variant="outline"
-                            className="flex-1 bg-red-500/10 border-red-500/30 text-red-300 hover:bg-red-500/20"
-                          >
-                            <ThumbsDown className="w-4 h-4 mr-2" />
-                            Request Changes
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Video Actions - Only show after approval */}
-                    {isVideoApproved() && (
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={handleVideoDownload}
-                          disabled={videoLoading}
-                          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                        >
-                          {videoLoading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Downloading...
-                            </>
-                          ) : (
-                            <>
-                              <Download className="w-4 h-4 mr-2" />
-                              Download Video
-                            </>
-                          )}
-                        </Button>
-                        {/* {!order.hasReviewed && order.celebrity?.id && (
-                          <ReviewModal
-                            celebrityId={order.celebrity.id}
-                            celebrityName={order.celebrity.name || "Celebrity"}
-                            bookingId={order.booking?.id}
-                            onReviewSubmitted={() => {
-                              setOrder({ ...order, hasReviewed: true })
-                            }}
-                          >
-                            <Button
-                              variant="outline"
-                              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                            >
-                              <Star className="w-4 h-4 mr-2" />
-                              Leave Review
-                            </Button>
-                          </ReviewModal>
-                        )} */}
-                      </div>
-                    )}
-
-                    {/* Approval Status Messages */}
-                    {order.approvedAt && (
-                      <p className="text-green-200 text-sm">
-                        ✅ Approved on{" "}
-                        {safeFormatDate(
-                          order.approvedAt,
-                          "MMMM d, yyyy 'at' h:mm a"
+                    {/* Video Actions */}
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                      <Button
+                        onClick={handleVideoDownload}
+                        disabled={videoLoading}
+                        className="bg-purple-600 hover:bg-purple-700 text-white flex-1 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
+                      >
+                        {videoLoading ? (
+                          <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                        ) : (
+                          <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         )}
-                      </p>
-                    )}
-                    {order.declinedAt && order.declineReason && (
-                      <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
-                        <p className="text-orange-200 text-sm font-medium mb-2">
-                          Feedback sent on{" "}
-                          {safeFormatDate(
-                            order.declinedAt,
-                            "MMMM d, yyyy 'at' h:mm a"
-                          )}
-                          :
-                        </p>
-                        <p className="text-orange-100 text-sm italic">
-                          "{order.declineReason}"
-                        </p>
-                      </div>
-                    )}
-                    {order.deliveredAt && isVideoApproved() && (
-                      <p className="text-purple-200 text-sm">
-                        Delivered on{" "}
-                        {safeFormatDate(
-                          order.deliveredAt,
-                          "MMMM d, yyyy 'at' h:mm a"
-                        )}
-                      </p>
-                    )}
+                        {videoLoading ? "Downloading..." : "Download Video"}
+                      </Button>
+                      <Button
+                        onClick={() => setShowTipModal(true)}
+                        variant="outline"
+                        className="border-pink-500 text-pink-400 hover:bg-pink-500/10 flex-1 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
+                      >
+                        <Gift className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        Send a Tip
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
 
               {/* Tip Section - Only show after video approval */}
               {allowTipsAndReviews() && order.celebrity?.id && (
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Heart className="w-5 h-5 text-pink-500" />
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <CardTitle className="text-white text-lg sm:text-xl flex items-center">
+                      <Heart className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-pink-500" />
                       Show Your Appreciation
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-purple-200 text-sm">
+                  <CardContent className="space-y-3 sm:space-y-4">
+                    <p className="text-purple-200 text-xs sm:text-sm">
                       Love your video? Show {order.celebrity.name} some extra
                       appreciation with a tip!
                     </p>
 
                     {/* Tip History */}
                     {tips.length > 0 && (
-                      <div className="space-y-3">
+                      <div className="space-y-2 sm:space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-purple-200 text-sm">
+                          <span className="text-purple-200 text-xs sm:text-sm">
                             Your Tips:
                           </span>
-                          <span className="text-white font-semibold">
+                          <span className="text-white font-semibold text-sm sm:text-base">
                             ${totalTips.toLocaleString()}
                           </span>
                         </div>
-                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                        <div className="space-y-2 max-h-24 sm:max-h-32 overflow-y-auto">
                           {tips.map((tip) => (
                             <div
                               key={tip.id}
-                              className="flex items-center justify-between p-2 bg-white/5 rounded"
+                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 p-2 sm:p-3 bg-white/5 rounded"
                             >
                               <div className="flex items-center gap-2">
-                                <Gift className="w-4 h-4 text-pink-400" />
-                                <span className="text-white text-sm">
+                                <Gift className="w-3 h-3 sm:w-4 sm:h-4 text-pink-400" />
+                                <span className="text-white text-xs sm:text-sm font-medium">
                                   ${tip.amount}
                                 </span>
                                 {tip.message && (
-                                  <span className="text-purple-200 text-xs truncate max-w-32">
+                                  <span className="text-purple-200 text-xs truncate max-w-24 sm:max-w-32">
                                     "{tip.message}"
                                   </span>
                                 )}
                               </div>
-                              <span className="text-purple-300 text-xs">
+                              <span className="text-purple-300 text-xs ml-5 sm:ml-0">
                                 {safeFormatDate(tip.createdAt, "MMM d")}
                               </span>
                             </div>
@@ -599,8 +543,8 @@ export default function OrderDetailsPage() {
                       celebrityImage={order.celebrity.image || undefined}
                       onTipSuccess={handleTipSuccess}
                     >
-                      <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white">
-                        <Heart className="w-4 h-4 mr-2" />
+                      <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-sm sm:text-base py-2 sm:py-3">
+                        <Heart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Send a Tip
                       </Button>
                     </TipModal>
@@ -615,82 +559,69 @@ export default function OrderDetailsPage() {
 
               {/* Order Status */}
               {!isVideoApproved() && (
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Clock className="w-5 h-5" />
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <CardTitle className="text-white text-lg sm:text-xl flex items-center">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       Order Status
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {order.status === "pending" && (
-                        <div className="flex items-center gap-3 p-4 bg-yellow-500/20 rounded-lg">
-                          <Clock className="w-6 h-6 text-yellow-400" />
+                        <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-yellow-500/20 rounded-lg">
+                          <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 mt-0.5" />
                           <div>
-                            <p className="text-white font-semibold">
+                            <p className="text-white font-semibold text-sm sm:text-base">
                               Waiting for Celebrity Response
                             </p>
-                            <p className="text-yellow-200 text-sm">
+                            <p className="text-yellow-200 text-xs sm:text-sm">
                               {order.celebrity?.name || "The celebrity"} will
                               review your request and respond soon.
                             </p>
                           </div>
                         </div>
                       )}
-                      {order.status === "confirmed" && (
-                        <div className="flex items-center gap-3 p-4 bg-blue-500/20 rounded-lg">
-                          <CheckCircle className="w-6 h-6 text-blue-400" />
+
+                      {order.status === "accepted" && (
+                        <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-blue-500/20 rounded-lg">
+                          <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 mt-0.5" />
                           <div>
-                            <p className="text-white font-semibold">
+                            <p className="text-white font-semibold text-sm sm:text-base">
                               Request Accepted!
                             </p>
-                            <p className="text-blue-200 text-sm">
+                            <p className="text-blue-200 text-xs sm:text-sm">
                               {order.celebrity?.name || "The celebrity"} is
                               working on your video message.
                             </p>
                           </div>
                         </div>
                       )}
-                      {order.status === "pending_approval" && (
-                        <div className="flex items-center gap-3 p-4 bg-purple-500/20 rounded-lg">
-                          <Eye className="w-6 h-6 text-purple-400" />
+
+                      {order.status === "in_progress" && (
+                        <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-purple-500/20 rounded-lg">
+                          <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 animate-spin mt-0.5" />
                           <div>
-                            <p className="text-white font-semibold">
-                              Video Ready for Review!
+                            <p className="text-white font-semibold text-sm sm:text-base">
+                              Video in Production
                             </p>
-                            <p className="text-purple-200 text-sm">
-                              {order.celebrity?.name || "The celebrity"} has
-                              uploaded your video. Please review it above.
+                            <p className="text-purple-200 text-xs sm:text-sm">
+                              Your personalized video message is being created.
                             </p>
                           </div>
                         </div>
                       )}
-                      {order.status === "revision_requested" && (
-                        <div className="flex items-center gap-3 p-4 bg-orange-500/20 rounded-lg">
-                          <MessageCircle className="w-6 h-6 text-orange-400" />
+
+                      {order.status === "declined" && (
+                        <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-red-500/20 rounded-lg">
+                          <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-400 mt-0.5" />
                           <div>
-                            <p className="text-white font-semibold">
-                              Revision Requested
-                            </p>
-                            <p className="text-orange-200 text-sm">
-                              {order.celebrity?.name || "The celebrity"} is
-                              working on the changes you requested.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {order.status === "cancelled" && (
-                        <div className="flex items-center gap-3 p-4 bg-red-500/20 rounded-lg">
-                          <AlertCircle className="w-6 h-6 text-red-400" />
-                          <div>
-                            <p className="text-white font-semibold">
+                            <p className="text-white font-semibold text-sm sm:text-base">
                               Request Declined
                             </p>
-                            <p className="text-red-200 text-sm">
-                              Unfortunately,{" "}
-                              {order.celebrity?.name || "the celebrity"} was
-                              unable to fulfil this request.
+                            <p className="text-red-200 text-xs sm:text-sm">
+                              Unfortunately, {order.celebrity?.name || "the celebrity"} 
+                              couldn't fulfill this request.
                             </p>
                           </div>
                         </div>
@@ -701,45 +632,45 @@ export default function OrderDetailsPage() {
               )}
 
               {/* Message Details */}
-              <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5" />
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-white text-lg sm:text-xl flex items-center">
+                    <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Message Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                <CardContent className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">
+                      <Label className="text-purple-200 text-xs sm:text-sm font-medium">
                         Recipient
                       </Label>
-                      <p className="text-white">
+                      <p className="text-white text-sm sm:text-base">
                         {order.recipientName || "Not specified"}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">
+                      <Label className="text-purple-200 text-xs sm:text-sm font-medium">
                         Occasion
                       </Label>
-                      <p className="text-white">
+                      <p className="text-white text-sm sm:text-base">
                         {order.occasion || "Not specified"}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">
+                      <Label className="text-purple-200 text-xs sm:text-sm font-medium">
                         Message Type
                       </Label>
-                      <p className="text-white capitalize">
+                      <p className="text-white capitalize text-sm sm:text-base">
                         {order.messageType || "video"}
                       </p>
                     </div>
                     {order.scheduledDate && (
                       <div>
-                        <Label className="text-purple-200 text-sm font-medium">
+                        <Label className="text-purple-200 text-xs sm:text-sm font-medium">
                           Scheduled For
                         </Label>
-                        <p className="text-white">
+                        <p className="text-white text-sm sm:text-base">
                           {safeFormatDate(order.scheduledDate, "MMMM d, yyyy")}
                           {order.scheduledTime && ` at ${order.scheduledTime}`}
                         </p>
@@ -750,20 +681,20 @@ export default function OrderDetailsPage() {
                   <Separator className="bg-white/20" />
 
                   <div>
-                    <Label className="text-purple-200 text-sm font-medium">
+                    <Label className="text-purple-200 text-xs sm:text-sm font-medium">
                       Personal Message
                     </Label>
-                    <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
+                    <p className="text-white bg-white/5 p-2 sm:p-3 rounded-lg mt-1 sm:mt-2 text-sm sm:text-base">
                       {order.personalMessage || "No message provided"}
                     </p>
                   </div>
 
                   {order.specialInstructions && (
                     <div>
-                      <Label className="text-purple-200 text-sm font-medium">
+                      <Label className="text-purple-200 text-xs sm:text-sm font-medium">
                         Special Instructions
                       </Label>
-                      <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
+                      <p className="text-white bg-white/5 p-2 sm:p-3 rounded-lg mt-1 sm:mt-2 text-sm sm:text-base">
                         {order.specialInstructions}
                       </p>
                     </div>
@@ -773,19 +704,19 @@ export default function OrderDetailsPage() {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Celebrity Info */}
               {order.celebrity && (
-                <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <User className="w-5 h-5" />
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <CardTitle className="text-white text-lg sm:text-xl flex items-center">
+                      <User className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       Celebrity
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-4 mb-4">
-                      <Avatar className="w-16 h-16">
+                    <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                      <Avatar className="w-12 h-12 sm:w-16 sm:h-16">
                         <AvatarImage
                           src={order.celebrity.image || "/placeholder.svg"}
                         />
@@ -795,22 +726,22 @@ export default function OrderDetailsPage() {
                             .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold text-white">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <h3 className="text-base sm:text-lg font-semibold text-white">
                             {order.celebrity.name || "Unknown Celebrity"}
                           </h3>
                           {order.celebrity.verified && (
-                            <CheckCircle className="w-5 h-5 text-blue-400" />
+                            <CheckCircle className="w-3 h-3 sm:w-5 sm:h-5 text-blue-400" />
                           )}
                         </div>
-                        <p className="text-purple-200 text-sm">
+                        <p className="text-purple-200 text-xs sm:text-sm">
                           {order.celebrity.category || "Entertainment"}
                         </p>
                       </div>
                     </div>
                     <Link href={`/celebrities/${order.celebrity.id}`}>
-                      <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                      <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-sm sm:text-base py-2 sm:py-3">
                         View Profile
                       </Button>
                     </Link>
