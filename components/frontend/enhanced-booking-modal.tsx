@@ -46,27 +46,6 @@ const addOns = [
     description: "Get your video in 12 hours",
     price: 99,
   },
-  {
-    id: "hd",
-    icon: <Camera className="w-5 h-5" />,
-    title: "4K HD Quality",
-    description: "Ultra-high definition video",
-    price: 49,
-  },
-  {
-    id: "music",
-    icon: <Music className="w-5 h-5" />,
-    title: "Background Music",
-    description: "Custom soundtrack for your video",
-    price: 29,
-  },
-  {
-    id: "extended",
-    icon: <Clock className="w-5 h-5" />,
-    title: "Extended Length",
-    description: "Up to 10 minutes instead of standard",
-    price: 199,
-  },
 ];
 
 // Mock availability data
@@ -135,6 +114,14 @@ export default function EnhancedBookingModal({
       }, 1000);
     }
   }, [selectedDate]);
+
+  // Calculate delivery time based on selected add-ons
+  const getDeliveryTime = () => {
+    if (selectedAddOns.includes("rush")) {
+      return "12 hours";
+    }
+    return celebrity.responseTime;
+  };
 
   // Calculate total price
   const calculateTotal = () => {
@@ -865,7 +852,7 @@ export default function EnhancedBookingModal({
                     </p>
                     <p>
                       <strong>Expected Delivery:</strong> Within{" "}
-                      {celebrity.responseTime}
+                      {getDeliveryTime()}
                     </p>
                   </div>
                 </div>
@@ -877,7 +864,7 @@ export default function EnhancedBookingModal({
                     <p>✓ {celebrity.name} will be notified of your request</p>
                     <p>✓ You'll receive updates on order progress</p>
                     <p>
-                      ✓ Video will be delivered within {celebrity.responseTime}
+                      ✓ Video will be delivered within {getDeliveryTime()}
                     </p>
                   </div>
                 </div>

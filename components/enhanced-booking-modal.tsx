@@ -63,20 +63,6 @@ const addOns = [
     description: "Get your video in 12 hours",
     price: 99,
   },
-  {
-    id: "music",
-    icon: <Music className="w-5 h-5" />,
-    title: "Background Music",
-    description: "Custom soundtrack for your video",
-    price: 29,
-  },
-  {
-    id: "extended",
-    icon: <Clock className="w-5 h-5" />,
-    title: "Extended Length",
-    description: "Double the standard duration",
-    price: 199,
-  },
 ];
 
 // Tip amounts for celebrity appreciation
@@ -237,6 +223,14 @@ export default function EnhancedBookingModal({
   }, [selectedDate]);
 
   // Calculate total price
+  // Calculate delivery time based on selected add-ons
+  const getDeliveryTime = () => {
+    if (selectedAddOns.includes("rush")) {
+      return "12 hours";
+    }
+    return selectedService.deliveryTime;
+  };
+
   const calculateTotal = () => {
     if (!selectedService) return 0;
 
@@ -1280,7 +1274,7 @@ export default function EnhancedBookingModal({
                           {selectedDate && format(selectedDate, "MMMM d, yyyy")}{" "}
                           at {selectedSlot}
                         </p>
-                        <p>• Delivery: {selectedService.deliveryTime}</p>
+                        <p>• Delivery: {getDeliveryTime()}</p>
                         <p>• Duration: {selectedService.duration}</p>
                         {formData.tipAmount > 0 && (
                           <p>
@@ -1473,7 +1467,7 @@ export default function EnhancedBookingModal({
                       <strong>Celebrity:</strong> {celebrity.name}
                     </p>
                     <p>
-                      <strong>Service:</strong> {selectedService.name}
+                      <strong>Service:</strong> {selectedService?.title || selectedService?.name || "Service"}
                     </p>
                     <p>
                       <strong>Recipient:</strong> {formData.recipientName}
@@ -1491,7 +1485,7 @@ export default function EnhancedBookingModal({
                     </p>
                     <p>
                       <strong>Expected Delivery:</strong>{" "}
-                      {selectedService.deliveryTime}
+                      {getDeliveryTime()}
                     </p>
                     {formData.tipAmount > 0 && (
                       <p>
