@@ -51,7 +51,7 @@ const pricingTiers = [
       "Custom background music",
       "Multiple takes if needed",
     ],
-    notIncluded: ["asap delivery (24-48h)", "Commercial use license"],
+    notIncluded: ["ASAP delivery (12h)", "Commercial use license"],
     celebrities: "A-list actors, chart-topping musicians, sports stars",
   },
   {
@@ -64,7 +64,7 @@ const pricingTiers = [
     features: [
       "5-10 minute personalized video",
       "4K Ultra HD quality",
-      "asap delivery (24-48 hours)",
+      "ASAP delivery (12 hours)",
       "Digital download + cloud storage",
       "Commercial use license",
       "Dedicated account manager",
@@ -80,28 +80,10 @@ const pricingTiers = [
 
 const addOns = [
   {
-    name: "asap delivery",
+    name: "ASAP delivery",
     price: 99,
-    description: "Get your video in 24-48 hours",
+    description: "Get your video in 12 hours",
     icon: <Zap className="w-5 h-5" />,
-  },
-  {
-    name: "Extended Length",
-    price: 199,
-    description: "Up to 10 minutes instead of standard length",
-    icon: <Star className="w-5 h-5" />,
-  },
-  {
-    name: "Commercial License",
-    price: 299,
-    description: "Use for business, marketing, or commercial purposes",
-    icon: <Crown className="w-5 h-5" />,
-  },
-  {
-    name: "Gift Packaging",
-    price: 49,
-    description: "Beautiful digital gift presentation",
-    icon: <Gift className="w-5 h-5" />,
   },
 ];
 
@@ -124,7 +106,7 @@ const faqs = [
   {
     question: "Are there any hidden fees?",
     answer:
-      "No hidden fees! The price you see is what you pay, unless you choose to add optional extras like asap delivery or extended length.",
+      "No hidden fees! The price you see is what you pay, unless you choose to add optional extras like ASAP delivery.",
   },
 ];
 
