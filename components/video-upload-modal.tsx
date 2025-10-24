@@ -24,6 +24,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { upload } from "@vercel/blob/client";
 
 interface VideoUploadModalProps {
   bookingId: string;
@@ -88,57 +89,57 @@ export function VideoUploadModal({
     setUploadProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append("video", selectedFile);
-      formData.append("bookingId", bookingId);
-      formData.append("notes", notes.trim());
+      // Generate unique filename for video
+      const timestamp = Date.now();
+      const sanitizedFileName = selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+      const filename = `celebrity-videos/${bookingId}/${timestamp}-${sanitizedFileName}`;
 
-      const xhr = new XMLHttpRequest();
+      console.log("🔄 Uploading video to Vercel Blob...");
+      
+      // Upload directly to Vercel Blob with progress tracking
+      const blob = await upload(filename, selectedFile, {
+        access: "public",
+        handleUploadUrl: "/api/celebrity/upload-video/blob",
+        onUploadProgress: (progress) => {
+          const percentage = Math.round((progress.loaded / progress.total) * 100);
+          setUploadProgress(percentage);
+        },
+      });
 
-      // Track upload progress
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(progress);
+      console.log("✅ Video uploaded to Blob:", blob.url);
+
+      // Now send the blob URL and metadata to our API
+      const response = await fetch("/api/celebrity/upload-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId,
+          videoUrl: blob.url,
+          filename: blob.pathname,
+          notes: notes.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUploadComplete(true);
+        toast.success(
+          "The customer will be notified to review your video message."
+        );
+
+        // Call success callback
+        if (onUploadSuccess) {
+          onUploadSuccess();
         }
-      });
 
-      // Handle completion
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
-          setUploadComplete(true);
-          toast.success(
-            "The customer will be notified to review your video message."
-          );
-
-          // Call success callback
-          if (onUploadSuccess) {
-            onUploadSuccess();
-          }
-
-          // Reset form after a delay
-          setTimeout(() => {
-            handleClose();
-          }, 2000);
-        } else if (xhr.status === 413) {
-          // Handle 413 Payload Too Large error specifically
-          throw new Error(
-            "File size too large. Please select a smaller video file (max 80MB)."
-          );
-        } else {
-          const errorResponse = JSON.parse(xhr.responseText);
-          throw new Error(errorResponse.error || "Upload failed");
-        }
-      });
-
-      // Handle errors
-      xhr.addEventListener("error", () => {
-        throw new Error("Network error during upload");
-      });
-
-      xhr.open("POST", "/api/celebrity/upload-video");
-      xhr.send(formData);
+        // Reset form after a delay
+        setTimeout(() => {
+          handleClose();
+        }, 2000);
+      } else {
+        throw new Error(data.error || data.details || "Upload failed");
+      }
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(

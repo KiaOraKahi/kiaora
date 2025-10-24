@@ -1,19 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { put } from "@vercel/blob"
 import { calculatePaymentSplit } from "@/lib/stripe"
 import { sendVideoApprovalNotification } from "@/lib/email"
-
-// Configure API route to handle large file uploads
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '100mb', // Increase body size limit to 100MB
-    },
-  },
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +14,22 @@ export async function POST(request: NextRequest) {
       console.log("❌ Celebrity Video Upload API - No session or user ID")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    // Parse JSON body instead of FormData
+    const body = await request.json()
+    const { bookingId, videoUrl, filename, notes } = body
+
+    if (!bookingId || !videoUrl) {
+      return NextResponse.json({ 
+        error: "Missing required fields: bookingId and videoUrl" 
+      }, { status: 400 })
+    }
+
+    console.log("📋 Upload Details:")
+    console.log("   - Booking ID:", bookingId)
+    console.log("   - Video URL:", videoUrl)
+    console.log("   - Filename:", filename)
+    console.log("   - Notes:", notes)
 
     // Get celebrity profile
     const celebrity = await prisma.celebrity.findUnique({
@@ -43,48 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Celebrity profile not found" }, { status: 404 })
     }
 
-    const data = await request.formData()
-    const file: File | null = data.get("video") as unknown as File
-    const bookingId: string = data.get("bookingId") as string
-
-    if (!file) {
-      return NextResponse.json({ error: "No video file received." }, { status: 400 })
-    }
-
-    if (!bookingId) {
-      return NextResponse.json({ error: "Booking ID is required." }, { status: 400 })
-    }
-
-    console.log("📋 Upload Details:")
-    console.log("   - Celebrity:", celebrity.user.name)
-    console.log("   - Booking ID:", bookingId)
-    console.log("   - File name:", file.name)
-    console.log("   - File size:", file.size, "bytes")
-    console.log("   - File type:", file.type)
-
-    // Validate file size (80MB max for videos)
-    if (file.size > 80 * 1024 * 1024) {
-      return NextResponse.json({ error: "File size too large. Maximum 80MB allowed for videos." }, { status: 400 })
-    }
-
-    // Validate file type - only videos allowed
-    const allowedVideoTypes = [
-      "video/mp4",
-      "video/mpeg",
-      "video/quicktime",
-      "video/x-msvideo", // .avi
-      "video/webm",
-      "video/x-ms-wmv", // .wmv
-    ]
-
-    if (!allowedVideoTypes.includes(file.type)) {
-      return NextResponse.json(
-        {
-          error: "Invalid file type. Only video files (MP4, MOV, AVI, WebM, WMV) are allowed.",
-        },
-        { status: 400 },
-      )
-    }
+    console.log("✅ Celebrity found:", celebrity.user.name)
 
     // Find and validate the booking
     const booking = await prisma.booking.findFirst({
@@ -139,33 +104,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate payment status - must be SUCCEEDED
-    // if (booking.order?.paymentStatus !== "SUCCEEDED") {
-    //   console.log("❌ Payment not succeeded for booking:", booking.order?.paymentStatus)
-    //   return NextResponse.json(
-    //     {
-    //       error: "Cannot upload video for unpaid booking. Payment must be completed first.",
-    //     },
-    //     { status: 400 },
-    //   )
-    // }
-
-    // Generate unique filename for video
-    const timestamp = Date.now()
-    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
-    const filename = `celebrity-videos/${celebrity.id}/${booking.order?.orderNumber}-${timestamp}-${sanitizedFileName}`
-
-    console.log("📤 Uploading video to Vercel Blob...")
-    console.log("🔍 Environment check - BLOB_READ_WRITE_TOKEN:", process.env.BLOB_READ_WRITE_TOKEN ? "✅ SET" : "❌ NOT SET")
-    console.log("🔍 Environment check - NEXTAUTH_URL:", process.env.NEXTAUTH_URL || "❌ NOT SET")
-    
-    // Upload video to Vercel Blob
-    const blob = await put(filename, file, {
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN, // Explicitly pass the token
-    })
-
-    console.log("✅ Video uploaded successfully:", blob.url)
+    console.log("✅ Video already uploaded to Blob:", videoUrl)
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
       // Get the full order details for payment split calculation (but don't transfer yet)
@@ -199,7 +138,7 @@ export async function POST(request: NextRequest) {
       const order = await tx.order.update({
         where: { id: booking.order!.id },
         data: {
-          videoUrl: blob.url,
+          videoUrl: videoUrl,
           status: "PENDING_APPROVAL", 
           approvalStatus: "PENDING_APPROVAL",
           deliveredAt: new Date(),
@@ -231,7 +170,7 @@ export async function POST(request: NextRequest) {
           {
             orderNumber: booking.order.orderNumber,
             celebrityName: celebrity.user.name || "Celebrity",
-            videoUrl: blob.url,
+            videoUrl: videoUrl,
             recipientName: booking.recipientName || "Recipient",
             occasion: booking.occasion || "General Request",
             approvalUrl: `${process.env.NEXTAUTH_URL}/orders/${booking.order.orderNumber}`,
@@ -249,7 +188,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("VIDEO UPLOAD COMPLETED - AWAITING CUSTOMER APPROVAL")
-    console.log("   - Video URL:", blob.url)
+    console.log("   - Video URL:", videoUrl)
     console.log("   - Booking Status: IN_PROGRESS")
     console.log("   - Order Status: PENDING_APPROVAL")
     console.log("   - Approval Status: PENDING_APPROVAL")
@@ -258,8 +197,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Video uploaded successfully and sent for customer approval",
-      videoUrl: blob.url,
-      filename: blob.pathname,
+      videoUrl: videoUrl,
+            filename: filename,
       order: {
         id: updatedOrder.order.id,
         orderNumber: booking.order?.orderNumber,
