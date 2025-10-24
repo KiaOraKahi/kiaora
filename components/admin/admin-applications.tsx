@@ -384,25 +384,27 @@ export function AdminApplications() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-semibold text-white">
+                          <h3 className="text-xs md:text-base font-semibold text-white md:w-auto w-20 truncate">
                             {application.fullName}
                           </h3>
-                          <p className="text-sm text-purple-200">
+                          <p className="text-xs md:text-sm text-purple-200">
                             {application.profession}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <Badge
-                          className={
+                          className={` ${
                             application.status === "APPROVED"
                               ? "bg-green-500/20 text-green-300"
                               : "bg-red-500/20 text-red-300"
-                          }
+                          }`}
                         >
-                          {application.status}
+                          <span className="text-[10px] md:text-base">
+                            {application.status}
+                          </span>
                         </Badge>
-                        <span className="text-sm text-purple-300">
+                        <span className="md:text-sm text-purple-300 text-xs ">
                           {format(
                             new Date(application.createdAt),
                             "MMM d, yyyy"
