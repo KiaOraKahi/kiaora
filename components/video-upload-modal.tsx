@@ -48,7 +48,7 @@ export function VideoUploadModal({
   const [notes, setNotes] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  const MAX_FILE_SIZE = 80 * 1024 * 1024; // Increased to 80MB to allow for larger videos
   const ALLOWED_TYPES = [
     "video/mp4",
     "video/mov",
@@ -121,6 +121,11 @@ export function VideoUploadModal({
           setTimeout(() => {
             handleClose();
           }, 2000);
+        } else if (xhr.status === 413) {
+          // Handle 413 Payload Too Large error specifically
+          throw new Error(
+            "File size too large. Please select a smaller video file (max 80MB)."
+          );
         } else {
           const errorResponse = JSON.parse(xhr.responseText);
           throw new Error(errorResponse.error || "Upload failed");
@@ -224,7 +229,7 @@ export function VideoUploadModal({
                       Click to select video file
                     </p>
                     <p className="text-xs sm:text-sm text-gray-500">
-                      Supports MP4, MOV, AVI, QuickTime, WebM (max 50MB)
+                      Supports MP4, MOV, AVI, QuickTime, WebM (max 80MB)
                     </p>
                   </div>
                 ) : (

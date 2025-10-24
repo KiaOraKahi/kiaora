@@ -6,6 +6,15 @@ import { put } from "@vercel/blob"
 import { calculatePaymentSplit } from "@/lib/stripe"
 import { sendVideoApprovalNotification } from "@/lib/email"
 
+// Configure API route to handle large file uploads
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '100mb', // Increase body size limit to 100MB
+    },
+  },
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log("🎬 Celebrity Video Upload API - Starting...")
@@ -53,9 +62,9 @@ export async function POST(request: NextRequest) {
     console.log("   - File size:", file.size, "bytes")
     console.log("   - File type:", file.type)
 
-    // Validate file size (50MB max for videos)
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: "File size too large. Maximum 50MB allowed for videos." }, { status: 400 })
+    // Validate file size (80MB max for videos)
+    if (file.size > 80 * 1024 * 1024) {
+      return NextResponse.json({ error: "File size too large. Maximum 80MB allowed for videos." }, { status: 400 })
     }
 
     // Validate file type - only videos allowed

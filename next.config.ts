@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
       "lh3.googleusercontent.com"
     ],
   },
+  // Configure API routes to handle large file uploads
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client'],
+  },
+  // This will be handled by the API route configuration
 };
 
 export default nextConfig;
