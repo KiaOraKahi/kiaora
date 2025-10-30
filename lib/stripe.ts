@@ -244,6 +244,7 @@ export const createLoginLink = async (accountId: string): Promise<string> => {
 
 /**
  * Transfer booking payment to celebrity (80% split) - ONLY AFTER APPROVAL
+ * Handles test environment insufficient funds gracefully
  */
 export const transferBookingPayment = async (transferData: {
   accountId: string;
@@ -257,6 +258,8 @@ export const transferBookingPayment = async (transferData: {
   transferId: string;
   celebrityAmount: number;
   platformFee: number;
+  status: "PAID" | "PENDING";
+  isSimulated: boolean;
 }> => {
   try {
     const platformFeePercentage = transferData.platformFeePercentage || 20; // Default 20%
@@ -276,30 +279,59 @@ export const transferBookingPayment = async (transferData: {
       }`
     );
 
-    const transfer = await stripe.transfers.create({
-      amount: celebrityAmount,
-      currency: transferData.currency,
-      destination: transferData.accountId,
-      description: `Approved video payment for order ${transferData.orderNumber} - ${transferData.celebrityName}`,
-      metadata: {
-        type: "approved_booking_payment",
-        orderId: transferData.orderId,
-        orderNumber: transferData.orderNumber,
-        celebrityName: transferData.celebrityName,
-        originalAmount: transferData.amount.toString(),
-        platformFee: platformFee.toString(),
-        platformFeePercentage: platformFeePercentage.toString(),
-        trigger: "customer_approval",
-      },
-    });
+    const isTestMode = process.env.STRIPE_SECRET_KEY?.includes('sk_test_')
+    console.log(`🧪 Test mode: ${isTestMode}`)
 
-    console.log("✅ Approved booking transfer successful:", transfer.id);
+    try {
+      const transfer = await stripe.transfers.create({
+        amount: celebrityAmount,
+        currency: transferData.currency,
+        destination: transferData.accountId,
+        description: `Approved video payment for order ${transferData.orderNumber} - ${transferData.celebrityName}`,
+        metadata: {
+          type: "approved_booking_payment",
+          orderId: transferData.orderId,
+          orderNumber: transferData.orderNumber,
+          celebrityName: transferData.celebrityName,
+          originalAmount: transferData.amount.toString(),
+          platformFee: platformFee.toString(),
+          platformFeePercentage: platformFeePercentage.toString(),
+          trigger: "customer_approval",
+        },
+      });
 
-    return {
-      transferId: transfer.id,
-      celebrityAmount,
-      platformFee,
-    };
+      console.log("✅ Approved booking transfer successful:", transfer.id);
+
+      return {
+        transferId: transfer.id,
+        celebrityAmount,
+        platformFee,
+        status: "PAID",
+        isSimulated: false,
+      };
+    } catch (stripeError: any) {
+      console.error("❌ Stripe transfer error:", stripeError);
+      
+      // Handle insufficient funds in test environment
+      if (stripeError.code === 'balance_insufficient' && isTestMode) {
+        console.log(`⚠️ Insufficient funds in test environment - creating simulated transfer`);
+        
+        const simulatedTransferId = `simulated_${Date.now()}_${transferData.orderNumber}`;
+        
+        console.log(`🔄 Simulated transfer created: ${simulatedTransferId}`);
+        
+        return {
+          transferId: simulatedTransferId,
+          celebrityAmount,
+          platformFee,
+          status: "PENDING",
+          isSimulated: true,
+        };
+      } else {
+        // Re-throw other errors
+        throw stripeError;
+      }
+    }
   } catch (error) {
     console.error("❌ Failed to transfer approved booking payment:", error);
     throw new Error(
