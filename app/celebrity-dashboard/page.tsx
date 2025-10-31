@@ -99,6 +99,8 @@ interface BookingRequest {
   recipientName: string;
   occasion: string;
   instructions: string;
+  personalMessage: string;
+  specialInstructions: string;
   amount: number;
   celebrityAmount: number;
   tipAmount: number;

@@ -56,6 +56,8 @@ interface CelebrityBookingDetails {
   recipientName: string
   occasion: string
   instructions: string
+  personalMessage: string
+  specialInstructions: string
   tips: Array<{
     id: string
     amount: number
@@ -262,9 +264,27 @@ export default function CelebrityBookingDetailsPage() {
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-purple-200 text-sm">Instructions</Label>
-                  <p className="text-white bg-white/5 p-3 rounded-lg mt-2">{booking.instructions}</p>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-purple-200 text-sm">Personal Message</Label>
+                    <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
+                      {booking.personalMessage || "No personal message provided"}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-purple-200 text-sm">Special Instructions</Label>
+                    <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
+                      {booking.specialInstructions || "No special instructions provided"}
+                    </p>
+                  </div>
+                  
+                  {booking.instructions && (
+                    <div>
+                      <Label className="text-purple-200 text-sm">Additional Instructions</Label>
+                      <p className="text-white bg-white/5 p-3 rounded-lg mt-2">{booking.instructions}</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
