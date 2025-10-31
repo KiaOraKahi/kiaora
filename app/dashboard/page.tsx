@@ -451,7 +451,7 @@ export default function UserDashboard() {
               <Card className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30">
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-white">
-                    ${payments.reduce((sum, p) => sum + p.amount, 0)}
+                    ${orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0).toFixed(2)}
                   </div>
                   <div className="text-green-200 text-sm">Total Spent</div>
                 </CardContent>
@@ -671,7 +671,7 @@ export default function UserDashboard() {
                                 <div className="flex items-center gap-1 text-purple-300 mb-0 sm:mb-1">
                                   <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
                                   <span className="font-semibold text-sm sm:text-base">
-                                    ${order.totalAmount}
+                                    ${order.totalAmount.toFixed(2)}
                                   </span>
                                 </div>
                                 <div className="text-xs text-purple-200 ml-2 sm:ml-0">
@@ -829,7 +829,7 @@ export default function UserDashboard() {
                               }`}
                             >
                               {payment.type === "refund" ? "-" : "+"}$
-                              {payment.amount}
+                              {payment.amount.toFixed(2)}
                             </div>
                             <div className="text-purple-300 text-sm capitalize">
                               {payment.status}
