@@ -82,6 +82,7 @@ interface Order {
   approvalStatus?: string;
   videoUrl?: string;
   tipAmount?: number;
+  transferStatus?: string;
 }
 
 interface Payment {
@@ -202,6 +203,12 @@ const approvalStatusColors = {
   pending_approval: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   approved: "bg-green-500/20 text-green-300 border-green-500/30",
   declined: "bg-red-500/20 text-red-300 border-red-500/30",
+};
+
+const transferStatusColors = {
+  pending: "bg-yellow-500/20 text-yellow-300",
+  paid: "bg-green-500/20 text-green-300",
+  failed: "bg-red-500/20 text-red-300",
 };
 
 export default function UserDashboard() {
@@ -620,6 +627,17 @@ export default function UserDashboard() {
                                         }`}
                                       >
                                         {order.approvalStatus.replace("_", " ")}
+                                      </Badge>
+                                    )}
+                                    {order.transferStatus && (
+                                      <Badge
+                                        className={`text-xs ${
+                                          transferStatusColors[
+                                            order.transferStatus as keyof typeof transferStatusColors
+                                          ]
+                                        }`}
+                                      >
+                                        Transfer: {order.transferStatus}
                                       </Badge>
                                     )}
                                   </div>
