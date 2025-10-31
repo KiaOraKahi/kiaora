@@ -271,17 +271,17 @@ export default function StripeConnectOnboarding({ className }: StripeConnectOnbo
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white/5 p-4 rounded-lg text-center">
                   <DollarSign className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold">${status.totalEarnings.toLocaleString()}</p>
+                  <p className="text-white font-semibold">${(status.totalEarnings / 100).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-purple-200 text-sm">Total Earnings</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-lg text-center">
                   <Loader2 className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold">${status.pendingEarnings.toLocaleString()}</p>
+                  <p className="text-white font-semibold">${(status.pendingEarnings / 100).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-purple-200 text-sm">Pending</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-lg text-center">
                   <DollarSign className="w-6 h-6 text-pink-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold">${status.totalTips.toLocaleString()}</p>
+                  <p className="text-white font-semibold">${(status.totalTips / 100).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-purple-200 text-sm">Tips Received</p>
                 </div>
               </div>
