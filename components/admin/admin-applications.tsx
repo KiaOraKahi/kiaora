@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "../ui/select";
 
-interface Application {
+interface CelebrityApplication {
   id: string;
   fullName: string;
   email: string;
@@ -57,11 +57,11 @@ interface Application {
 }
 
 export function AdminApplications() {
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [applications, setApplications] = useState<CelebrityApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApplication, setSelectedApplication] =
-    useState<Application | null>(null);
+    useState<CelebrityApplication | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
   const [showApproveModal, setShowApproveModal] = useState(false);
@@ -90,36 +90,10 @@ export function AdminApplications() {
     }
   };
 
-  const openApproveModal = (application: Application) => {
+  const openApproveModal = (application: CelebrityApplication) => {
     setSelectedApplication(application);
     setApproveType("");
     setShowApproveModal(true);
-  };
-
-  const handleApprove = async (applicationId: string) => {
-    try {
-      setProcessingId(applicationId);
-      const response = await fetch(
-        `/api/admin/applications/${applicationId}/approve`,
-        {
-          method: "POST",
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Application approved successfully");
-        fetchApplications();
-      } else {
-        toast.error(data.error || "Failed to approve application");
-      }
-    } catch (error) {
-      console.error("Error approving application:", error);
-      toast.error("Failed to approve application");
-    } finally {
-      setProcessingId(null);
-    }
   };
 
   const confirmApprove = async () => {
@@ -145,6 +119,8 @@ export function AdminApplications() {
         toast.success(`Application approved as ${approveType}`);
         fetchApplications();
         setShowApproveModal(false);
+        setSelectedApplication(null);
+        setApproveType("");
       } else {
         toast.error(data.error || "Failed to approve application");
       }
@@ -186,7 +162,7 @@ export function AdminApplications() {
     }
   };
 
-  const viewApplicationDetails = (application: Application) => {
+  const viewApplicationDetails = (application: CelebrityApplication) => {
     setSelectedApplication(application);
     setShowDetails(true);
   };
@@ -419,6 +395,74 @@ export function AdminApplications() {
           )}
         </div>
       </div>
+
+      {/* Approval Modal */}
+      {showApproveModal && selectedApplication && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-purple-500/30 rounded-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Approve Application
+            </h2>
+            <p className="text-purple-300 mb-4">
+              Select whether{" "}
+              <span className="font-semibold text-white">
+                {selectedApplication.fullName}
+              </span>{" "}
+              should be approved as VIP or Non-VIP celebrity.
+            </p>
+
+            <Select
+              value={approveType}
+              onValueChange={(val) =>
+                setApproveType(val as "" | "VIP" | "NON_VIP")
+              }
+            >
+              <SelectTrigger className="w-full mb-4 bg-gray-800 border-gray-600 text-white">
+                <SelectValue placeholder="Select celebrity type" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-600">
+                <SelectItem
+                  value="VIP"
+                  className="text-white hover:bg-gray-700"
+                >
+                  VIP Celebrity
+                </SelectItem>
+                <SelectItem
+                  value="NON_VIP"
+                  className="text-white hover:bg-gray-700"
+                >
+                  Non-VIP Celebrity
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={confirmApprove}
+                disabled={
+                  processingId === selectedApplication.id || !approveType
+                }
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                {processingId === selectedApplication.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                )}
+                Approve as {approveType || "..."}
+              </Button>
+              <Button
+                onClick={() => setShowApproveModal(false)}
+                variant="outline"
+                disabled={processingId === selectedApplication.id}
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Application Details Modal */}
       {showDetails && selectedApplication && (
@@ -680,7 +724,10 @@ export function AdminApplications() {
                     Reject
                   </Button>
                   <Button
-                    onClick={() => handleApprove(selectedApplication.id)}
+                    onClick={() => {
+                      closeDetails();
+                      openApproveModal(selectedApplication);
+                    }}
                     disabled={processingId === selectedApplication.id}
                     className="bg-green-600 hover:bg-green-700"
                   >
