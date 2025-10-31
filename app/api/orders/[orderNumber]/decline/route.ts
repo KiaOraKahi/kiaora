@@ -17,9 +17,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Parse request body
-    const body = await request.json()
-    console.log("📝 Request body received:", body)
+    // Parse request body with error handling
+    let body
+    try {
+      const rawBody = await request.text()
+      console.log("📝 Raw request body:", rawBody)
+      
+      if (!rawBody || rawBody.trim() === '') {
+        console.log("❌ Empty request body")
+        return NextResponse.json({ error: "Request body is empty" }, { status: 400 })
+      }
+      
+      body = JSON.parse(rawBody)
+      console.log("📝 Parsed request body:", body)
+    } catch (parseError) {
+      console.error("❌ JSON parsing error:", parseError)
+      return NextResponse.json({ 
+        error: "Invalid JSON in request body",
+        details: parseError instanceof Error ? parseError.message : "Unknown parsing error"
+      }, { status: 400 })
+    }
 
     const { reason, reasons, feedback, requestRevision } = body
 

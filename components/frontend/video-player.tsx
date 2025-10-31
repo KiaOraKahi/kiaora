@@ -477,6 +477,12 @@ export default function VideoPlayer({
                             {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                reason: "quality",
+                                reasons: ["quality"],
+                                feedback: "Video quality needs improvement",
+                                requestRevision: true,
+                              }),
                             }
                           );
                           if (response.ok) {
@@ -485,6 +491,8 @@ export default function VideoPlayer({
                             );
                             onClose();
                           } else {
+                            const errorData = await response.json();
+                            console.error("Decline error:", errorData);
                             alert("Failed to decline video. Please try again.");
                           }
                         } catch (error) {
