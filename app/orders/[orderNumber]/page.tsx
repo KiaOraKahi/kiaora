@@ -1,42 +1,41 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import Footer from "@/components/frontend/footer";
+import Navbar from "@/components/frontend/navbar";
+import { TipModal } from "@/components/tip-modal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { ReviewModal } from "@/components/review-modal";
-import { TipModal } from "@/components/tip-modal";
 import VideoApprovalModal from "@/components/video-approval-modal";
 import VideoDeclineModal from "@/components/video-decline-modal";
-import {
-  Download,
-  Play,
-  Star,
-  Clock,
-  User,
-  MessageSquare,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  ArrowLeft,
-  Heart,
-  Gift,
-  ThumbsUp,
-  ThumbsDown,
-  Eye,
-  MessageCircle,
-} from "lucide-react";
 import { format } from "date-fns";
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle,
+  Clock,
+  Download,
+  Gift,
+  Heart,
+  Loader2,
+  Maximize,
+  MessageSquare,
+  Eye,
+  Minimize,
+  Play,
+  ThumbsDown,
+  ThumbsUp,
+  User,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import Navbar from "@/components/frontend/navbar";
-import Footer from "@/components/frontend/footer";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import WatermarkOverlay from "@/components/frontend/watermark-overlay";
 
 interface OrderDetails {
   id: string;
@@ -101,10 +100,40 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [approving, setApproving] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showTipModal, setShowTipModal] = useState(false);
   const router = useRouter();
+
+  // Video and fullscreen handling
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(document.fullscreenElement === videoContainerRef.current);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    const el = videoContainerRef.current;
+    if (!el) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await el.requestFullscreen();
+      }
+    } catch (err) {
+      console.error("Fullscreen toggle failed:", err);
+      toast.error("Unable to toggle fullscreen");
+    }
+  };
 
   useEffect(() => {
     if (orderNumber) {
@@ -151,6 +180,7 @@ export default function OrderDetailsPage() {
     if (!order) return;
 
     try {
+      setApproving(true);
       const response = await fetch(`/api/orders/${order.orderNumber}/approve`, {
         method: "POST",
         headers: {
@@ -178,6 +208,8 @@ export default function OrderDetailsPage() {
       console.error("Error approving video:", error);
       toast.error("Failed to approve video. Please try again.");
       throw error;
+    } finally {
+      setApproving(false);
     }
   };
 
@@ -288,6 +320,13 @@ export default function OrderDetailsPage() {
   // Check if video has been approved
   const isVideoApproved = () => {
     return order?.status.toLowerCase() === "completed";
+  };
+
+  // Check if order is approved by customer (fan)
+  const isCustomerApproved = () => {
+    const statusApproved = order?.status?.toLowerCase() === "completed";
+    const approvalFlag = order?.approvalStatus?.toLowerCase() === "approved";
+    return Boolean(statusApproved || approvalFlag);
   };
 
   // Check if tips and reviews should be allowed
@@ -410,14 +449,40 @@ export default function OrderDetailsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 sm:space-y-4">
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <div
+                      ref={videoContainerRef}
+                      className="relative aspect-video bg-black rounded-lg overflow-hidden"
+                    >
                       <video
+                        ref={videoRef}
                         controls
+                        controlsList="nofullscreen"
+                        onDoubleClick={toggleFullscreen}
                         className="w-full h-full object-cover"
                         src={order.videoUrl}
                       >
                         Your browser does not support the video tag.
                       </video>
+                      <div className="absolute bottom-1 right-1 z-10">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={toggleFullscreen}
+                          className="bg-black/20 backdrop-blur border-0  text-white hover:bg-black/20 hover:text-white "
+                          title={
+                            isFullscreen
+                              ? "Exit fullscreen"
+                              : "Enter fullscreen"
+                          }
+                        >
+                          {isFullscreen ? (
+                            <Minimize className="w-4 h-4" />
+                          ) : (
+                            <Maximize className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <WatermarkOverlay visible={!isCustomerApproved()} />
                     </div>
 
                     {/* Video Approval Section */}
@@ -436,11 +501,16 @@ export default function OrderDetailsPage() {
                               </p>
                               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <Button
-                                  onClick={() => setShowApprovalModal(true)}
-                                  className="bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
+                                  onClick={handleApproveVideo}
+                                  disabled={approving}
+                                  className="bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2 disabled:opacity-70"
                                 >
-                                  <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                                  Approve Video
+                                  {approving ? (
+                                    <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                                  ) : (
+                                    <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                  )}
+                                  {approving ? "Approving..." : "Approve Video"}
                                 </Button>
                                 <Button
                                   onClick={() => setShowDeclineModal(true)}
@@ -458,18 +528,36 @@ export default function OrderDetailsPage() {
 
                     {/* Video Actions */}
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                      <Button
-                        onClick={handleVideoDownload}
-                        disabled={videoLoading}
-                        className="bg-purple-600 hover:bg-purple-700 text-white flex-1 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
-                      >
-                        {videoLoading ? (
-                          <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
-                        ) : (
-                          <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      {order.status?.toLowerCase() === "pending_approval" &&
+                        order.videoUrl && (
+                          <Button
+                            size="sm"
+                            disabled={approving}
+                            className="bg-green-600 hover:bg-green-700 text-white flex-1 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2 disabled:opacity-70"
+                            onClick={handleApproveVideo}
+                          >
+                            {approving ? (
+                              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                            ) : (
+                              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            )}
+                            {approving ? "Approving..." : "Approve Video"}
+                          </Button>
                         )}
-                        {videoLoading ? "Downloading..." : "Download Video"}
-                      </Button>
+                      {isCustomerApproved() && (
+                        <Button
+                          onClick={handleVideoDownload}
+                          disabled={videoLoading}
+                          className="bg-purple-600 hover:bg-purple-700 text-white flex-1 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
+                        >
+                          {videoLoading ? (
+                            <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                          ) : (
+                            <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          )}
+                          {videoLoading ? "Downloading..." : "Download Video"}
+                        </Button>
+                      )}
                       <Button
                         onClick={() => setShowTipModal(true)}
                         variant="outline"
@@ -620,7 +708,8 @@ export default function OrderDetailsPage() {
                               Request Declined
                             </p>
                             <p className="text-red-200 text-xs sm:text-sm">
-                              Unfortunately, {order.celebrity?.name || "the celebrity"} 
+                              Unfortunately,{" "}
+                              {order.celebrity?.name || "the celebrity"}
                               couldn't fulfill this request.
                             </p>
                           </div>

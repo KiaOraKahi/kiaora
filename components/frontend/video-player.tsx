@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import WatermarkOverlay from "@/components/frontend/watermark-overlay";
 
 interface VideoPlayerProps {
   src?: string;
@@ -32,6 +33,8 @@ interface VideoPlayerProps {
   videoUrl?: string;
   isReview?: boolean;
   orderNumber?: string;
+  showWatermark?: boolean;
+  watermarkText?: string;
 }
 
 export default function VideoPlayer({
@@ -47,8 +50,11 @@ export default function VideoPlayer({
   videoUrl,
   isReview = false,
   orderNumber,
+  showWatermark = false,
+  watermarkText = "KIAORA",
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -176,13 +182,22 @@ export default function VideoPlayer({
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      videoRef.current?.requestFullscreen();
+      // Request fullscreen on the container to keep overlays visible
+      containerRef.current?.requestFullscreen();
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();
       setIsFullscreen(false);
     }
   };
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
 
   const skip = (seconds: number) => {
     const video = videoRef.current;
@@ -241,7 +256,7 @@ export default function VideoPlayer({
           onMouseMove={handleMouseMove}
         >
           {/* Video Container */}
-          <div className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl">
+          <div ref={containerRef} className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl">
             {/* YouTube Embed or Regular Video */}
             {embedUrl ? (
               <div className="relative w-full aspect-video">
@@ -258,13 +273,16 @@ export default function VideoPlayer({
                 {/* Regular Video Element */}
                 <video
                   ref={videoRef}
-                  className="w-full aspect-video"
+                  className={isFullscreen ? "w-full h-full object-contain" : "w-full aspect-video"}
                   poster={poster}
                   preload="metadata"
                 >
                   <source src={videoUrl || src} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
+
+                {/* Watermark Overlay */}
+                <WatermarkOverlay visible={showWatermark || isReview} text={watermarkText} />
 
                 {/* Video Controls */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/60">

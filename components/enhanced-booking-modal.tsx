@@ -290,6 +290,12 @@ export default function EnhancedBookingModal({
       return;
     }
 
+    // Require phone number before proceeding to payment
+    if (!formData.phone || formData.phone.trim().length < 6) {
+      setPaymentError("Please enter your phone number");
+      return;
+    }
+
     setIsCreatingPayment(true);
     setPaymentError("");
 
@@ -1166,7 +1172,7 @@ export default function EnhancedBookingModal({
                       </div>
                       <div>
                         <Label className="text-white mb-2 block">
-                          Phone Number
+                          Phone Number *
                         </Label>
                         <Input
                           type="tel"
@@ -1176,6 +1182,7 @@ export default function EnhancedBookingModal({
                           }
                           className="bg-white/10 border-white/20 text-white placeholder:text-purple-300"
                           placeholder="+1 (555) 123-4567"
+                          required
                         />
                       </div>
                     </div>
@@ -1299,7 +1306,7 @@ export default function EnhancedBookingModal({
                   </Button>
                   <Button
                     onClick={createPaymentIntent}
-                    disabled={isCreatingPayment || !formData.email}
+                    disabled={isCreatingPayment || !formData.email || !formData.phone}
                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     {isCreatingPayment ? (

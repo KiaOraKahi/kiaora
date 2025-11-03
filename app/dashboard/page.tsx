@@ -1226,6 +1226,8 @@ export default function UserDashboard() {
         autoPlay={true}
         isReview={videoModal.isReview}
         orderNumber={videoModal.orderNumber}
+        showWatermark={videoModal.isReview}
+        watermarkText="KIAORA"
       />
     </div>
   );

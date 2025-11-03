@@ -323,3 +323,42 @@ label.flex.items-center.gap-2.text-sm.leading-none.font-medium.select-none.group
 .flex.space-around.mt-2.text-sm {
     justify-content: space-around;
 }
+
+/* KIAORA watermark overlay for videos */
+.kiaora-watermark {
+  position: relative; /* enables ::after absolute positioning */
+}
+.kiaora-watermark::after {
+  content: "KIAORA";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.1);
+  font-weight: 900;
+  font-size: clamp(48px, 10vw, 120px);
+  transform: rotate(-12deg);
+  letter-spacing: 0.25em;
+  z-index: 2;
+}
+
+/* Ensure watermark shows in fullscreen across browsers */
+.kiaora-watermark:fullscreen::after,
+.kiaora-watermark:-webkit-full-screen::after,
+.kiaora-watermark:-moz-full-screen::after {
+  content: "KIAORA";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.1);
+  font-weight: 900;
+  font-size: clamp(48px, 10vw, 160px);
+  transform: rotate(-12deg);
+  letter-spacing: 0.25em;
+  z-index: 9999; /* on top in fullscreen */
+}

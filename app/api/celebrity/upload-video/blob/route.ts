@@ -30,10 +30,14 @@ export async function POST(request: NextRequest): Promise<Response> {
 
         return {
           allowedContentTypes: [
-            "video/mp4",
-            "video/quicktime", 
-            "video/x-msvideo",
-            "video/webm"
+            // Canonical MIME types for common containers
+            "video/mp4",        // .mp4
+            "video/quicktime",  // .mov
+            "video/x-msvideo",  // .avi
+            "video/x-m4v",      // .m4v
+            "video/x-ms-wmv",   // .wmv
+            "video/webm",       // .webm
+            "video/x-flv",      // .flv
           ],
           maximumSizeInBytes: maxSize,
           tokenPayload: JSON.stringify({

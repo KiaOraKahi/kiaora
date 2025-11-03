@@ -36,13 +36,28 @@ export async function POST(request: NextRequest) {
     // Validate file type based on type parameter
     let allowedTypes: string[]
     if (type === "video") {
-      allowedTypes = ["video/mp4", "video/mov", "video/avi", "video/quicktime", "video/webm"]
+      allowedTypes = [
+        // Canonical types
+        "video/mp4",        // .mp4
+        "video/quicktime",  // .mov
+        "video/x-msvideo",  // .avi
+        "video/x-m4v",      // .m4v
+        "video/x-ms-wmv",   // .wmv
+        "video/webm",       // .webm
+        "video/x-flv",      // .flv
+        // Non-standard variants sometimes reported by browsers
+        "video/mov",
+        "video/avi",
+        "video/wmv",
+      ]
     } else {
       allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"]
     }
     
     if (!allowedTypes.includes(file.type)) {
-      const fileTypeDesc = type === "video" ? "video files (MP4, MOV, AVI, QuickTime, or WebM)" : "images and PDFs"
+      const fileTypeDesc = type === "video"
+        ? "video files (MP4, MOV, AVI, M4V, WMV, WebM, or FLV)"
+        : "images and PDFs"
       return NextResponse.json({ error: `Invalid file type. Only ${fileTypeDesc} are allowed.` }, { status: 400 })
     }
 

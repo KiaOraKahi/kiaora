@@ -334,6 +334,16 @@ export default function CelebrityBookingDetailsPage() {
                     </p>
                   </div>
 
+                  <div>
+                    <Label className="text-purple-200 text-sm">
+                      Tip Message
+                    </Label>
+                    <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
+                      {booking.tips?.slice().reverse().find((t) => t.message)?.message ||
+                        "No tip message provided"}
+                    </p>
+                  </div>
+
                   {/* {booking.instructions && (
                     <div>
                       <Label className="text-purple-200 text-sm">Additional Instructions</Label>
