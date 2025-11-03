@@ -66,6 +66,7 @@ export function AdminApplications() {
 
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [approveType, setApproveType] = useState<"VIP" | "NON_VIP" | "">("");
+  const [vipStatusByEmail, setVipStatusByEmail] = useState<Record<string, boolean | null>>({});
 
   useEffect(() => {
     fetchApplications();
@@ -89,6 +90,30 @@ export function AdminApplications() {
       setLoading(false);
     }
   };
+
+  // Fetch VIP status for approved applications using admin celebrities API
+  useEffect(() => {
+    const approved = applications.filter((app) => app.status === "APPROVED");
+    const emailsToFetch = approved
+      .map((app) => app.email)
+      .filter((email) => vipStatusByEmail[email] === undefined);
+
+    if (emailsToFetch.length === 0) return;
+
+    const fetchVipForEmail = async (email: string) => {
+      try {
+        const res = await fetch(`/api/admin/celebrities?search=${encodeURIComponent(email)}&limit=1`);
+        const json = await res.json();
+        const celeb = json?.celebrities?.[0];
+        const isVIP = celeb?.isVIP ?? null;
+        setVipStatusByEmail((prev) => ({ ...prev, [email]: isVIP }));
+      } catch (e) {
+        setVipStatusByEmail((prev) => ({ ...prev, [email]: null }));
+      }
+    };
+
+    emailsToFetch.forEach((email) => fetchVipForEmail(email));
+  }, [applications]);
 
   const openApproveModal = (application: CelebrityApplication) => {
     setSelectedApplication(application);
@@ -380,6 +405,17 @@ export function AdminApplications() {
                             {application.status}
                           </span>
                         </Badge>
+                        {application.status === "APPROVED" && (
+                          <Badge className="bg-yellow-500/20 text-yellow-300">
+                            <span className="text-[10px] md:text-base">
+                              {vipStatusByEmail[application.email] === true
+                                ? "VIP"
+                                : vipStatusByEmail[application.email] === false
+                                ? "Non-VIP"
+                                : ""}
+                            </span>
+                          </Badge>
+                        )}
                         <span className="md:text-sm text-purple-300 text-xs ">
                           {format(
                             new Date(application.createdAt),

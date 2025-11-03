@@ -104,6 +104,7 @@ export async function GET(request: NextRequest) {
         email: celebrity.user.email || "",
         category: celebrity.category || "Entertainment",
         basePrice: celebrity.pricePersonal || celebrity.price || 299,
+        isVIP: celebrity.isVIP || false,
         rating: Number((celebrity.averageRating || 0).toFixed(1)),
         totalBookings: celebrity._count.bookings || 0,
         totalEarnings: Math.round(totalEarnings / 100), // Convert from cents to dollars
