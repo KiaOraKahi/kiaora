@@ -27,7 +27,7 @@ export function WatermarkOverlay({
       <span
         className={clsx(
           "select-none font-black text-6xl sm:text-7xl tracking-widest transform -rotate-12 z-10",
-          textClassName ? textClassName : "text-white/10"
+          textClassName ? textClassName : "text-black/50"
         )}
       >
         {text}

@@ -196,7 +196,8 @@ export default function VideoPlayer({
       setIsFullscreen(!!document.fullscreenElement);
     };
     document.addEventListener("fullscreenchange", handleFsChange);
-    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
 
   const skip = (seconds: number) => {
@@ -256,7 +257,10 @@ export default function VideoPlayer({
           onMouseMove={handleMouseMove}
         >
           {/* Video Container */}
-          <div ref={containerRef} className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl">
+          <div
+            ref={containerRef}
+            className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl"
+          >
             {/* YouTube Embed or Regular Video */}
             {embedUrl ? (
               <div className="relative w-full aspect-video">
@@ -273,7 +277,11 @@ export default function VideoPlayer({
                 {/* Regular Video Element */}
                 <video
                   ref={videoRef}
-                  className={isFullscreen ? "w-full h-full object-contain" : "w-full aspect-video"}
+                  className={
+                    isFullscreen
+                      ? "w-full h-full object-contain"
+                      : "w-full aspect-video"
+                  }
                   poster={poster}
                   preload="metadata"
                 >
@@ -285,7 +293,7 @@ export default function VideoPlayer({
                 <WatermarkOverlay
                   visible={showWatermark || isReview}
                   text={watermarkText}
-                  textClassName="text-black/80"
+                  textClassName="text-black/50"
                 />
 
                 {/* Video Controls */}
