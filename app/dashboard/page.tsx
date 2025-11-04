@@ -458,7 +458,10 @@ export default function UserDashboard() {
               <Card className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30">
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-white">
-                    ${orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0).toFixed(2)}
+                    $
+                    {orders
+                      .reduce((sum, order) => sum + (order.totalAmount || 0), 0)
+                      .toFixed(2)}
                   </div>
                   <div className="text-green-200 text-sm">Total Spent</div>
                 </CardContent>
@@ -1227,7 +1230,7 @@ export default function UserDashboard() {
         isReview={videoModal.isReview}
         orderNumber={videoModal.orderNumber}
         showWatermark={videoModal.isReview}
-        watermarkText="KIAORA"
+        watermarkText="KIA ORA KAH"
       />
     </div>
   );

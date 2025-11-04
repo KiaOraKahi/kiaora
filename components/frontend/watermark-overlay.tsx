@@ -7,12 +7,14 @@ interface WatermarkOverlayProps {
   visible?: boolean;
   text?: string;
   className?: string;
+  textClassName?: string;
 }
 
 export function WatermarkOverlay({
   visible = true,
-  text = "KIAORA",
+  text = "KIA ORA KAH",
   className,
+  textClassName,
 }: WatermarkOverlayProps) {
   if (!visible) return null;
   return (
@@ -22,7 +24,12 @@ export function WatermarkOverlay({
         className
       )}
     >
-      <span className="select-none text-white/10 font-black text-6xl sm:text-7xl tracking-widest transform -rotate-12 z-10">
+      <span
+        className={clsx(
+          "select-none font-black text-6xl sm:text-7xl tracking-widest transform -rotate-12 z-10",
+          textClassName ? textClassName : "text-white/10"
+        )}
+      >
         {text}
       </span>
     </div>

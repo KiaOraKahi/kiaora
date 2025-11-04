@@ -51,7 +51,7 @@ export default function VideoPlayer({
   isReview = false,
   orderNumber,
   showWatermark = false,
-  watermarkText = "KIAORA",
+  watermarkText = "Kia Ora Kah",
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -282,7 +282,11 @@ export default function VideoPlayer({
                 </video>
 
                 {/* Watermark Overlay */}
-                <WatermarkOverlay visible={showWatermark || isReview} text={watermarkText} />
+                <WatermarkOverlay
+                  visible={showWatermark || isReview}
+                  text={watermarkText}
+                  textClassName="text-black/80"
+                />
 
                 {/* Video Controls */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/60">
