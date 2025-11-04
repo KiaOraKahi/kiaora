@@ -66,14 +66,19 @@ export async function GET(request: NextRequest) {
           },
         },
         booking: true,
-        tips: {
-          where: {
-            paymentStatus: "SUCCEEDED",
+        items: {
+          select: {
+            type: true,
+            metadata: true,
           },
+        },
+        // Include all tips to allow computing latest message even if pending
+        tips: {
           select: {
             id: true,
             amount: true,
             message: true,
+            paymentStatus: true,
             createdAt: true,
           },
         },
@@ -135,8 +140,30 @@ export async function GET(request: NextRequest) {
 
       // Calculate total tips for this booking
       // Tips are stored as dollars in the database, so no conversion needed
+      // Only successful tips contribute to totals
+      const succeededTips = (order.tips || []).filter(
+        (tip: any) => tip.paymentStatus === "SUCCEEDED"
+      );
       const totalTips =
-        order.tips?.reduce((sum: number, tip: any) => sum + tip.amount, 0) || 0;
+        succeededTips.reduce((sum: number, tip: any) => sum + tip.amount, 0) || 0;
+
+      // Extract tipMessage from initial tip order item metadata (if present)
+      let tipMessageFromItem: string | undefined = undefined;
+      try {
+        const tipItem = (order.items || []).find((it: any) => it.type === "tip" && it.metadata);
+        if (tipItem) {
+          const md = typeof tipItem.metadata === "string" ? JSON.parse(tipItem.metadata) : tipItem.metadata;
+          tipMessageFromItem = md?.tipMessage || md?.message || undefined;
+        }
+      } catch (err) {
+        console.log("⚠️ Failed to parse tip item metadata", err);
+      }
+
+      // Fallback: use the most recent tip's message if available (any status)
+      const latestTipMessage = (order.tips || [])
+        .slice()
+        .reverse()
+        .find((t: any) => t.message)?.message || undefined;
 
       console.log(`💰 Booking ${booking.id} tip calculation:`, {
         tipCount: order.tips?.length || 0,
@@ -174,13 +201,15 @@ export async function GET(request: NextRequest) {
         declineReason: order.declineReason || "",
         declinedAt: order.declinedAt?.toISOString(),
         revisionCount: order.revisionCount,
+        tipMessage: tipMessageFromItem ?? latestTipMessage,
+        // Only expose succeeded tips in the list shown to celebrity
         tips:
-          order.tips?.map((tip: any) => ({
+          succeededTips.map((tip: any) => ({
             id: tip.id,
             amount: tip.amount,
             message: tip.message,
             createdAt: tip.createdAt.toISOString(),
-          })) || [],
+          })),
       };
     });
 

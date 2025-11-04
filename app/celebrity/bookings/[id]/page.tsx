@@ -41,6 +41,7 @@ interface CelebrityBookingDetails {
   amount: number;
   celebrityAmount: number;
   tipAmount: number;
+  tipMessage?: string;
   totalEarnings: number;
   requestedDate: string;
   deadline: string | null;
@@ -339,7 +340,8 @@ export default function CelebrityBookingDetailsPage() {
                       Tip Message
                     </Label>
                     <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
-                      {booking.tips?.slice().reverse().find((t) => t.message)?.message ||
+                      {booking.tips?.slice().reverse().find((t) => t.message)?.message ??
+                        booking.tipMessage ??
                         "No tip message provided"}
                     </p>
                   </div>

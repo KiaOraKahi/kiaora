@@ -200,6 +200,8 @@ async function handleBookingPayment({
       celebrityName: celebrity.user.name || "Unknown",
       userId: session.user.id,
       userName: session.user.name || "Unknown",
+      // Tip details (for debugging/trace)
+      tipMessage: bookingData?.tipMessage || "",
       baseAmount: revenueSplit.baseAmount.toString(),
       tipAmount: revenueSplit.tipAmount.toString(),
       gstAmount: revenueSplit.gstAmount.toString(),
