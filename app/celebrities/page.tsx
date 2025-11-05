@@ -475,7 +475,7 @@ export default function TalentsPage() {
                             </span>
                           </div>
                           <span className="text-lg md:text-2xl font-bold text-yellow-300">
-                            {formatPrice(celebrity.price)}
+                            {/* {formatPrice(celebrity.price)} */}
                           </span>
                         </div>
 
