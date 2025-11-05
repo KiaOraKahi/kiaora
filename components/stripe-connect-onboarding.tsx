@@ -369,10 +369,8 @@ export default function StripeConnectOnboarding({ className }: StripeConnectOnbo
               1
             </div>
             <div>
-              <p className="text-white font-medium">Bookings (80% to you)</p>
-              <p className="text-purple-200 text-sm">
-                You receive 80% of each booking payment, with 20% going to platform fees.
-              </p>
+              <p className="text-white font-medium">VIP earn 80% after platform fees.</p>
+              <p className="text-purple-200 text-sm">Non-VIP earn 73.9% after platform fees.</p>
             </div>
           </div>
 
