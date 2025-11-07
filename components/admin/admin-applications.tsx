@@ -372,8 +372,8 @@ export function AdminApplications() {
                   className="bg-white/10 border-white/20 backdrop-blur-lg"
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                         <Avatar>
                           <AvatarImage
                             src={
@@ -384,16 +384,16 @@ export function AdminApplications() {
                             {application.fullName.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <h3 className="text-xs md:text-base font-semibold text-white md:w-auto w-20 truncate">
+                        <div className="min-w-0">
+                          <h3 className="text-sm md:text-base font-semibold text-white sm:w-auto max-w-[70vw] sm:max-w-none truncate">
                             {application.fullName}
                           </h3>
-                          <p className="text-xs md:text-sm text-purple-200">
+                          <p className="text-xs md:text-sm text-purple-200 max-w-[70vw] sm:max-w-none truncate">
                             {application.profession}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-2 sm:mt-0">
                         <Badge
                           className={` ${
                             application.status === "APPROVED"
@@ -401,13 +401,13 @@ export function AdminApplications() {
                               : "bg-red-500/20 text-red-300"
                           }`}
                         >
-                          <span className="text-[10px] md:text-base">
+                          <span className="text-[10px] sm:text-xs md:text-sm">
                             {application.status}
                           </span>
                         </Badge>
                         {application.status === "APPROVED" && (
                           <Badge className="bg-yellow-500/20 text-yellow-300">
-                            <span className="text-[10px] md:text-base">
+                            <span className="text-[10px] sm:text-xs md:text-sm">
                               {vipStatusByEmail[application.email] === true
                                 ? "VIP"
                                 : vipStatusByEmail[application.email] === false
@@ -416,7 +416,7 @@ export function AdminApplications() {
                             </span>
                           </Badge>
                         )}
-                        <span className="md:text-sm text-purple-300 text-xs ">
+                        <span className="text-xs md:text-sm text-purple-300">
                           {format(
                             new Date(application.createdAt),
                             "MMM d, yyyy"
