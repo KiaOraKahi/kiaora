@@ -202,8 +202,8 @@ export default function JoinCelebrityPage() {
     motivation: "",
     profession: "",
     availability: "24 hours",
-    basePrice: 299.0,
-    rushPrice: 399.0,
+    basePrice: 0,
+    rushPrice: 0,
     followerCount: "0",
     socialMedia: {
       instagram: "",
@@ -425,8 +425,8 @@ export default function JoinCelebrityPage() {
         motivation: formData.experience, // Use experience as motivation
         profession: formData.category, // Use category as profession
         availability: formData.availability || "24 hours",
-        basePrice: formData.basePrice || 299.0,
-        rushPrice: formData.rushPrice || 399.0,
+        basePrice: formData.basePrice,
+        rushPrice: formData.rushPrice,
         followerCount: formData.followerCount || "0",
       };
 

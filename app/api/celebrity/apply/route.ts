@@ -57,11 +57,11 @@ export async function POST(request: NextRequest) {
         tiktokHandle: socialMedia.tiktok || null,
         youtubeHandle: socialMedia.youtube || null,
         otherSocialMedia: socialMedia.other || null,
-        followerCount: "0", // Default value
-        basePrice: 299.0, // Default base price
-        rushPrice: 399.0, // Default rush price
+        followerCount: body.followerCount || "0",
+        basePrice: typeof body.basePrice === "number" ? body.basePrice : 0,
+        rushPrice: typeof body.rushPrice === "number" ? body.rushPrice : 0,
         languages: body.languages,
-        availability: "24 hours", // Default availability
+        availability: body.availability || "24 hours",
         specialRequests: body.specialRequests || null,
         motivation: body.experience, // Using experience as motivation
         hasProfilePhoto: body.hasProfilePhoto || false,

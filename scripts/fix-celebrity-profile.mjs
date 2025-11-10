@@ -39,7 +39,7 @@ async function fixCelebrityProfile() {
         bio: "Professional actress and entertainer with years of experience in the industry. I love creating personalized video messages for fans!",
         longBio: "Sarah Celebrity is a talented actress and entertainer who has been in the industry for over 10 years. She has appeared in numerous films and TV shows, and loves connecting with fans through personalized video messages. Her warm personality and professional approach make her a favorite among fans worldwide.",
         category: "Actor",
-        price: 299,
+        price: 0,
         rating: 4.8,
         averageRating: 4.8,
         totalReviews: 0,

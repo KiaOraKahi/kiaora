@@ -107,8 +107,8 @@ export default function ReferralProgram() {
         dateReferred: new Date(2024, 0, 15),
         dateSignedUp: new Date(2024, 0, 16),
         dateFirstPurchase: new Date(2024, 0, 18),
-        totalSpent: 299,
-        reward: 29.9,
+        totalSpent: 249,
+        reward: 24.9,
       },
       {
         id: "2",

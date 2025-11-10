@@ -125,7 +125,7 @@ const mockRecentBookings = [
     id: 1,
     customer: "John Doe",
     celebrity: "Emma Stone",
-    amount: 299,
+    amount: 249,
     status: "CONFIRMED",
     date: "2 hours ago",
   },

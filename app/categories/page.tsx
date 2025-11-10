@@ -43,7 +43,7 @@ const categories = [
       {
         id: 1,
         name: "Emma Stone",
-        price: 299,
+        price: 279,
         rating: 4.9,
         image: "/placeholder.svg?height=300&width=200&text=Emma+Stone",
       },

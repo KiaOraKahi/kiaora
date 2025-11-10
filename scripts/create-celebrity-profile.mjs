@@ -34,7 +34,7 @@ async function createCelebrityProfile() {
         userId: sarahUser.id,
         bio: 'Professional celebrity available for personalized video messages',
         category: 'Influencer',
-        price: 299.0,
+        price: 0,
         isActive: true,
         verified: true,
         responseTime: '24 hours'
@@ -53,4 +53,4 @@ async function createCelebrityProfile() {
   }
 }
 
-createCelebrityProfile(); 
+createCelebrityProfile();

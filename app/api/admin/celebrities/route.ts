@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
         name: celebrity.user.name || "Celebrity",
         email: celebrity.user.email || "",
         category: celebrity.category || "Entertainment",
-        basePrice: celebrity.pricePersonal || celebrity.price || 299,
+        basePrice: celebrity.pricePersonal || celebrity.price || 0,
         isVIP: celebrity.isVIP || false,
         rating: Number((celebrity.averageRating || 0).toFixed(1)),
         totalBookings: celebrity._count.bookings || 0,

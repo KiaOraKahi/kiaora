@@ -102,7 +102,7 @@ export async function POST(
           }`,
           longBio: application.achievements || application.experience,
           category: application.category,
-          price: application.basePrice || 299.0, // Use the single price field
+          price: application.basePrice || null, // Use the single price field
           rating: 4.5,
           averageRating: 4.5,
           totalReviews: 0,

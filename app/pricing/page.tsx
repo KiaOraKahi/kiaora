@@ -36,8 +36,8 @@ const pricingTiers = [
   },
   {
     name: "Premium",
-    price: 299,
-    originalPrice: 399,
+    price: null,
+    originalPrice: null,
     description: "Most popular choice for special occasions",
     color: "from-purple-500 to-pink-500",
     popular: true,
@@ -215,7 +215,7 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="grid md:grid-cols-3 gap-12 md:gap-8 mb-16">
             {pricingTiers.map((tier, index) => (
               <motion.div
                 key={tier.name}
@@ -227,8 +227,10 @@ export default function PricingPage() {
                 className={`relative ${tier.popular ? "scale-105" : ""}`}
               >
                 <Card
-                  className={`bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full overflow-hidden ${
-                    tier.popular ? "border-purple-500/50" : ""
+                  className={`bg-white/10 border-white/20 backdrop-blur-lg hover:bg-white/20 transition-all duration-300 h-full ${
+                    tier.popular
+                      ? "overflow-visible border-purple-500/50"
+                      : "overflow-hidden"
                   }`}
                 >
                   {tier.popular && (
@@ -249,7 +251,7 @@ export default function PricingPage() {
                       <div className="mb-6">
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-5xl font-bold text-white">
-                            ${tier.price}
+                            {tier.price !== null ? `$${tier.price}` : "Varies by celebrity"}
                           </span>
                           {tier.originalPrice && (
                             <span className="text-2xl text-purple-300 line-through">
@@ -426,7 +428,7 @@ export default function PricingPage() {
             </p>
             <Button
               size="lg"
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-12 py-4 text-lg"
+              className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-base sm:px-12 sm:py-4 sm:text-lg"
               onClick={() => (window.location.href = "/celebrities")}
             >
               Browse Celebrities

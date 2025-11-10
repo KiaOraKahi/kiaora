@@ -12,7 +12,7 @@ const mockCelebrities = {
     category: "Actor",
     rating: 4.9,
     reviewCount: 127,
-    price: 299,
+    price: 249,
     responseTime: "24 hours",
     verified: true,
     featured: true,
@@ -66,7 +66,7 @@ const mockCelebrities = {
       totalOrders: 89,
     },
     pricing: {
-      personal: 299,
+      personal: 249,
       business: 599,
       charity: 199,
     },
@@ -160,7 +160,7 @@ const mockCelebrities = {
     pricing: {
       personal: 599,
       business: 899,
-      charity: 299,
+      charity: 0,
     },
     reviews: [
       {
@@ -242,7 +242,7 @@ const mockCelebrities = {
     pricing: {
       personal: 899,
       business: 1499,
-      charity: 399,
+      charity: 0,
     },
     reviews: [
       {
@@ -340,7 +340,7 @@ export async function GET(
           category: celebrity.category || "Entertainment",
           rating: Number((celebrity.averageRating || 4.5).toFixed(1)),
           reviewCount: celebrity._count.reviews || 0,
-          price: celebrity.price || 299,
+          price: typeof celebrity.price === "number" ? celebrity.price : 0,
           isVIP: celebrity.isVIP,
           responseTime: celebrity.responseTime || "24 hours",
           verified: celebrity.verified || false,
@@ -367,9 +367,9 @@ export async function GET(
             totalOrders: celebrity._count.bookings || 0,
           },
           pricing: {
-            personal: celebrity.price || 299,
-            business: celebrity.price || 599,
-            charity: celebrity.price || 199,
+            personal: typeof celebrity.price === "number" ? celebrity.price : 0,
+            business: typeof celebrity.price === "number" ? celebrity.price : 0,
+            charity: typeof celebrity.price === "number" ? celebrity.price : 0,
           },
           reviews: celebrity.reviews.map((review) => ({
             id: review.id,

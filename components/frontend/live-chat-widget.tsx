@@ -93,7 +93,7 @@ const botResponses: Record<
   },
   "what are your prices": {
     message:
-      "Prices vary by celebrity, typically ranging from $99-$2999. Personal messages start at $99, business endorsements at $299. Would you like to see specific pricing?",
+      "Prices vary by celebrity and service. Personal messages often start around $99, and business endorsements vary by talent. Would you like to see specific pricing?",
     quickReplies: [
       "Show celebrity prices",
       "Business pricing",

@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         rating: Number(averageRating.toFixed(1)),
         reviewCount: celebrity._count.reviews || 0,
         bookingCount: celebrity._count.bookings || 0,
-        price: celebrity.price || 299,
+        price: typeof celebrity.price === "number" ? celebrity.price : 0,
         verified: celebrity.verified || false,
         featured: celebrity.featured || false,
         bio: celebrity.bio || "Professional celebrity",

@@ -137,7 +137,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       email: celebrity.user.email || "",
       image: celebrity.user.image,
       category: celebrity.category || "Entertainment",
-      basePrice: celebrity.pricePersonal || celebrity.price || 299,
+      basePrice: celebrity.pricePersonal || celebrity.price || 0,
       rating: Number((celebrity.averageRating || 0).toFixed(1)),
       totalBookings: celebrity._count.bookings || 0,
       totalEarnings: Math.round(totalEarnings / 100), // Convert from cents to dollars
