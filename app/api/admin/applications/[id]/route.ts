@@ -106,8 +106,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         celebrity = await tx.celebrity.create({
           data: {
             userId: user.id,
-            bio: `${application.profession} - ${application.experience}`,
-            longBio: application.achievements,
+            // Do not auto-prefix category/profession in bio; use applicant-provided content
+            bio: application.motivation || application.experience || "",
+            longBio: application.achievements || application.experience || "",
             category: application.category,
             pricePersonal: application.basePrice,
             priceBusiness: application.rushPrice || Math.round(application.basePrice * 1.5),

@@ -318,6 +318,8 @@ export default function CelebrityDashboard() {
         recipientName: request.recipientName,
         occasion: request.occasion,
         instructions: request.instructions,
+        personalMessage: request.personalMessage || "",
+        specialInstructions: request.specialInstructions || "",
         amount: request.amount,
         celebrityAmount: request.celebrityAmount || 0,
         tipAmount: request.tipAmount || 0,
@@ -380,6 +382,8 @@ export default function CelebrityDashboard() {
         recipientName: request.recipientName,
         occasion: request.occasion,
         instructions: request.instructions,
+        personalMessage: request.personalMessage || "",
+        specialInstructions: request.specialInstructions || "",
         amount: request.amount,
         celebrityAmount: request.celebrityAmount || 0,
         tipAmount: request.tipAmount || 0,
@@ -2145,11 +2149,10 @@ export default function CelebrityDashboard() {
 
                           <div className="mb-4">
                             <p className="text-purple-200 text-sm font-medium mb-2">
-                              Special Instructions:
+                              Personal Message:
                             </p>
                             <p className="text-white bg-white/5 p-3 rounded-lg">
-                              {request.instructions ||
-                                "No special instructions provided"}
+                              {request.personalMessage || "No message provided"}
                             </p>
                           </div>
 
@@ -2399,11 +2402,10 @@ export default function CelebrityDashboard() {
 
                           <div className="mb-4">
                             <p className="text-purple-200 text-sm font-medium mb-2">
-                              Message Instructions:
+                              Personal Message:
                             </p>
                             <p className="text-white bg-white/5 p-3 rounded-lg">
-                              {order.instructions ||
-                                "No special instructions provided"}
+                              {order.personalMessage || "No message provided"}
                             </p>
                           </div>
 
@@ -2509,9 +2511,14 @@ export default function CelebrityDashboard() {
                                 >
                                   <Button className="w-full sm:flex-1 bg-yellow-600 hover:bg-yellow-700">
                                     <Upload className="w-4 h-4 mr-2" />
-                                    <span className="hidden sm:inline">Upload Revision (
-                                    {(order.revisionCount || 0) + 1}/2)</span>
-                                    <span className="sm:hidden">Revision {(order.revisionCount || 0) + 1}/2</span>
+                                    <span className="hidden sm:inline">
+                                      Upload Revision (
+                                      {(order.revisionCount || 0) + 1}/2)
+                                    </span>
+                                    <span className="sm:hidden">
+                                      Revision {(order.revisionCount || 0) + 1}
+                                      /2
+                                    </span>
                                   </Button>
                                 </VideoUploadModal>
                               )}
@@ -2814,16 +2821,31 @@ export default function CelebrityDashboard() {
                         </div>
                         <div>
                           <Label htmlFor="category">Category</Label>
-                          <Input
-                            type="text"
-                            id="category"
-                            value={profile.category}
-                            onChange={(e) =>
-                              updateProfile("category", e.target.value)
+                          <Select
+                            value={profile?.category || ""}
+                            onValueChange={(value) =>
+                              updateProfile("category", value)
                             }
-                          />
+                          >
+                            <SelectTrigger id="category">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Actor/Actress">Actor/Actress</SelectItem>
+                              <SelectItem value="Musician/Singer">Musician/Singer</SelectItem>
+                              <SelectItem value="Athlete">Athlete</SelectItem>
+                              <SelectItem value="Influencer">Influencer</SelectItem>
+                              <SelectItem value="Comedian">Comedian</SelectItem>
+                              <SelectItem value="Author/Writer">Author/Writer</SelectItem>
+                              <SelectItem value="Chef">Chef</SelectItem>
+                              <SelectItem value="Entrepreneur">Entrepreneur</SelectItem>
+                              <SelectItem value="TV Personality">TV Personality</SelectItem>
+                              <SelectItem value="Model">Model</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div className="grid md:grid-cols-3 gap-4">
+                        {/* <div className="grid md:grid-cols-3 gap-4">
                           <div>
                             <Label htmlFor="pricePersonal">
                               Price (Personal)
@@ -2872,7 +2894,7 @@ export default function CelebrityDashboard() {
                               }
                             />
                           </div>
-                        </div>
+                        </div> */}
                         <div>
                           <Label className="flex items-center space-x-2">
                             <span>Active</span>

@@ -97,10 +97,9 @@ export async function POST(
       const celebrity = await tx.celebrity.create({
         data: {
           userId: user.id,
-          bio: `${application.profession || application.category} with ${
-            application.experience
-          }`,
-          longBio: application.achievements || application.experience,
+          // Do not auto-prefix category/profession in bio; use applicant-provided content
+          bio: application.motivation || application.experience || "",
+          longBio: application.achievements || application.experience || "",
           category: application.category,
           price: application.basePrice || null, // Use the single price field
           rating: 4.5,
