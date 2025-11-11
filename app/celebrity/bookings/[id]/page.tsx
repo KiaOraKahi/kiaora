@@ -370,8 +370,14 @@ export default function CelebrityBookingDetailsPage() {
                     <video
                       controls
                       className="w-full rounded-lg"
-                      src={booking.videoUrl}
+                      src={booking.videoUrl || undefined}
                       poster="/video-placeholder.jpg"
+                      onError={() => {
+                        try {
+                          // eslint-disable-next-line no-console
+                          console.warn("Video failed to load from src:", booking.videoUrl);
+                        } catch {}
+                      }}
                     >
                       Your browser does not support the video tag.
                     </video>

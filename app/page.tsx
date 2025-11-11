@@ -450,18 +450,12 @@ export default function KiaOraHomepage() {
                           <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative overflow-hidden">
                             <div className="absolute inset-1 rounded-full overflow-hidden">
                               <Image
-                                src={talent.image}
-                                alt={talent.name}
+                                src={talent?.image}
+                                alt={talent?.name || ""}
                                 fill
                                 className="object-cover rounded-full"
                                 sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 160px"
                                 priority={index < 3}
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                    talent.name
-                                  )}&background=8b5cf6&color=fff&size=400`;
-                                }}
                               />
                             </div>
                           </div>
@@ -623,8 +617,8 @@ export default function KiaOraHomepage() {
                               className="relative w-8 h-8 rounded-full border-2 border-white/20 overflow-hidden"
                             >
                               <Image
-                                src={talent.image || "/placeholder.svg"}
-                                alt={talent.name}
+                                src={talent?.image || "/placeholder.svg"}
+                                alt={talent?.name || ""}
                                 fill
                                 className="object-cover"
                                 sizes="32px"

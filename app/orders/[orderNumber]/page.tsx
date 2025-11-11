@@ -459,7 +459,14 @@ export default function OrderDetailsPage() {
                         controlsList="nofullscreen"
                         onDoubleClick={toggleFullscreen}
                         className="w-full h-full object-cover"
-                        src={order.videoUrl}
+                        src={order.videoUrl || undefined}
+                        onError={() => {
+                          try {
+                            // Gracefully show a toast and keep page usable
+                            // eslint-disable-next-line no-console
+                            console.warn("Video failed to load from src:", order.videoUrl);
+                          } catch {}
+                        }}
                       >
                         Your browser does not support the video tag.
                       </video>
