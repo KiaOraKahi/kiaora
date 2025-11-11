@@ -61,6 +61,8 @@ model Celebrity {
   bio                      String?
   category                 String?
   price                    Float?
+  priceBusiness            Float?
+  priceCharity             Float?
   isActive                 Boolean             @default(true)
   isVIP                    Boolean             @default(false)
   rating                   Float?              @default(4.5)

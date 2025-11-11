@@ -527,7 +527,7 @@ export default function ServicesPage() {
                                 {selectedServiceData?.deliveryTime}
                               </span>
                             </div>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                            {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
                               <span className="text-yellow-200 text-sm sm:text-base">
                                 ASAP Price:
                               </span>
@@ -537,7 +537,7 @@ export default function ServicesPage() {
                                 )}{" "}
                                 within {selectedServiceData?.asapDeliveryTime}
                               </span>
-                            </div>
+                            </div> */}
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
                               <span className="text-yellow-200 text-sm sm:text-base">
                                 Format:

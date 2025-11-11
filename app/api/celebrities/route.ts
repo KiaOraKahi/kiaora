@@ -179,8 +179,14 @@ export async function GET(request: NextRequest) {
           bio: celebrity.bio || "Professional celebrity",
           price: typeof celebrity.price === "number" ? celebrity.price : 0,
           pricePersonal: typeof celebrity.price === "number" ? celebrity.price : 0,
-          priceBusiness: typeof celebrity.price === "number" ? celebrity.price : 0,
-          priceCharity: typeof celebrity.price === "number" ? celebrity.price : 0,
+          priceBusiness:
+            typeof (celebrity as any).priceBusiness === "number"
+              ? (celebrity as any).priceBusiness
+              : 0,
+          priceCharity:
+            typeof (celebrity as any).priceCharity === "number"
+              ? (celebrity as any).priceCharity
+              : 0,
           rating: Number((celebrity.averageRating || celebrity.rating || 4.5).toFixed(1)),
           reviewCount: celebrity._count.reviews || 0,
           responseTime: celebrity.responseTime || "24 hours",

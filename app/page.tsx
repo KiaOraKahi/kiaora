@@ -600,7 +600,7 @@ export default function KiaOraHomepage() {
                             {service.deliveryTime}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between text-sm border-t border-white/10 pt-3">
+                        {/* <div className="flex items-center justify-between text-sm border-t border-white/10 pt-3">
                           <span className="text-orange-300 font-semibold">
                             ASAP Price:
                           </span>
@@ -608,7 +608,7 @@ export default function KiaOraHomepage() {
                             {formatPrice(service.asapPrice)} within{" "}
                             {service.asapDeliveryTime}
                           </span>
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* Sample Talents Preview */}

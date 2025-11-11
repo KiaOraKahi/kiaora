@@ -79,7 +79,7 @@ export const servicesData: ServiceData[] = [
     currency: "nzd",
     duration: "1 - 3 minutes",
     deliveryTime: "2 - 5 days",
-    asapPrice: 289,
+    asapPrice: 299,
     asapDeliveryTime: "24hrs",
     popular: true,
     features: [
@@ -223,7 +223,7 @@ export const servicesData: ServiceData[] = [
     currency: "nzd",
     duration: "2 - 5 minutes",
     deliveryTime: "2 - 7 days",
-    asapPrice: 389,
+    asapPrice: 399,
     asapDeliveryTime: "24hrs",
     popular: false,
     features: [

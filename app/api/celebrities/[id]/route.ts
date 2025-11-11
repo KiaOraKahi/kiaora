@@ -368,8 +368,14 @@ export async function GET(
           },
           pricing: {
             personal: typeof celebrity.price === "number" ? celebrity.price : 0,
-            business: typeof celebrity.price === "number" ? celebrity.price : 0,
-            charity: typeof celebrity.price === "number" ? celebrity.price : 0,
+            business:
+              typeof (celebrity as any).priceBusiness === "number"
+                ? (celebrity as any).priceBusiness
+                : 0,
+            charity:
+              typeof (celebrity as any).priceCharity === "number"
+                ? (celebrity as any).priceCharity
+                : 0,
           },
           reviews: celebrity.reviews.map((review) => ({
             id: review.id,
