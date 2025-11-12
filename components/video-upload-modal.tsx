@@ -91,17 +91,22 @@ export function VideoUploadModal({
     try {
       // Generate unique filename for video
       const timestamp = Date.now();
-      const sanitizedFileName = selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+      const sanitizedFileName = selectedFile.name.replace(
+        /[^a-zA-Z0-9.-]/g,
+        "_"
+      );
       const filename = `celebrity-videos/${bookingId}/${timestamp}-${sanitizedFileName}`;
 
       console.log("🔄 Uploading video to Vercel Blob...");
-      
+
       // Upload directly to Vercel Blob with progress tracking
       const blob = await upload(filename, selectedFile, {
         access: "public",
         handleUploadUrl: "/api/celebrity/upload-video/blob",
         onUploadProgress: (progress) => {
-          const percentage = Math.round((progress.loaded / progress.total) * 100);
+          const percentage = Math.round(
+            (progress.loaded / progress.total) * 100
+          );
           setUploadProgress(percentage);
         },
       });
@@ -124,9 +129,7 @@ export function VideoUploadModal({
 
       if (response.ok) {
         setUploadComplete(true);
-        toast.success(
-          "The customer will be notified to review your video message."
-        );
+        toast.success("Video successfully uploaded!");
 
         // Call success callback
         if (onUploadSuccess) {
