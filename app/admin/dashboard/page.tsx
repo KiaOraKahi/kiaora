@@ -1,46 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Users,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  UserPlus,
-  Crown,
-  ShoppingCart,
-  Star,
-  Activity,
-  Shield,
-  ArrowUpRight,
-  ArrowDownRight,
-  Eye,
-  Edit,
-  Trash2,
-  Plus,
-  Filter,
-  Search,
-  Download,
-  RefreshCw,
-  LogOut,
-  FileText,
-  Settings,
-} from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { AdminApplications } from "@/components/admin/admin-applications";
+import AdminContentManagement from "@/components/admin/admin-content-management";
+import AdminPlatformFees from "@/components/admin/admin-platform-fees";
+import AdminServiceManagement from "@/components/admin/admin-service-management";
 import AuthRedirect from "@/components/auth-redirect";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import AdminPlatformFees from "@/components/admin/admin-platform-fees";
-import AdminContentManagement from "@/components/admin/admin-content-management";
-import AdminServiceManagement from "@/components/admin/admin-service-management";
-import { AdminApplications } from "@/components/admin/admin-applications";
+import {
+  Activity,
+  ArrowUpRight,
+  Calendar,
+  Crown,
+  Download,
+  Edit,
+  Eye,
+  FileText,
+  Filter,
+  LogOut,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
+  ShoppingCart,
+  Trash2,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const SubtleLuxuryStarfield = () => {
   return (
@@ -867,7 +861,6 @@ export default function AdminDashboard() {
                   value="platform-fees"
                   className="text-white data-[state=active]:bg-purple-500 text-xs sm:text-sm p-2 sm:p-3 flex-shrink-0 whitespace-nowrap"
                 >
-                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Platform Fees</span>
                 </TabsTrigger>
                 <TabsTrigger
@@ -954,7 +947,6 @@ export default function AdminDashboard() {
                       <CardTitle className="text-sm font-medium text-white/80">
                         Total Revenue
                       </CardTitle>
-                      <DollarSign className="h-4 w-4 text-green-400" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-xl sm:text-2xl font-bold text-white">
@@ -975,7 +967,9 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
                   <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg sm:text-xl">Recent Users</CardTitle>
+                      <CardTitle className="text-white text-lg sm:text-xl">
+                        Recent Users
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 sm:space-y-4">
                       {dataLoading ? (
@@ -1391,19 +1385,31 @@ export default function AdminDashboard() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="platform-fees" className="space-y-4 sm:space-y-6">
+              <TabsContent
+                value="platform-fees"
+                className="space-y-4 sm:space-y-6"
+              >
                 <AdminPlatformFees />
               </TabsContent>
 
-              <TabsContent value="applications" className="space-y-4 sm:space-y-6">
+              <TabsContent
+                value="applications"
+                className="space-y-4 sm:space-y-6"
+              >
                 <AdminApplications />
               </TabsContent>
 
-              <TabsContent value="content-management" className="space-y-4 sm:space-y-6">
+              <TabsContent
+                value="content-management"
+                className="space-y-4 sm:space-y-6"
+              >
                 <AdminContentManagement />
               </TabsContent>
 
-              <TabsContent value="service-management" className="space-y-4 sm:space-y-6">
+              <TabsContent
+                value="service-management"
+                className="space-y-4 sm:space-y-6"
+              >
                 <AdminServiceManagement />
               </TabsContent>
 

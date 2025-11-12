@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
+import Footer from "@/components/frontend/footer";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
+import Navbar from "@/components/frontend/navbar";
+import VideoPlayer from "@/components/frontend/video-player";
+import { ProfileImageUpload } from "@/components/profile-image-upload";
+import { TipModal } from "@/components/tip-modal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -13,56 +18,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
+import { motion } from "framer-motion";
 import {
-  Search,
-  Filter,
+  Bell,
   Calendar,
   Clock,
-  DollarSign,
-  User,
-  Package,
-  ChevronRight,
-  Loader2,
-  Settings,
   CreditCard,
-  Heart,
-  Star,
   Edit,
-  Save,
-  X,
-  CheckCircle,
-  AlertCircle,
-  Play,
-  Download,
   Eye,
-  MessageSquare,
-  Bell,
-  Shield,
+  Filter,
+  Heart,
+  Loader2,
   Lock,
-  Mail,
-  Phone,
-  MapPin,
-  Camera,
-  Trash2,
-  Plus,
-  Minus,
   LogOut,
+  Mail,
+  Minus,
+  Package,
+  Play,
+  Save,
+  Search,
+  Settings,
+  Shield,
+  User,
+  X,
 } from "lucide-react";
-import { format } from "date-fns";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import Navbar from "@/components/frontend/navbar";
-import Footer from "@/components/frontend/footer";
-import MobileNavbar from "@/components/frontend/mobile-navbar";
-import { TipModal } from "@/components/tip-modal";
-import { ProfileImageUpload } from "@/components/profile-image-upload";
-import VideoPlayer from "@/components/frontend/video-player";
-import { useToast } from "@/components/frontend/toast-provider";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 interface Order {
   id: string;
@@ -690,7 +675,6 @@ export default function UserDashboard() {
                               {/* Price Info */}
                               <div className="flex sm:flex-col lg:text-right">
                                 <div className="flex items-center gap-1 text-purple-300 mb-0 sm:mb-1">
-                                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
                                   <span className="font-semibold text-sm sm:text-base">
                                     ${order.totalAmount.toFixed(2)}
                                   </span>

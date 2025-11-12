@@ -66,7 +66,9 @@ export function AdminApplications() {
 
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [approveType, setApproveType] = useState<"VIP" | "NON_VIP" | "">("");
-  const [vipStatusByEmail, setVipStatusByEmail] = useState<Record<string, boolean | null>>({});
+  const [vipStatusByEmail, setVipStatusByEmail] = useState<
+    Record<string, boolean | null>
+  >({});
 
   useEffect(() => {
     fetchApplications();
@@ -102,7 +104,9 @@ export function AdminApplications() {
 
     const fetchVipForEmail = async (email: string) => {
       try {
-        const res = await fetch(`/api/admin/celebrities?search=${encodeURIComponent(email)}&limit=1`);
+        const res = await fetch(
+          `/api/admin/celebrities?search=${encodeURIComponent(email)}&limit=1`
+        );
         const json = await res.json();
         const celeb = json?.celebrities?.[0];
         const isVIP = celeb?.isVIP ?? null;
@@ -288,8 +292,7 @@ export function AdminApplications() {
                               </span>
                             </span>
                             <span className="flex items-center gap-1">
-                              <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />$
-                              {application.basePrice}
+                              ${application.basePrice}
                             </span>
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />

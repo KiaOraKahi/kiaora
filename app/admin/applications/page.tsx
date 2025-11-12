@@ -1,135 +1,154 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CheckCircle, XCircle, Eye, Mail, DollarSign, Calendar, FileText, Loader2 } from "lucide-react"
-import { format } from "date-fns"
-import { toast } from "sonner"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  CheckCircle,
+  XCircle,
+  Eye,
+  Mail,
+  DollarSign,
+  Calendar,
+  FileText,
+  Loader2,
+} from "lucide-react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
 
 interface Application {
-  id: string
-  fullName: string
-  email: string
-  phone: string
-  dateOfBirth: string
-  nationality: string
-  profession: string
-  category: string
-  experience: string
-  achievements: string
-  instagramHandle?: string
-  twitterHandle?: string
-  tiktokHandle?: string
-  youtubeHandle?: string
-  followerCount: string
-  basePrice: number
-  rushPrice: number
-  languages: string[]
-  availability: string
-  motivation: string
-  profilePhotoUrl?: string
-  idDocumentUrl?: string
-  verificationDocumentUrl?: string
-  status: string
-  createdAt: string
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  nationality: string;
+  profession: string;
+  category: string;
+  experience: string;
+  achievements: string;
+  instagramHandle?: string;
+  twitterHandle?: string;
+  tiktokHandle?: string;
+  youtubeHandle?: string;
+  followerCount: string;
+  basePrice: number;
+  rushPrice: number;
+  languages: string[];
+  availability: string;
+  motivation: string;
+  profilePhotoUrl?: string;
+  idDocumentUrl?: string;
+  verificationDocumentUrl?: string;
+  status: string;
+  createdAt: string;
 }
 
 export default function AdminApplications() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [applications, setApplications] = useState<Application[]>([])
-  const [loading, setLoading] = useState(true)
-  const [processingId, setProcessingId] = useState<string | null>(null)
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [selectedApplication, setSelectedApplication] =
+    useState<Application | null>(null);
 
   useEffect(() => {
-    if (status === "loading") return
+    if (status === "loading") return;
 
     if (!session || session.user.role !== "ADMIN") {
-      router.push("/")
-      return
+      router.push("/");
+      return;
     }
 
-    fetchApplications()
-  }, [session, status, router])
+    fetchApplications();
+  }, [session, status, router]);
 
   const fetchApplications = async () => {
     try {
-      setLoading(true)
-      const response = await fetch("/api/admin/applications")
-      const data = await response.json()
+      setLoading(true);
+      const response = await fetch("/api/admin/applications");
+      const data = await response.json();
 
       if (response.ok) {
-        setApplications(data.applications || [])
+        setApplications(data.applications || []);
       } else {
-        toast.error("1 Failed to fetch applications")
+        toast.error("1 Failed to fetch applications");
       }
     } catch (error) {
-      console.error("Error fetching applications:", error)
-      toast.error("2 Failed to fetch applications")
+      console.error("Error fetching applications:", error);
+      toast.error("2 Failed to fetch applications");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleApprove = async (applicationId: string) => {
     try {
-      setProcessingId(applicationId)
-      const response = await fetch(`/api/admin/applications/${applicationId}/approve`, {
-        method: "POST",
-      })
+      setProcessingId(applicationId);
+      const response = await fetch(
+        `/api/admin/applications/${applicationId}/approve`,
+        {
+          method: "POST",
+        }
+      );
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        toast.success("Application approved successfully")
-        fetchApplications()
+        toast.success("Application approved successfully");
+        fetchApplications();
       } else {
-        toast.error(data.error || "Failed to approve application")
+        toast.error(data.error || "Failed to approve application");
       }
     } catch (error) {
-      console.error("Error approving application:", error)
-      toast.error("Failed to approve application")
+      console.error("Error approving application:", error);
+      toast.error("Failed to approve application");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   const handleReject = async (applicationId: string) => {
     try {
-      setProcessingId(applicationId)
+      setProcessingId(applicationId);
       const response = await fetch(`/api/admin/applications/${applicationId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ action: "reject" }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        toast.success("Application rejected")
-        fetchApplications()
+        toast.success("Application rejected");
+        fetchApplications();
       } else {
-        toast.error(data.error || "Failed to reject application")
+        toast.error(data.error || "Failed to reject application");
       }
     } catch (error) {
-      console.error("Error rejecting application:", error)
-      toast.error("Failed to reject application")
+      console.error("Error rejecting application:", error);
+      toast.error("Failed to reject application");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   if (status === "loading" || loading) {
     return (
@@ -156,7 +175,7 @@ export default function AdminApplications() {
 
         <Footer />
       </div>
-    )
+    );
   }
 
   if (!session || session.user.role !== "ADMIN") {
@@ -180,18 +199,26 @@ export default function AdminApplications() {
 
         <div className="relative z-10 flex items-center justify-center min-h-screen pt-24">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
-            <p className="text-purple-200">This page is only accessible to administrators.</p>
+            <h1 className="text-2xl font-bold text-white mb-4">
+              Access Denied
+            </h1>
+            <p className="text-purple-200">
+              This page is only accessible to administrators.
+            </p>
           </div>
         </div>
 
         <Footer />
       </div>
-    )
+    );
   }
 
-  const pendingApplications = applications.filter((app) => app.status === "PENDING")
-  const processedApplications = applications.filter((app) => app.status !== "PENDING")
+  const pendingApplications = applications.filter(
+    (app) => app.status === "PENDING"
+  );
+  const processedApplications = applications.filter(
+    (app) => app.status !== "PENDING"
+  );
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -214,16 +241,26 @@ export default function AdminApplications() {
       <div className="relative z-10 pt-24 pb-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Celebrity Applications</h1>
-            <p className="text-purple-200">Review and manage celebrity applications</p>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Celebrity Applications
+            </h1>
+            <p className="text-purple-200">
+              Review and manage celebrity applications
+            </p>
           </div>
 
           <Tabs defaultValue="pending" className="space-y-6">
             <TabsList className="bg-white/10 border border-white/20">
-              <TabsTrigger value="pending" className="data-[state=active]:bg-purple-500">
+              <TabsTrigger
+                value="pending"
+                className="data-[state=active]:bg-purple-500"
+              >
                 Pending ({pendingApplications.length})
               </TabsTrigger>
-              <TabsTrigger value="processed" className="data-[state=active]:bg-purple-500">
+              <TabsTrigger
+                value="processed"
+                className="data-[state=active]:bg-purple-500"
+              >
                 Processed ({processedApplications.length})
               </TabsTrigger>
             </TabsList>
@@ -233,8 +270,12 @@ export default function AdminApplications() {
                 <Card className="bg-white/10 border-white/20">
                   <CardContent className="p-8 text-center">
                     <FileText className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">No Pending Applications</h3>
-                    <p className="text-purple-200">All applications have been processed.</p>
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      No Pending Applications
+                    </h3>
+                    <p className="text-purple-200">
+                      All applications have been processed.
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
@@ -243,45 +284,61 @@ export default function AdminApplications() {
                     <Card
                       key={application.id}
                       className="bg-white/10 border-white/20 backdrop-blur-lg cursor-pointer hover:bg-white/15 transition-colors"
-                      onClick={() => router.push(`/admin/applications/${application.id}`)}
+                      onClick={() =>
+                        router.push(`/admin/applications/${application.id}`)
+                      }
                     >
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-4">
                             <Avatar className="w-16 h-16">
-                              <AvatarImage src={application.profilePhotoUrl || "/placeholder.svg"} />
+                              <AvatarImage
+                                src={
+                                  application.profilePhotoUrl ||
+                                  "/placeholder.svg"
+                                }
+                              />
                               <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                                 {application.fullName.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <h3 className="text-xl font-semibold text-white mb-1">{application.fullName}</h3>
+                              <h3 className="text-xl font-semibold text-white mb-1">
+                                {application.fullName}
+                              </h3>
                               <p className="text-purple-200 mb-2">
-                                {application.profession} • {application.category}
+                                {application.profession} •{" "}
+                                {application.category}
                               </p>
                               <div className="flex items-center gap-4 text-sm text-purple-300">
                                 <span className="flex items-center gap-1">
                                   <Mail className="w-4 h-4" />
                                   {application.email}
                                 </span>
-                                <span className="flex items-center gap-1">
-                                  <DollarSign className="w-4 h-4" />${application.basePrice}
-                                </span>
+                                <span className="flex items-center gap-1"></span>
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-4 h-4" />
-                                  {format(new Date(application.createdAt), "MMM d, yyyy")}
+                                  {format(
+                                    new Date(application.createdAt),
+                                    "MMM d, yyyy"
+                                  )}
                                 </span>
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <div
+                            className="flex items-center gap-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                                  onClick={() => setSelectedApplication(application)}
+                                  onClick={() =>
+                                    setSelectedApplication(application)
+                                  }
                                 >
                                   <Eye className="w-4 h-4 mr-2" />
                                   Quick View
@@ -289,122 +346,223 @@ export default function AdminApplications() {
                               </DialogTrigger>
                               <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-4xl max-h-[80vh] overflow-y-auto">
                                 <DialogHeader>
-                                  <DialogTitle className="text-2xl">Application Details</DialogTitle>
+                                  <DialogTitle className="text-2xl">
+                                    Application Details
+                                  </DialogTitle>
                                 </DialogHeader>
                                 {selectedApplication && (
                                   <div className="space-y-6">
                                     <div className="flex items-center gap-4">
                                       <Avatar className="w-20 h-20">
-                                        <AvatarImage src={selectedApplication.profilePhotoUrl || "/placeholder.svg"} />
+                                        <AvatarImage
+                                          src={
+                                            selectedApplication.profilePhotoUrl ||
+                                            "/placeholder.svg"
+                                          }
+                                        />
                                         <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                                          {selectedApplication.fullName.charAt(0)}
+                                          {selectedApplication.fullName.charAt(
+                                            0
+                                          )}
                                         </AvatarFallback>
                                       </Avatar>
                                       <div>
-                                        <h3 className="text-2xl font-bold">{selectedApplication.fullName}</h3>
-                                        <p className="text-purple-200">{selectedApplication.profession}</p>
-                                        <Badge className="mt-2">{selectedApplication.category}</Badge>
+                                        <h3 className="text-2xl font-bold">
+                                          {selectedApplication.fullName}
+                                        </h3>
+                                        <p className="text-purple-200">
+                                          {selectedApplication.profession}
+                                        </p>
+                                        <Badge className="mt-2">
+                                          {selectedApplication.category}
+                                        </Badge>
                                       </div>
                                     </div>
 
-                                    <Tabs defaultValue="personal" className="w-full">
+                                    <Tabs
+                                      defaultValue="personal"
+                                      className="w-full"
+                                    >
                                       <TabsList className="bg-gray-800">
-                                        <TabsTrigger value="personal">Personal</TabsTrigger>
-                                        <TabsTrigger value="professional">Professional</TabsTrigger>
-                                        <TabsTrigger value="social">Social & Pricing</TabsTrigger>
-                                        <TabsTrigger value="documents">Documents</TabsTrigger>
+                                        <TabsTrigger value="personal">
+                                          Personal
+                                        </TabsTrigger>
+                                        <TabsTrigger value="professional">
+                                          Professional
+                                        </TabsTrigger>
+                                        <TabsTrigger value="social">
+                                          Social & Pricing
+                                        </TabsTrigger>
+                                        <TabsTrigger value="documents">
+                                          Documents
+                                        </TabsTrigger>
                                       </TabsList>
 
-                                      <TabsContent value="personal" className="space-y-4">
+                                      <TabsContent
+                                        value="personal"
+                                        className="space-y-4"
+                                      >
                                         <div className="grid md:grid-cols-2 gap-4">
                                           <div>
-                                            <label className="text-sm text-purple-300">Email</label>
-                                            <p className="text-white">{selectedApplication.email}</p>
+                                            <label className="text-sm text-purple-300">
+                                              Email
+                                            </label>
+                                            <p className="text-white">
+                                              {selectedApplication.email}
+                                            </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">Phone</label>
-                                            <p className="text-white">{selectedApplication.phone}</p>
+                                            <label className="text-sm text-purple-300">
+                                              Phone
+                                            </label>
+                                            <p className="text-white">
+                                              {selectedApplication.phone}
+                                            </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">Date of Birth</label>
-                                            <p className="text-white">{selectedApplication.dateOfBirth}</p>
+                                            <label className="text-sm text-purple-300">
+                                              Date of Birth
+                                            </label>
+                                            <p className="text-white">
+                                              {selectedApplication.dateOfBirth}
+                                            </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">Nationality</label>
-                                            <p className="text-white">{selectedApplication.nationality}</p>
+                                            <label className="text-sm text-purple-300">
+                                              Nationality
+                                            </label>
+                                            <p className="text-white">
+                                              {selectedApplication.nationality}
+                                            </p>
                                           </div>
                                         </div>
                                       </TabsContent>
 
-                                      <TabsContent value="professional" className="space-y-4">
+                                      <TabsContent
+                                        value="professional"
+                                        className="space-y-4"
+                                      >
                                         <div>
-                                          <label className="text-sm text-purple-300">Experience</label>
-                                          <p className="text-white mt-1">{selectedApplication.experience}</p>
+                                          <label className="text-sm text-purple-300">
+                                            Experience
+                                          </label>
+                                          <p className="text-white mt-1">
+                                            {selectedApplication.experience}
+                                          </p>
                                         </div>
                                         <div>
-                                          <label className="text-sm text-purple-300">Achievements</label>
-                                          <p className="text-white mt-1">{selectedApplication.achievements}</p>
+                                          <label className="text-sm text-purple-300">
+                                            Achievements
+                                          </label>
+                                          <p className="text-white mt-1">
+                                            {selectedApplication.achievements}
+                                          </p>
                                         </div>
                                         <div>
-                                          <label className="text-sm text-purple-300">Motivation</label>
-                                          <p className="text-white mt-1">{selectedApplication.motivation}</p>
+                                          <label className="text-sm text-purple-300">
+                                            Motivation
+                                          </label>
+                                          <p className="text-white mt-1">
+                                            {selectedApplication.motivation}
+                                          </p>
                                         </div>
                                       </TabsContent>
 
-                                      <TabsContent value="social" className="space-y-4">
+                                      <TabsContent
+                                        value="social"
+                                        className="space-y-4"
+                                      >
                                         <div className="grid md:grid-cols-2 gap-4">
                                           <div>
-                                            <label className="text-sm text-purple-300">Instagram</label>
+                                            <label className="text-sm text-purple-300">
+                                              Instagram
+                                            </label>
                                             <p className="text-white">
-                                              {selectedApplication.instagramHandle || "Not provided"}
+                                              {selectedApplication.instagramHandle ||
+                                                "Not provided"}
                                             </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">Twitter/X</label>
+                                            <label className="text-sm text-purple-300">
+                                              Twitter/X
+                                            </label>
                                             <p className="text-white">
-                                              {selectedApplication.twitterHandle || "Not provided"}
+                                              {selectedApplication.twitterHandle ||
+                                                "Not provided"}
                                             </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">TikTok</label>
+                                            <label className="text-sm text-purple-300">
+                                              TikTok
+                                            </label>
                                             <p className="text-white">
-                                              {selectedApplication.tiktokHandle || "Not provided"}
+                                              {selectedApplication.tiktokHandle ||
+                                                "Not provided"}
                                             </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">YouTube</label>
+                                            <label className="text-sm text-purple-300">
+                                              YouTube
+                                            </label>
                                             <p className="text-white">
-                                              {selectedApplication.youtubeHandle || "Not provided"}
+                                              {selectedApplication.youtubeHandle ||
+                                                "Not provided"}
                                             </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">Follower Count</label>
-                                            <p className="text-white">{selectedApplication.followerCount}</p>
-                                          </div>
-                                          <div>
-                                            <label className="text-sm text-purple-300">Languages</label>
+                                            <label className="text-sm text-purple-300">
+                                              Follower Count
+                                            </label>
                                             <p className="text-white">
-                                              {selectedApplication.languages?.join(", ") || "English"}
+                                              {
+                                                selectedApplication.followerCount
+                                              }
                                             </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">Base Price</label>
-                                            <p className="text-white">${selectedApplication.basePrice}</p>
+                                            <label className="text-sm text-purple-300">
+                                              Languages
+                                            </label>
+                                            <p className="text-white">
+                                              {selectedApplication.languages?.join(
+                                                ", "
+                                              ) || "English"}
+                                            </p>
                                           </div>
                                           <div>
-                                            <label className="text-sm text-purple-300">Rush Price</label>
-                                            <p className="text-white">${selectedApplication.rushPrice}</p>
+                                            <label className="text-sm text-purple-300">
+                                              Base Price
+                                            </label>
+                                            <p className="text-white">
+                                              ${selectedApplication.basePrice}
+                                            </p>
+                                          </div>
+                                          <div>
+                                            <label className="text-sm text-purple-300">
+                                              Rush Price
+                                            </label>
+                                            <p className="text-white">
+                                              ${selectedApplication.rushPrice}
+                                            </p>
                                           </div>
                                         </div>
                                       </TabsContent>
 
-                                      <TabsContent value="documents" className="space-y-4">
+                                      <TabsContent
+                                        value="documents"
+                                        className="space-y-4"
+                                      >
                                         <div className="grid md:grid-cols-3 gap-4">
                                           {selectedApplication.profilePhotoUrl && (
                                             <div>
-                                              <label className="text-sm text-purple-300">Profile Photo</label>
+                                              <label className="text-sm text-purple-300">
+                                                Profile Photo
+                                              </label>
                                               <img
-                                                src={selectedApplication.profilePhotoUrl || "/placeholder.svg"}
+                                                src={
+                                                  selectedApplication.profilePhotoUrl ||
+                                                  "/placeholder.svg"
+                                                }
                                                 alt="Profile"
                                                 className="w-full h-32 object-cover rounded-lg mt-2"
                                               />
@@ -412,9 +570,14 @@ export default function AdminApplications() {
                                           )}
                                           {selectedApplication.idDocumentUrl && (
                                             <div>
-                                              <label className="text-sm text-purple-300">ID Document</label>
+                                              <label className="text-sm text-purple-300">
+                                                ID Document
+                                              </label>
                                               <img
-                                                src={selectedApplication.idDocumentUrl || "/placeholder.svg"}
+                                                src={
+                                                  selectedApplication.idDocumentUrl ||
+                                                  "/placeholder.svg"
+                                                }
                                                 alt="ID Document"
                                                 className="w-full h-32 object-cover rounded-lg mt-2"
                                               />
@@ -422,9 +585,14 @@ export default function AdminApplications() {
                                           )}
                                           {selectedApplication.verificationDocumentUrl && (
                                             <div>
-                                              <label className="text-sm text-purple-300">Verification Document</label>
+                                              <label className="text-sm text-purple-300">
+                                                Verification Document
+                                              </label>
                                               <img
-                                                src={selectedApplication.verificationDocumentUrl || "/placeholder.svg"}
+                                                src={
+                                                  selectedApplication.verificationDocumentUrl ||
+                                                  "/placeholder.svg"
+                                                }
                                                 alt="Verification"
                                                 className="w-full h-32 object-cover rounded-lg mt-2"
                                               />
@@ -476,8 +644,12 @@ export default function AdminApplications() {
                 <Card className="bg-white/10 border-white/20">
                   <CardContent className="p-8 text-center">
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">No Processed Applications</h3>
-                    <p className="text-purple-200">Processed applications will appear here.</p>
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      No Processed Applications
+                    </h3>
+                    <p className="text-purple-200">
+                      Processed applications will appear here.
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
@@ -486,20 +658,31 @@ export default function AdminApplications() {
                     <Card
                       key={application.id}
                       className="bg-white/10 border-white/20 backdrop-blur-lg cursor-pointer hover:bg-white/15 transition-colors"
-                      onClick={() => router.push(`/admin/applications/${application.id}`)}
+                      onClick={() =>
+                        router.push(`/admin/applications/${application.id}`)
+                      }
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
                             <Avatar>
-                              <AvatarImage src={application.profilePhotoUrl || "/placeholder.svg"} />
+                              <AvatarImage
+                                src={
+                                  application.profilePhotoUrl ||
+                                  "/placeholder.svg"
+                                }
+                              />
                               <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                                 {application.fullName.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <h3 className="font-semibold text-white">{application.fullName}</h3>
-                              <p className="text-sm text-purple-200">{application.profession}</p>
+                              <h3 className="font-semibold text-white">
+                                {application.fullName}
+                              </h3>
+                              <p className="text-sm text-purple-200">
+                                {application.profession}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
@@ -513,7 +696,10 @@ export default function AdminApplications() {
                               {application.status}
                             </Badge>
                             <span className="text-sm text-purple-300">
-                              {format(new Date(application.createdAt), "MMM d, yyyy")}
+                              {format(
+                                new Date(application.createdAt),
+                                "MMM d, yyyy"
+                              )}
                             </span>
                           </div>
                         </div>
@@ -529,5 +715,5 @@ export default function AdminApplications() {
 
       <Footer />
     </div>
-  )
+  );
 }
