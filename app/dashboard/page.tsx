@@ -1214,7 +1214,7 @@ export default function UserDashboard() {
         isReview={videoModal.isReview}
         orderNumber={videoModal.orderNumber}
         showWatermark={videoModal.isReview}
-        watermarkText="KIA ORA KAH"
+        watermarkText="KIA ORA KAHI"
       />
     </div>
   );

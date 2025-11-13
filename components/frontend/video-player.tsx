@@ -51,7 +51,7 @@ export default function VideoPlayer({
   isReview = false,
   orderNumber,
   showWatermark = false,
-  watermarkText = "Kia Ora Kah",
+  watermarkText = "Kia Ora Kahi",
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);

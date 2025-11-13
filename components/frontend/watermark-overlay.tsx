@@ -12,7 +12,7 @@ interface WatermarkOverlayProps {
 
 export function WatermarkOverlay({
   visible = true,
-  text = "KIA ORA KAH",
+  text = "KIA ORA KAHI",
   className,
   textClassName,
 }: WatermarkOverlayProps) {
