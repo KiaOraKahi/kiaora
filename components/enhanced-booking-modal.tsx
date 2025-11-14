@@ -990,7 +990,7 @@ export default function EnhancedBookingModal({
                 <div className="flex gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => setCurrentStep(1)}
                     className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
                   >
                     Back
@@ -1124,7 +1124,7 @@ export default function EnhancedBookingModal({
                 <div className="flex gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() => setCurrentStep(2)}
                     className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
                   >
                     Back
@@ -1299,7 +1299,7 @@ export default function EnhancedBookingModal({
                 <div className="flex gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep(4)}
+                    onClick={() => setCurrentStep(3)}
                     className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
                   >
                     Back
@@ -1393,7 +1393,7 @@ export default function EnhancedBookingModal({
 
                 <Button
                   variant="outline"
-                  onClick={() => setCurrentStep(5)}
+                  onClick={() => setCurrentStep(4)}
                   className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
                   Back to Review
@@ -1436,12 +1436,12 @@ export default function EnhancedBookingModal({
                     missing. This usually means there was an issue with the
                     payment intent creation.
                   </p>
-                  <Button
-                    onClick={() => setCurrentStep(5)}
-                    className="mt-4 bg-yellow-600 hover:bg-yellow-700"
-                  >
-                    Go Back to Review
-                  </Button>
+                <Button
+                  onClick={() => setCurrentStep(4)}
+                  className="mt-4 bg-yellow-600 hover:bg-yellow-700"
+                >
+                  Go Back to Review
+                </Button>
                 </div>
               </motion.div>
             )}
