@@ -153,6 +153,45 @@ export default function CelebrityBookingDetailsPage() {
     }
   };
 
+  const getRevenueBreakdown = () => {
+    if (!booking) {
+      return {
+        bookingAmount: 0,
+        tipAmount: 0,
+        platformFees: 0,
+        celebrityShare: 0,
+        totalEarnings: 0,
+        sharePercentLabel: "73.9%",
+      };
+    }
+
+    const GST_RATE = 0.15;
+    const OTHER_FEES_RATE = 0.089;
+    const TOTAL_FEES_RATE = GST_RATE + OTHER_FEES_RATE;
+
+    const bookingAmount = Math.round(booking.amount || 0);
+    const tipAmount = Math.round(booking.tipAmount || 0);
+    const baseAmount = Math.max(bookingAmount - tipAmount, 0);
+
+    const detectedShare = baseAmount > 0 ? (booking.celebrityAmount || 0) / baseAmount : 0;
+    const sharePercent = Math.abs(detectedShare - 0.8) < 0.03 ? 0.8 : 0.739;
+    const sharePercentLabel = sharePercent === 0.8 ? "80%" : "73.9%";
+
+    const platformFees = Math.round(baseAmount * TOTAL_FEES_RATE);
+    const amountAfterFees = Math.max(baseAmount - platformFees, 0);
+    const celebrityShare = Math.round(amountAfterFees * sharePercent);
+    const totalEarnings = celebrityShare + tipAmount;
+
+    return {
+      bookingAmount,
+      tipAmount,
+      platformFees,
+      celebrityShare,
+      totalEarnings,
+      sharePercentLabel,
+    };
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -458,33 +497,38 @@ export default function CelebrityBookingDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-purple-200">Booking Amount</span>
-                  <span className="text-white font-semibold">
-                    ${booking.amount.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-200">Your Earnings</span>
-                  <span className="text-green-300">
-                    ${booking.celebrityAmount.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-200">Tips</span>
-                  <span className="text-yellow-300">
-                    +${booking.tipAmount.toLocaleString()}
-                  </span>
-                </div>
-                <Separator className="bg-white/20" />
-                <div className="flex justify-between">
-                  <span className="text-green-200 font-semibold">
-                    Total Earnings
-                  </span>
-                  <span className="text-green-400 font-bold text-lg">
-                    ${booking.totalEarnings.toLocaleString()}
-                  </span>
-                </div>
+                {(() => {
+                  const breakdown = getRevenueBreakdown();
+                  return (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-purple-200">Booking Amount</span>
+                        <span className="text-white font-semibold">
+                          ${breakdown.bookingAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-purple-200">Platform Fees (23.9%)</span>
+                        <span className="text-red-300">- ${breakdown.platformFees.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-purple-200">Celebrity Share ({breakdown.sharePercentLabel})</span>
+                        <span className="text-green-300">${breakdown.celebrityShare.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-purple-200">Tips</span>
+                        <span className="text-yellow-300">+${breakdown.tipAmount.toLocaleString()}</span>
+                      </div>
+                      <Separator className="bg-white/20" />
+                      <div className="flex justify-between">
+                        <span className="text-green-200 font-semibold">Total Earnings</span>
+                        <span className="text-green-400 font-bold text-lg">
+                          ${breakdown.totalEarnings.toLocaleString()}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
 
