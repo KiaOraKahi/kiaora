@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
           select: {
             type: true,
             metadata: true,
+            totalPrice: true,
           },
         },
         // Include all tips to allow computing latest message even if pending
@@ -140,12 +141,16 @@ export async function GET(request: NextRequest) {
 
       // Calculate total tips for this booking
       // Tips are stored as dollars in the database, so no conversion needed
-      // Only successful tips contribute to totals
+      // Include tip from initial booking order items and any successful post-booking tips
       const succeededTips = (order.tips || []).filter(
         (tip: any) => tip.paymentStatus === "SUCCEEDED"
       );
-      const totalTips =
+      const tipFromSucceededRecords =
         succeededTips.reduce((sum: number, tip: any) => sum + tip.amount, 0) || 0;
+      const tipFromOrderItems = (order.items || [])
+        .filter((it: any) => it.type === "tip")
+        .reduce((sum: number, it: any) => sum + (Number(it.totalPrice) || 0), 0);
+      const totalTips = tipFromOrderItems + tipFromSucceededRecords;
 
       // Extract tipMessage from initial tip order item metadata (if present)
       let tipMessageFromItem: string | undefined = undefined;
@@ -168,9 +173,22 @@ export async function GET(request: NextRequest) {
       console.log(`💰 Booking ${booking.id} tip calculation:`, {
         tipCount: order.tips?.length || 0,
         individualTips: order.tips?.map((tip) => tip.amount) || [],
+        tipFromOrderItems,
+        tipFromSucceededRecords,
         totalTips,
-        note: "Tips stored as dollars in database, no conversion applied",
+        note: "Tips include booking-time tip from order items + successful tip payments",
       });
+
+      const GST_RATE = 0.15;
+      const OTHER_FEES_RATE = 0.089;
+      const TOTAL_FEES_RATE = GST_RATE + OTHER_FEES_RATE;
+
+      const bookingAmount = order.totalAmount || 0;
+      const baseAmount = Math.max(bookingAmount - totalTips, 0);
+      const platformFees = Math.round(baseAmount * TOTAL_FEES_RATE);
+      const amountAfterFees = Math.max(baseAmount - platformFees, 0);
+      const sharePercent = celebrity.isVIP ? 0.8 : 0.739;
+      const computedCelebrityAmount = Math.round(amountAfterFees * sharePercent);
 
       return {
         id: booking.id,
@@ -183,10 +201,10 @@ export async function GET(request: NextRequest) {
         instructions: booking.instructions || "",
         personalMessage: booking.message || "",
         specialInstructions: booking.specialInstructions || "",
-        amount: order.totalAmount || 0,
-        celebrityAmount: order.celebrityAmount || 0,
+        amount: bookingAmount,
+        celebrityAmount: computedCelebrityAmount,
         tipAmount: totalTips,
-        totalEarnings: (order.celebrityAmount || 0) + totalTips,
+        totalEarnings: computedCelebrityAmount + totalTips,
         requestedDate: booking.createdAt.toISOString(),
         status: booking.status.toLowerCase(),
         createdAt: booking.createdAt.toISOString(),
