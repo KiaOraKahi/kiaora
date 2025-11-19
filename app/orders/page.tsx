@@ -1,103 +1,119 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Calendar, Clock, DollarSign, User, Package, ChevronRight, Loader2 } from "lucide-react"
-import { format } from "date-fns"
-import Link from "next/link"
-import Navbar from "@/components/frontend/navbar"
-import Footer from "@/components/frontend/footer"
-import MobileNavbar from "@/components/frontend/mobile-navbar"
-import { Sub } from "@radix-ui/react-dropdown-menu"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  Filter,
+  Calendar,
+  Clock,
+  DollarSign,
+  User,
+  Package,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
+import { format } from "date-fns";
+import Link from "next/link";
+import Navbar from "@/components/frontend/navbar";
+import Footer from "@/components/frontend/footer";
+import MobileNavbar from "@/components/frontend/mobile-navbar";
+import { Sub } from "@radix-ui/react-dropdown-menu";
 
 interface Order {
-  id: string
-  orderNumber: string
-  status: string
-  paymentStatus: string
-  totalAmount: number
-  createdAt: string
-  recipientName: string
-  occasion: string
-  scheduledDate: string
-  scheduledTime: string
-  bookingStatus: string
-  celebrityName: string
-  celebrityImage: string
-  celebrityCategory: string
+  id: string;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  totalAmount: number;
+  createdAt: string;
+  recipientName: string;
+  occasion: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  bookingStatus: string;
+  celebrityName: string;
+  celebrityImage: string;
+  celebrityCategory: string;
 }
 
 interface OrdersResponse {
-  orders: Order[]
+  orders: Order[];
   pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-    hasNext: boolean
-    hasPrev: boolean
-  }
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 // Subtle starfield component
 const SubtleLuxuryStarfield = () => {
   useEffect(() => {
-    const existingStarfield = document.querySelector(".starfield")
+    const existingStarfield = document.querySelector(".starfield");
     if (existingStarfield) {
-      existingStarfield.remove()
+      existingStarfield.remove();
     }
 
     const createStar = () => {
-      const star = document.createElement("div")
-      const size = Math.random() * 2 + 1
-      const type = Math.random()
+      const star = document.createElement("div");
+      const size = Math.random() * 2 + 1;
+      const type = Math.random();
 
       if (type > 0.97) {
-        star.className = "star diamond"
-        star.style.width = `${size * 1.5}px`
-        star.style.height = `${size * 1.5}px`
+        star.className = "star diamond";
+        star.style.width = `${size * 1.5}px`;
+        star.style.height = `${size * 1.5}px`;
       } else if (type > 0.93) {
-        star.className = "star sapphire"
-        star.style.width = `${size * 1.2}px`
-        star.style.height = `${size * 1.2}px`
+        star.className = "star sapphire";
+        star.style.width = `${size * 1.2}px`;
+        star.style.height = `${size * 1.2}px`;
       } else {
-        star.className = "star"
-        star.style.width = `${size}px`
-        star.style.height = `${size}px`
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
       }
 
-      star.style.left = `${Math.random() * 100}%`
-      star.style.top = `${Math.random() * 100}%`
-      star.style.animationDelay = `${Math.random() * 5}s`
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 5}s`;
 
-      return star
-    }
+      return star;
+    };
 
-    const starfield = document.createElement("div")
-    starfield.className = "starfield"
+    const starfield = document.createElement("div");
+    starfield.className = "starfield";
 
     for (let i = 0; i < 60; i++) {
-      starfield.appendChild(createStar())
+      starfield.appendChild(createStar());
     }
 
-    document.body.appendChild(starfield)
+    document.body.appendChild(starfield);
 
     return () => {
-      const starfieldToRemove = document.querySelector(".starfield")
+      const starfieldToRemove = document.querySelector(".starfield");
       if (starfieldToRemove && document.body.contains(starfieldToRemove)) {
-        document.body.removeChild(starfieldToRemove)
+        document.body.removeChild(starfieldToRemove);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  return null
-}
+  return null;
+};
 
 const statusColors = {
   pending: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
@@ -106,77 +122,79 @@ const statusColors = {
   completed: "bg-green-500/20 text-green-300 border-green-500/30",
   cancelled: "bg-red-500/20 text-red-300 border-red-500/30",
   failed: "bg-red-500/20 text-red-300 border-red-500/30",
-}
+};
 
 const paymentStatusColors = {
   pending: "bg-yellow-500/20 text-yellow-300",
   paid: "bg-green-500/20 text-green-300",
   failed: "bg-red-500/20 text-red-300",
   refunded: "bg-gray-500/20 text-gray-300",
-}
+};
 
 export default function OrdersPage() {
-  const { data: session, status } = useSession()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pagination, setPagination] = useState<OrdersResponse["pagination"] | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
-      
+  const { data: session, status } = useSession();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<
+    OrdersResponse["pagination"] | null
+  >(null);
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const fetchOrders = async (page = 1, status = "all", search = "") => {
     try {
-      setLoading(true)
+      setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
         limit: "10",
         ...(status !== "all" && { status }),
         ...(search && { search }),
-      })
+      });
 
-      const response = await fetch(`/api/orders?${params}`)
-      const data: OrdersResponse = await response.json()
+      const response = await fetch(`/api/orders?${params}`);
+      const data: OrdersResponse = await response.json();
 
       if (response.ok) {
-        setOrders(data.orders)
-        setPagination(data.pagination)
+        setOrders(data.orders);
+        setPagination(data.pagination);
       } else {
-        console.error("Failed to fetch orders:", data.error)
+        console.error("Failed to fetch orders:", data.error);
       }
     } catch (error) {
-      console.error("Error fetching orders:", error)
+      console.error("Error fetching orders:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (session) {
-      fetchOrders(currentPage, statusFilter, searchTerm)
+      fetchOrders(currentPage, statusFilter, searchTerm);
     }
-  }, [session, currentPage, statusFilter])
+  }, [session, currentPage, statusFilter]);
 
   const handleSearch = () => {
-    setCurrentPage(1)
-    fetchOrders(1, statusFilter, searchTerm)
-  }
+    setCurrentPage(1);
+    fetchOrders(1, statusFilter, searchTerm);
+  };
 
   const handleStatusFilter = (status: string) => {
-    setStatusFilter(status)
-    setCurrentPage(1)
-    fetchOrders(1, status, searchTerm)
-  }
+    setStatusFilter(status);
+    setCurrentPage(1);
+    fetchOrders(1, status, searchTerm);
+  };
 
   if (status === "loading") {
     return (
@@ -187,7 +205,7 @@ export default function OrdersPage() {
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
         </div>
       </div>
-    )
+    );
   }
 
   if (!session) {
@@ -197,27 +215,31 @@ export default function OrdersPage() {
         <SubtleLuxuryStarfield />
         <div className="relative z-10 text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Please Sign In</h1>
-          <p className="text-purple-200">You need to be signed in to view your orders.</p>
+          <p className="text-purple-200">
+            You need to be signed in to view your orders.
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       <SubtleLuxuryStarfield />
-      
+
       {/* Main Content */}
       <div className="relative z-10">
         {isMobile ? <MobileNavbar /> : <Navbar />}
-        
+
         {/* Main Content */}
 
         <div className="container mx-auto px-4 py-8 pt-24">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-white mb-2">My Orders</h1>
-            <p className="text-purple-200">Track and manage your celebrity video bookings</p>
+            <p className="text-purple-200">
+              Track and manage your celebrity video bookings
+            </p>
           </div>
 
           {/* Filters and Search */}
@@ -237,8 +259,11 @@ export default function OrdersPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Select value={statusFilter} onValueChange={handleStatusFilter}>
-                    <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
+                  <Select
+                    value={statusFilter}
+                    onValueChange={handleStatusFilter}
+                  >
+                    <SelectTrigger className="md:w-40 bg-white/10 border-white/20 text-white">
                       <Filter className="w-4 h-4 mr-2" />
                       <SelectValue />
                     </SelectTrigger>
@@ -251,7 +276,10 @@ export default function OrdersPage() {
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button onClick={handleSearch} className="bg-purple-600 hover:bg-purple-700">
+                  <Button
+                    onClick={handleSearch}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
                     Search
                   </Button>
                 </div>
@@ -268,7 +296,9 @@ export default function OrdersPage() {
             <Card className="bg-slate-900 border-white/20">
               <CardContent className="p-12 text-center">
                 <Package className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">No Orders Found</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  No Orders Found
+                </h3>
                 <p className="text-purple-200 mb-6">
                   {searchTerm || statusFilter !== "all"
                     ? "No orders match your current filters."
@@ -312,13 +342,25 @@ export default function OrdersPage() {
                           <div className="flex-1 min-w-0">
                             {/* Header with badges */}
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                              <h3 className="text-base sm:text-lg font-semibold text-white truncate">{order.orderNumber}</h3>
+                              <h3 className="text-base sm:text-lg font-semibold text-white truncate">
+                                {order.orderNumber}
+                              </h3>
                               <div className="flex flex-wrap gap-2">
-                                <Badge className={statusColors[order.status as keyof typeof statusColors]}>
+                                <Badge
+                                  className={
+                                    statusColors[
+                                      order.status as keyof typeof statusColors
+                                    ]
+                                  }
+                                >
                                   {order.status.replace("_", " ")}
                                 </Badge>
                                 <Badge
-                                  className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}
+                                  className={
+                                    paymentStatusColors[
+                                      order.paymentStatus as keyof typeof paymentStatusColors
+                                    ]
+                                  }
                                 >
                                   {order.paymentStatus}
                                 </Badge>
@@ -329,19 +371,30 @@ export default function OrdersPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-sm text-purple-200">
                               <div className="flex items-center gap-1">
                                 <User className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate">{order.celebrityName}</span>
+                                <span className="truncate">
+                                  {order.celebrityName}
+                                </span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Package className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate">For {order.recipientName}</span>
+                                <span className="truncate">
+                                  For {order.recipientName}
+                                </span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate">{format(new Date(order.scheduledDate), "MMM d, yyyy")}</span>
+                                <span className="truncate">
+                                  {format(
+                                    new Date(order.scheduledDate),
+                                    "MMM d, yyyy"
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate">{order.scheduledTime}</span>
+                                <span className="truncate">
+                                  {order.scheduledTime}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -352,7 +405,9 @@ export default function OrdersPage() {
                           <div className="text-left sm:text-right">
                             <div className="flex items-center gap-1 text-purple-300 mb-1">
                               <DollarSign className="w-4 h-4" />
-                              <span className="font-semibold text-lg sm:text-xl">${order.totalAmount}</span>
+                              <span className="font-semibold text-lg sm:text-xl">
+                                ${order.totalAmount}
+                              </span>
                             </div>
                             <div className="text-xs text-purple-200">
                               {format(new Date(order.createdAt), "MMM d, yyyy")}
@@ -365,7 +420,9 @@ export default function OrdersPage() {
                               size="sm"
                               className="text-purple-300 hover:text-white hover:bg-purple-500/20 whitespace-nowrap"
                             >
-                              <span className="hidden sm:inline">View Details</span>
+                              <span className="hidden sm:inline">
+                                View Details
+                              </span>
                               <span className="sm:hidden">Details</span>
                               <ChevronRight className="w-4 h-4 ml-1" />
                             </Button>
@@ -392,7 +449,10 @@ export default function OrdersPage() {
               </Button>
 
               <div className="flex items-center gap-2">
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                {Array.from(
+                  { length: pagination.totalPages },
+                  (_, i) => i + 1
+                ).map((page) => (
                   <Button
                     key={page}
                     variant={page === pagination.page ? "default" : "outline"}
@@ -424,5 +484,5 @@ export default function OrdersPage() {
         <Footer />
       </div>
     </div>
-  )
+  );
 }

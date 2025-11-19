@@ -2264,7 +2264,7 @@ export default function CelebrityDashboard() {
                           value={orderFilter}
                           onValueChange={setOrderFilter}
                         >
-                          <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
+                          <SelectTrigger className="md:w-48 bg-white/10 border-white/20 text-white">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -2831,15 +2831,27 @@ export default function CelebrityDashboard() {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Actor/Actress">Actor/Actress</SelectItem>
-                              <SelectItem value="Musician/Singer">Musician/Singer</SelectItem>
+                              <SelectItem value="Actor/Actress">
+                                Actor/Actress
+                              </SelectItem>
+                              <SelectItem value="Musician/Singer">
+                                Musician/Singer
+                              </SelectItem>
                               <SelectItem value="Athlete">Athlete</SelectItem>
-                              <SelectItem value="Influencer">Influencer</SelectItem>
+                              <SelectItem value="Influencer">
+                                Influencer
+                              </SelectItem>
                               <SelectItem value="Comedian">Comedian</SelectItem>
-                              <SelectItem value="Author/Writer">Author/Writer</SelectItem>
+                              <SelectItem value="Author/Writer">
+                                Author/Writer
+                              </SelectItem>
                               <SelectItem value="Chef">Chef</SelectItem>
-                              <SelectItem value="Entrepreneur">Entrepreneur</SelectItem>
-                              <SelectItem value="TV Personality">TV Personality</SelectItem>
+                              <SelectItem value="Entrepreneur">
+                                Entrepreneur
+                              </SelectItem>
+                              <SelectItem value="TV Personality">
+                                TV Personality
+                              </SelectItem>
                               <SelectItem value="Model">Model</SelectItem>
                               <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>

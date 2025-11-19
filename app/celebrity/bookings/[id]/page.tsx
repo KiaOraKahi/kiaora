@@ -254,7 +254,7 @@ export default function CelebrityBookingDetailsPage() {
             Back to Dashboard
           </Button>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">
                 Booking Details
@@ -279,7 +279,7 @@ export default function CelebrityBookingDetailsPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Main Booking Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Customer & Booking Info */}
@@ -291,7 +291,7 @@ export default function CelebrityBookingDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                   <Avatar className="w-16 h-16">
                     <AvatarImage
                       src={booking.customerImage || "/placeholder.svg"}
@@ -314,7 +314,7 @@ export default function CelebrityBookingDetailsPage() {
 
                 <Separator className="bg-white/20" />
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-purple-200 text-sm">
                       Recipient Name
@@ -419,10 +419,10 @@ export default function CelebrityBookingDetailsPage() {
                       Your browser does not support the video tag.
                     </video>
                   </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
                     <Button
                       onClick={() => window.open(booking.videoUrl!, "_blank")}
-                      className="bg-purple-600 hover:bg-purple-700"
+                      className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       View Full Screen
@@ -435,7 +435,7 @@ export default function CelebrityBookingDetailsPage() {
                         link.click();
                       }}
                       variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full sm:w-auto"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Download
@@ -461,7 +461,7 @@ export default function CelebrityBookingDetailsPage() {
                         key={tip.id}
                         className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div>
                             <p className="text-yellow-300 font-semibold">
                               +${tip.amount.toLocaleString()} tip
