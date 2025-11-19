@@ -261,7 +261,7 @@ export default function CelebrityBookingDetailsPage() {
               </h1>
               <p className="text-purple-200">Order #{booking.orderNumber}</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Badge className={getStatusBadgeColor(booking.status)}>
                 {booking.status.charAt(0).toUpperCase() +
                   booking.status.slice(1)}
