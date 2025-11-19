@@ -209,8 +209,20 @@ export async function GET(request: NextRequest) {
         status: booking.status.toLowerCase(),
         createdAt: booking.createdAt.toISOString(),
         deadline:
-          booking.deadline?.toISOString() ||
-          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          booking.deadline?.toISOString() || (() => {
+            let rush = false;
+            try {
+              const rushItem = (order.items || []).find((it: any) => {
+                if (it.type !== "addon") return false;
+                const md = typeof it.metadata === "string" ? JSON.parse(it.metadata) : it.metadata;
+                return md?.addOnId === "rush";
+              });
+              rush = !!rushItem;
+            } catch {}
+            const created = new Date(booking.createdAt);
+            const ms = rush ? 12 * 60 * 60 * 1000 : 3 * 24 * 60 * 60 * 1000;
+            return new Date(created.getTime() + ms).toISOString();
+          })(),
         paymentStatus: order.paymentStatus || "PENDING",
         approvalStatus:
           order.approvalStatus?.toLowerCase() || "pending_approval",

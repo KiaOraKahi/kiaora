@@ -181,6 +181,8 @@ async function handleBookingPayment({
   // Create booking record immediately to ensure it exists
   console.log("🎬 Creating booking record immediately...")
   try {
+    const hasRushAddOn = (orderItems || []).some((it: any) => it.type === "addon" && ((it.metadata && (it.metadata.addOnId === "rush" || it.metadata === "rush")) || false))
+    const deadlineMs = hasRushAddOn ? 12 * 60 * 60 * 1000 : 3 * 24 * 60 * 60 * 1000
     await prisma.booking.create({
       data: {
         orderId: order.id,
@@ -196,7 +198,7 @@ async function handleBookingPayment({
         price: celebrityAmount,
         totalAmount: order.totalAmount,
         scheduledDate: order.scheduledDate,
-        deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        deadline: new Date(Date.now() + deadlineMs),
       },
     })
     console.log("✅ Booking record created immediately")
