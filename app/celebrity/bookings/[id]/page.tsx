@@ -495,13 +495,13 @@ export default function CelebrityBookingDetailsPage() {
                     <div className="flex items-center gap-2">
                       {" "}
                       Financial Summary
-                      <Info className="w-4 h-4" />
+                      {/* <Info className="w-4 h-4" /> */}
                     </div>
 
-                    <div className="text-purple-300 text-xs mt-1 hidden group-hover:block">
+                    {/* <div className="text-purple-300 text-xs mt-1 hidden group-hover:block">
                       A fixed 23.9% fee applies before the 80% VIP / 70% non-VIP
                       split.
-                    </div>
+                    </div> */}
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -511,23 +511,19 @@ export default function CelebrityBookingDetailsPage() {
                   return (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-purple-200">Booking Amount</span>
+                        {/* <span className="text-purple-200">Booking Amount</span>
                         <span className="text-white font-semibold">
                           ${breakdown.bookingAmount.toFixed(2)}
-                        </span>
+                        </span> */}
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-purple-200">
-                          Platform Fees (23.9%)
-                        </span>
+                        <span className="text-purple-200">Platform Fees</span>
                         <span className="text-red-300">
                           - ${breakdown.platformFees.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-purple-200">
-                          Celebrity Share ({breakdown.sharePercentLabel})
-                        </span>
+                        <span className="text-purple-200">Celebrity Share</span>
                         <span className="text-green-300">
                           ${breakdown.celebrityShare.toFixed(2)}
                         </span>

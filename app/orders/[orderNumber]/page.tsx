@@ -464,7 +464,10 @@ export default function OrderDetailsPage() {
                           try {
                             // Gracefully show a toast and keep page usable
                             // eslint-disable-next-line no-console
-                            console.warn("Video failed to load from src:", order.videoUrl);
+                            console.warn(
+                              "Video failed to load from src:",
+                              order.videoUrl
+                            );
                           } catch {}
                         }}
                       >
@@ -565,92 +568,20 @@ export default function OrderDetailsPage() {
                           {videoLoading ? "Downloading..." : "Download Video"}
                         </Button>
                       )}
-                      <Button
+                      {/* <Button
                         onClick={() => setShowTipModal(true)}
                         variant="outline"
                         className="border-pink-500 text-pink-400 hover:bg-pink-500/10 flex-1 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2"
                       >
                         <Gift className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Send a Tip
-                      </Button>
+                      </Button> */}
                     </div>
                   </CardContent>
                 </Card>
               )}
 
               {/* Tip Section - Only show after video approval */}
-              {allowTipsAndReviews() && order.celebrity?.id && (
-                <Card className="bg-white/5 border-white/10">
-                  <CardHeader className="pb-3 sm:pb-4">
-                    <CardTitle className="text-white text-lg sm:text-xl flex items-center">
-                      <Heart className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-pink-500" />
-                      Show Your Appreciation
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 sm:space-y-4">
-                    <p className="text-purple-200 text-xs sm:text-sm">
-                      Love your video? Show {order.celebrity.name} some extra
-                      appreciation with a tip!
-                    </p>
-
-                    {/* Tip History */}
-                    {tips.length > 0 && (
-                      <div className="space-y-2 sm:space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-purple-200 text-xs sm:text-sm">
-                            Your Tips:
-                          </span>
-                          <span className="text-white font-semibold text-sm sm:text-base">
-                            ${totalTips.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="space-y-2 max-h-24 sm:max-h-32 overflow-y-auto">
-                          {tips.map((tip) => (
-                            <div
-                              key={tip.id}
-                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 p-2 sm:p-3 bg-white/5 rounded"
-                            >
-                              <div className="flex items-center gap-2">
-                                <Gift className="w-3 h-3 sm:w-4 sm:h-4 text-pink-400" />
-                                <span className="text-white text-xs sm:text-sm font-medium">
-                                  ${tip.amount}
-                                </span>
-                                {tip.message && (
-                                  <span className="text-purple-200 text-xs truncate max-w-24 sm:max-w-32">
-                                    "{tip.message}"
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-purple-300 text-xs ml-5 sm:ml-0">
-                                {safeFormatDate(tip.createdAt, "MMM d")}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                        <Separator className="bg-white/20" />
-                      </div>
-                    )}
-
-                    {/* Tip Button */}
-                    <TipModal
-                      orderNumber={order.orderNumber}
-                      celebrityName={order.celebrity.name || "Celebrity"}
-                      celebrityImage={order.celebrity.image || undefined}
-                      onTipSuccess={handleTipSuccess}
-                    >
-                      <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-sm sm:text-base py-2 sm:py-3">
-                        <Heart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        Send a Tip
-                      </Button>
-                    </TipModal>
-
-                    <p className="text-purple-300 text-xs text-center">
-                      💝 100% of your tip goes directly to{" "}
-                      {order.celebrity.name}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
 
               {/* Order Status */}
               {!isVideoApproved() && (

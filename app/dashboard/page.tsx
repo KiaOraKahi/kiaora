@@ -735,7 +735,7 @@ export default function UserDashboard() {
                                   )}
 
                                 {/* Show Tip button for completed and approved videos */}
-                                {order.status === "completed" &&
+                                {/* {order.status === "completed" &&
                                   order.approvalStatus === "approved" && (
                                     <TipModal
                                       orderNumber={order.orderNumber}
@@ -751,7 +751,7 @@ export default function UserDashboard() {
                                         Tip
                                       </Button>
                                     </TipModal>
-                                  )}
+                                  )} */}
 
                                 <Link href={`/orders/${order.orderNumber}`}>
                                   <Button
