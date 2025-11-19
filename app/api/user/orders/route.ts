@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       scheduledTime: order.scheduledTime || "N/A",
       bookingStatus: order.status.toLowerCase(),
       celebrityName: order.celebrity.user.name,
-                celebrityImage: order.celebrity.profileImage || "/talents/1.jpeg",
+      celebrityImage: order.celebrity.user.image || (order.celebrity as any).profileImage || "/talents/1.jpeg",
       celebrityCategory: order.celebrity.category || "Celebrity",
       approvalStatus: order.approvalStatus?.toLowerCase(),
       videoUrl: order.videoUrl,
@@ -58,4 +58,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-} 
+}
