@@ -924,7 +924,7 @@ export default function EnhancedBookingModal({
                 </div>
 
                 {/* Media Upload */}
-                <div>
+                <div className="hidden">
                   <Label className="text-white mb-4 block">
                     Upload Reference Materials (Optional)
                   </Label>
@@ -1304,7 +1304,9 @@ export default function EnhancedBookingModal({
                   </Button>
                   <Button
                     onClick={createPaymentIntent}
-                    disabled={isCreatingPayment || !formData.email || !formData.phone}
+                    disabled={
+                      isCreatingPayment || !formData.email || !formData.phone
+                    }
                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     {isCreatingPayment ? (
@@ -1434,12 +1436,12 @@ export default function EnhancedBookingModal({
                     missing. This usually means there was an issue with the
                     payment intent creation.
                   </p>
-                <Button
-                  onClick={() => setCurrentStep(4)}
-                  className="mt-4 bg-yellow-600 hover:bg-yellow-700"
-                >
-                  Go Back to Review
-                </Button>
+                  <Button
+                    onClick={() => setCurrentStep(4)}
+                    className="mt-4 bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    Go Back to Review
+                  </Button>
                 </div>
               </motion.div>
             )}
@@ -1472,7 +1474,10 @@ export default function EnhancedBookingModal({
                       <strong>Celebrity:</strong> {celebrity.name}
                     </p>
                     <p>
-                      <strong>Service:</strong> {selectedService?.title || selectedService?.name || "Service"}
+                      <strong>Service:</strong>{" "}
+                      {selectedService?.title ||
+                        selectedService?.name ||
+                        "Service"}
                     </p>
                     <p>
                       <strong>Recipient:</strong> {formData.recipientName}
@@ -1489,8 +1494,7 @@ export default function EnhancedBookingModal({
                       <strong>Total Paid:</strong> ${calculateTotal()}
                     </p>
                     <p>
-                      <strong>Expected Delivery:</strong>{" "}
-                      {getDeliveryTime()}
+                      <strong>Expected Delivery:</strong> {getDeliveryTime()}
                     </p>
                     {formData.tipAmount > 0 && (
                       <p>
