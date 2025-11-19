@@ -101,14 +101,33 @@ async function handleBookingPayment({
   // Generate unique order number
   const orderNumber = `KO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
 
-  // Calculate payment splits (80% to celebrity, 20% platform fee)
-  const celebrityAmount = Math.floor(amount * 0.8)
-  const platformFee = amount - celebrityAmount
-  
+  // Calculate payment splits: deduct 23.9% platform/service/GST first, then split remaining
+  const GST_RATE = 0.15
+  const OTHER_FEES_RATE = 0.089
+  const TOTAL_FEES_RATE = GST_RATE + OTHER_FEES_RATE // 23.9%
+
+  // Exclude booking-time tip from base by summing tip items in orderItems
+  const tipFromOrderItems = (orderItems || [])
+    .filter((it: any) => it.type === "tip")
+    .reduce((sum: number, it: any) => sum + (Number(it.totalPrice) || 0), 0)
+
+  const baseAmount = Math.max(amount - tipFromOrderItems, 0)
+  const platformFees = +(baseAmount * TOTAL_FEES_RATE).toFixed(2)
+  const amountAfterFees = +(Math.max(baseAmount - platformFees, 0)).toFixed(2)
+
+  const splitPercent = celebrity.isVIP ? 0.8 : 0.7
+  const celebrityAmount = +(amountAfterFees * splitPercent).toFixed(2)
+  const platformShare = +(platformFees + amountAfterFees * (1 - splitPercent)).toFixed(2)
+
   console.log("💰 Payment splits calculated:")
   console.log(`   Total Amount: $${amount}`)
-  console.log(`   Celebrity Amount (80%): $${celebrityAmount}`)
-  console.log(`   Platform Fee (20%): $${platformFee}`)
+  console.log(`   Tip in order items: $${tipFromOrderItems}`)
+  console.log(`   Base Amount (excl. tip): $${baseAmount}`)
+  console.log(`   Platform Fees (23.9%): $${platformFees}`)
+  console.log(`   Amount after fees: $${amountAfterFees}`)
+  console.log(`   Split: ${celebrity.isVIP ? "80/20 (VIP)" : "70/30 (Non-VIP)"}`)
+  console.log(`   Celebrity Amount: $${celebrityAmount}`)
+  console.log(`   Platform Share (fees + split remainder): $${platformShare}`)
   
   // Create order with payment splits
   console.log("📝 Creating order...")
@@ -119,7 +138,7 @@ async function handleBookingPayment({
       celebrityId: String(celebrity.id),
       totalAmount: amount,
       celebrityAmount: celebrityAmount,
-      platformFee: platformFee,
+      platformFee: platformShare,
       currency: "nzd",
       status: "PENDING",
       paymentStatus: "PENDING",
@@ -174,7 +193,7 @@ async function handleBookingPayment({
         instructions: order.specialInstructions || null,
         specialInstructions: order.specialInstructions || null,
         status: "PENDING",
-        price: celebrityAmount, // Use celebrity amount as the price
+        price: celebrityAmount,
         totalAmount: order.totalAmount,
         scheduledDate: order.scheduledDate,
         deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -202,13 +221,13 @@ async function handleBookingPayment({
       userName: session.user.name || "Unknown",
       // Tip details (for debugging/trace)
       tipMessage: bookingData?.tipMessage || "",
-      baseAmount: revenueSplit.baseAmount.toString(),
-      tipAmount: revenueSplit.tipAmount.toString(),
-      gstAmount: revenueSplit.gstAmount.toString(),
-      otherFeesAmount: revenueSplit.otherFeesAmount.toString(),
-      celebrityShare: revenueSplit.celebrityShare.toString(),
-      platformShare: revenueSplit.totalPlatformShare.toString(),
-      revenueSplit: revenueSplit.splitPercentage,
+      baseAmount: baseAmount.toString(),
+      tipAmount: tipFromOrderItems.toString(),
+      gstAmount: (baseAmount * GST_RATE).toFixed(2),
+      otherFeesAmount: (baseAmount * OTHER_FEES_RATE).toFixed(2),
+      celebrityShare: celebrityAmount.toString(),
+      platformShare: platformShare.toString(),
+      revenueSplit: celebrity.isVIP ? "80/20" : "70/30",
       // Payment info (no splits calculated yet)
       totalAmount: amountInCents.toString(),
       // Connect account info

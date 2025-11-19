@@ -174,9 +174,11 @@ export default function CelebrityBookingDetailsPage() {
     const baseAmount = Math.max(bookingAmount - tipAmount, 0);
 
     const platformFees = baseAmount * TOTAL_FEES_RATE;
-    const celebrityShare = Math.max(baseAmount - platformFees, 0);
+    const afterFees = Math.max(baseAmount - platformFees, 0);
+    const celebrityShare = Number(booking.celebrityAmount || 0);
+    const detectedShare = afterFees > 0 ? celebrityShare / afterFees : 0;
+    const sharePercentLabel = Math.abs(detectedShare - 0.8) < 0.05 ? "80%" : "70%";
     const totalEarnings = celebrityShare + tipAmount;
-    const sharePercentLabel = "76.1%";
 
     return {
       bookingAmount,

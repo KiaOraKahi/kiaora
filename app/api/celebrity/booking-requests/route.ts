@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
       const baseAmount = Math.max(bookingAmount - totalTips, 0);
       const platformFees = Math.round(baseAmount * TOTAL_FEES_RATE);
       const amountAfterFees = Math.max(baseAmount - platformFees, 0);
-      const sharePercent = celebrity.isVIP ? 0.8 : 0.739;
+      const sharePercent = celebrity.isVIP ? 0.8 : 0.7;
       const computedCelebrityAmount = Math.round(amountAfterFees * sharePercent);
 
       return {

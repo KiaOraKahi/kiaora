@@ -126,13 +126,11 @@ const calculateRevenueSplit = (
   let celebrityShare, platformShare;
 
   if (isVip) {
-    // VIP: Celebrity gets 80% of amount after fees
     celebrityShare = amountAfterFees * 0.8;
     platformShare = amountAfterFees * 0.2;
   } else {
-    // Non-VIP: Celebrity gets 73.9% of amount after fees
-    celebrityShare = amountAfterFees * 0.739;
-    platformShare = amountAfterFees * 0.261;
+    celebrityShare = amountAfterFees * 0.7;
+    platformShare = amountAfterFees * 0.3;
   }
 
   // Add 100% of tips to celebrity share
@@ -153,7 +151,7 @@ const calculateRevenueSplit = (
     platformShare: Math.round(platformShare),
     totalPlatformShare: Math.round(totalPlatformShare),
     isVip,
-    splitPercentage: isVip ? "80/20" : "73.9/26.1",
+    splitPercentage: isVip ? "80/20" : "70/30",
   };
 };
 
