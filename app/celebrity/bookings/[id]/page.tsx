@@ -1,38 +1,31 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  Download,
-  Play,
-  Star,
-  Clock,
-  User,
-  MessageSquare,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  ArrowLeft,
-  Heart,
-  Gift,
-  ThumbsUp,
-  ThumbsDown,
-  Eye,
-  MessageCircle,
-  DollarSign,
-  Calendar,
-} from "lucide-react";
-import { format } from "date-fns";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { VideoUploadModal } from "@/components/video-upload-modal";
+import { format } from "date-fns";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Clock,
+  DollarSign,
+  Download,
+  Eye,
+  Gift,
+  Info,
+  Loader2,
+  MessageCircle,
+  Play,
+  User,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface CelebrityBookingDetails {
   id: string;
@@ -177,7 +170,8 @@ export default function CelebrityBookingDetailsPage() {
     const afterFees = Math.max(baseAmount - platformFees, 0);
     const celebrityShare = Number(booking.celebrityAmount || 0);
     const detectedShare = afterFees > 0 ? celebrityShare / afterFees : 0;
-    const sharePercentLabel = Math.abs(detectedShare - 0.8) < 0.05 ? "80%" : "70%";
+    const sharePercentLabel =
+      Math.abs(detectedShare - 0.8) < 0.05 ? "80%" : "70%";
     const totalEarnings = celebrityShare + tipAmount;
 
     return {
@@ -377,7 +371,10 @@ export default function CelebrityBookingDetailsPage() {
                       Tip Message
                     </Label>
                     <p className="text-white bg-white/5 p-3 rounded-lg mt-2">
-                      {booking.tips?.slice().reverse().find((t) => t.message)?.message ??
+                      {booking.tips
+                        ?.slice()
+                        .reverse()
+                        .find((t) => t.message)?.message ??
                         booking.tipMessage ??
                         "No tip message provided"}
                     </p>
@@ -412,7 +409,10 @@ export default function CelebrityBookingDetailsPage() {
                       onError={() => {
                         try {
                           // eslint-disable-next-line no-console
-                          console.warn("Video failed to load from src:", booking.videoUrl);
+                          console.warn(
+                            "Video failed to load from src:",
+                            booking.videoUrl
+                          );
                         } catch {}
                       }}
                     >
@@ -491,7 +491,18 @@ export default function CelebrityBookingDetailsPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  Financial Summary
+                  <span className="ml-1  relative group">
+                    <div className="flex items-center gap-2">
+                      {" "}
+                      Financial Summary
+                      <Info className="w-4 h-4" />
+                    </div>
+
+                    <div className="text-purple-300 text-xs mt-1 hidden group-hover:block">
+                      A fixed 23.9% fee applies before the 80% VIP / 70% non-VIP
+                      split.
+                    </div>
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -506,20 +517,32 @@ export default function CelebrityBookingDetailsPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-purple-200">Platform Fees (23.9%)</span>
-                        <span className="text-red-300">- ${breakdown.platformFees.toFixed(2)}</span>
+                        <span className="text-purple-200">
+                          Platform Fees (23.9%)
+                        </span>
+                        <span className="text-red-300">
+                          - ${breakdown.platformFees.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-purple-200">Celebrity Share ({breakdown.sharePercentLabel})</span>
-                        <span className="text-green-300">${breakdown.celebrityShare.toFixed(2)}</span>
+                        <span className="text-purple-200">
+                          Celebrity Share ({breakdown.sharePercentLabel})
+                        </span>
+                        <span className="text-green-300">
+                          ${breakdown.celebrityShare.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-purple-200">Tips</span>
-                        <span className="text-yellow-300">+${breakdown.tipAmount.toFixed(2)}</span>
+                        <span className="text-yellow-300">
+                          +${breakdown.tipAmount.toFixed(2)}
+                        </span>
                       </div>
                       <Separator className="bg-white/20" />
                       <div className="flex justify-between">
-                        <span className="text-green-200 font-semibold">Total Earnings</span>
+                        <span className="text-green-200 font-semibold">
+                          Total Earnings
+                        </span>
                         <span className="text-green-400 font-bold text-lg">
                           ${breakdown.totalEarnings.toFixed(2)}
                         </span>
