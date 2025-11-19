@@ -1317,7 +1317,7 @@ export default function EnhancedBookingModal({
                     ) : (
                       <>
                         <CreditCard className="w-4 h-4 mr-2" />
-                        Proceed to Payment - ${calculateTotal()}
+                        Proceed to Payment
                       </>
                     )}
                   </Button>
