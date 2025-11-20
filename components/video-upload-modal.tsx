@@ -279,7 +279,7 @@ export function VideoUploadModal({
               </div>
 
               {/* Notes */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label
                   htmlFor="notes"
                   className="text-sm font-medium text-gray-700"
@@ -299,7 +299,7 @@ export function VideoUploadModal({
                 <p className="text-xs text-gray-500 text-right">
                   {notes.length}/200 characters
                 </p>
-              </div>
+              </div> */}
 
               {/* Upload Progress */}
               {isUploading && (
