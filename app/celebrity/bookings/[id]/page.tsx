@@ -152,11 +152,13 @@ export default function CelebrityBookingDetailsPage() {
     if (!booking) {
       return {
         bookingAmount: 0,
+        servicePrice: 0,
         tipAmount: 0,
         platformFees: 0,
         celebrityShare: 0,
         totalEarnings: 0,
-        sharePercentLabel: "76.1%",
+        sharePercentLabel: "80%",
+        vipSplitText: "You earn 80%",
       };
     }
 
@@ -175,14 +177,17 @@ export default function CelebrityBookingDetailsPage() {
     const sharePercentLabel =
       Math.abs(detectedShare - 0.8) < 0.05 ? "80%" : "70%";
     const totalEarnings = celebrityShare + tipAmount;
+    const vipSplitText = `You earn ${sharePercentLabel}`;
 
     return {
       bookingAmount,
+      servicePrice: baseAmount,
       tipAmount,
       platformFees,
       celebrityShare,
       totalEarnings,
       sharePercentLabel,
+      vipSplitText,
     };
   };
 
@@ -569,10 +574,10 @@ export default function CelebrityBookingDetailsPage() {
                   return (
                     <>
                       <div className="flex justify-between">
-                        {/* <span className="text-purple-200">Booking Amount</span>
+                        <span className="text-purple-200">Service Price</span>
                         <span className="text-white font-semibold">
-                          ${breakdown.bookingAmount.toFixed(2)}
-                        </span> */}
+                          ${breakdown.servicePrice.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-purple-200">Platform Fees</span>
@@ -581,7 +586,11 @@ export default function CelebrityBookingDetailsPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-purple-200">Celebrity Share</span>
+                        <span className="text-purple-200">{breakdown.sharePercentLabel === "80%" ? "VIP Split" : "Non VIP Split"}</span>
+                        <span className="text-purple-300">{breakdown.vipSplitText}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-purple-200">Your Earnings</span>
                         <span className="text-green-300">
                           ${breakdown.celebrityShare.toFixed(2)}
                         </span>
