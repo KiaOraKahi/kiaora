@@ -386,7 +386,7 @@ export default function CelebrityBookingDetailsPage() {
                     <Label className="text-purple-200 text-sm">Deadline</Label>
                     <p className="text-white font-medium">
                       {booking.deadline
-                        ? format(new Date(booking.deadline), "MMM d, yyyy")
+                        ? format(new Date(booking.deadline), "MMM d, yyyy, h:mm a")
                         : "No deadline set"}
                     </p>
                   </div>
@@ -641,7 +641,7 @@ export default function CelebrityBookingDetailsPage() {
                     <div>
                       <p className="text-white text-sm">Deadline Set</p>
                       <p className="text-purple-300 text-xs">
-                        {format(new Date(booking.deadline), "MMM d, yyyy")}
+                        {format(new Date(booking.deadline), "MMM d, yyyy, h:mm a")}
                       </p>
                     </div>
                   </div>
