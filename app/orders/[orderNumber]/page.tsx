@@ -686,6 +686,23 @@ export default function OrderDetailsPage() {
                     </div>
                     <div>
                       <Label className="text-purple-200 text-xs sm:text-sm font-medium">
+                        Service
+                      </Label>
+                      <p className="text-white text-sm sm:text-base">
+                        {(() => {
+                          const t = (order.messageType || '').toLowerCase();
+                          const m: Record<string, string> = {
+                            business: 'Business Endorsements',
+                            quick_shout: 'Quick Shout-Outs',
+                            personal: 'Personal Message',
+                            motivational: 'Motivational Message',
+                          };
+                          return m[t] || (t ? t.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) : 'Not specified');
+                        })()}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-purple-200 text-xs sm:text-sm font-medium">
                         Message Type
                       </Label>
                       <p className="text-white capitalize text-sm sm:text-base">
