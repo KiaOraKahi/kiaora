@@ -69,6 +69,8 @@ export async function GET(request: NextRequest) {
         items: {
           select: {
             type: true,
+            name: true,
+            description: true,
             metadata: true,
             totalPrice: true,
           },
@@ -146,18 +148,27 @@ export async function GET(request: NextRequest) {
         (tip: any) => tip.paymentStatus === "SUCCEEDED"
       );
       const tipFromSucceededRecords =
-        succeededTips.reduce((sum: number, tip: any) => sum + tip.amount, 0) || 0;
+        succeededTips.reduce((sum: number, tip: any) => sum + tip.amount, 0) ||
+        0;
       const tipFromOrderItems = (order.items || [])
         .filter((it: any) => it.type === "tip")
-        .reduce((sum: number, it: any) => sum + (Number(it.totalPrice) || 0), 0);
+        .reduce(
+          (sum: number, it: any) => sum + (Number(it.totalPrice) || 0),
+          0
+        );
       const totalTips = tipFromOrderItems + tipFromSucceededRecords;
 
       // Extract tipMessage from initial tip order item metadata (if present)
       let tipMessageFromItem: string | undefined = undefined;
       try {
-        const tipItem = (order.items || []).find((it: any) => it.type === "tip" && it.metadata);
+        const tipItem = (order.items || []).find(
+          (it: any) => it.type === "tip" && it.metadata
+        );
         if (tipItem) {
-          const md = typeof tipItem.metadata === "string" ? JSON.parse(tipItem.metadata) : tipItem.metadata;
+          const md =
+            typeof tipItem.metadata === "string"
+              ? JSON.parse(tipItem.metadata)
+              : tipItem.metadata;
           tipMessageFromItem = md?.tipMessage || md?.message || undefined;
         }
       } catch (err) {
@@ -165,10 +176,11 @@ export async function GET(request: NextRequest) {
       }
 
       // Fallback: use the most recent tip's message if available (any status)
-      const latestTipMessage = (order.tips || [])
-        .slice()
-        .reverse()
-        .find((t: any) => t.message)?.message || undefined;
+      const latestTipMessage =
+        (order.tips || [])
+          .slice()
+          .reverse()
+          .find((t: any) => t.message)?.message || undefined;
 
       console.log(`💰 Booking ${booking.id} tip calculation:`, {
         tipCount: order.tips?.length || 0,
@@ -188,7 +200,34 @@ export async function GET(request: NextRequest) {
       const platformFees = Math.round(baseAmount * TOTAL_FEES_RATE);
       const amountAfterFees = Math.max(baseAmount - platformFees, 0);
       const sharePercent = celebrity.isVIP ? 0.8 : 0.7;
-      const computedCelebrityAmount = Math.round(amountAfterFees * sharePercent);
+      const computedCelebrityAmount = Math.round(
+        amountAfterFees * sharePercent
+      );
+
+      const addOns: string[] = (() => {
+        try {
+          return (order.items || [])
+            .filter((it: any) => it.type === "addon")
+            .map((it: any) => {
+              const md =
+                typeof it.metadata === "string"
+                  ? JSON.parse(it.metadata)
+                  : it.metadata;
+              const id = md?.addOnId || md?.id || undefined;
+              if (id === "rush") return "ASAP";
+              return (
+                it.name ||
+                (id
+                  ? String(id)
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (l: string) => l.toUpperCase())
+                  : "Add-on")
+              );
+            });
+        } catch {
+          return [];
+        }
+      })();
 
       return {
         id: booking.id,
@@ -201,6 +240,7 @@ export async function GET(request: NextRequest) {
         instructions: booking.instructions || "",
         personalMessage: booking.message || "",
         specialInstructions: booking.specialInstructions || "",
+        addOns,
         amount: bookingAmount,
         celebrityAmount: computedCelebrityAmount,
         tipAmount: totalTips,
@@ -209,12 +249,16 @@ export async function GET(request: NextRequest) {
         status: booking.status.toLowerCase(),
         createdAt: booking.createdAt.toISOString(),
         deadline:
-          booking.deadline?.toISOString() || (() => {
+          booking.deadline?.toISOString() ||
+          (() => {
             let rush = false;
             try {
               const rushItem = (order.items || []).find((it: any) => {
                 if (it.type !== "addon") return false;
-                const md = typeof it.metadata === "string" ? JSON.parse(it.metadata) : it.metadata;
+                const md =
+                  typeof it.metadata === "string"
+                    ? JSON.parse(it.metadata)
+                    : it.metadata;
                 return md?.addOnId === "rush";
               });
               rush = !!rushItem;
@@ -233,13 +277,12 @@ export async function GET(request: NextRequest) {
         revisionCount: order.revisionCount,
         tipMessage: tipMessageFromItem ?? latestTipMessage,
         // Only expose succeeded tips in the list shown to celebrity
-        tips:
-          succeededTips.map((tip: any) => ({
-            id: tip.id,
-            amount: tip.amount,
-            message: tip.message,
-            createdAt: tip.createdAt.toISOString(),
-          })),
+        tips: succeededTips.map((tip: any) => ({
+          id: tip.id,
+          amount: tip.amount,
+          message: tip.message,
+          createdAt: tip.createdAt.toISOString(),
+        })),
       };
     });
 

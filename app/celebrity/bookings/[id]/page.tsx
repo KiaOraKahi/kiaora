@@ -53,6 +53,8 @@ interface CelebrityBookingDetails {
   instructions: string;
   personalMessage: string;
   specialInstructions: string;
+  messageType?: string;
+  addOns?: string[];
   tips: Array<{
     id: string;
     amount: number;
@@ -260,6 +262,32 @@ export default function CelebrityBookingDetailsPage() {
                 Booking Details
               </h1>
               <p className="text-purple-200">Order #{booking.orderNumber}</p>
+              <p className="text-purple-300 text-sm">
+                Service:{" "}
+                {(() => {
+                  const t = (booking.messageType || "").toLowerCase();
+                  const m: Record<string, string> = {
+                    business: "Business Endorsements",
+                    quick_shout: "Quick Shout-Outs",
+                    personal: "Personal Message",
+                    motivational: "Motivational Message",
+                  };
+                  return (
+                    m[t] ||
+                    (t
+                      ? t
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())
+                      : "Not specified")
+                  );
+                })()}
+              </p>
+
+              {booking.addOns && booking.addOns.length > 0 && (
+                <p className="text-yellow-300 text-sm">
+                  Add-ons: {booking.addOns.join(", ")}
+                </p>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge className={getStatusBadgeColor(booking.status)}>
@@ -328,6 +356,28 @@ export default function CelebrityBookingDetailsPage() {
                     <p className="text-white font-medium">{booking.occasion}</p>
                   </div>
                   <div>
+                    <Label className="text-purple-200 text-sm">Service</Label>
+                    <p className="text-white font-medium">
+                      {(() => {
+                        const t = (booking.messageType || "").toLowerCase();
+                        const m: Record<string, string> = {
+                          business: "Business Endorsements",
+                          quick_shout: "Quick Shout-Outs",
+                          personal: "Personal Message",
+                          motivational: "Motivational Message",
+                        };
+                        return (
+                          m[t] ||
+                          (t
+                            ? t
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())
+                            : "Not specified")
+                        );
+                      })()}
+                    </p>
+                  </div>
+                  <div>
                     <Label className="text-purple-200 text-sm">Deadline</Label>
                     <p className="text-white font-medium">
                       {booking.deadline
@@ -343,6 +393,14 @@ export default function CelebrityBookingDetailsPage() {
                       {booking.paymentStatus}
                     </p>
                   </div>
+                  {booking.addOns && booking.addOns.length > 0 && (
+                    <div>
+                      <Label className="text-purple-200 text-sm">Add-ons</Label>
+                      <p className="text-white font-medium">
+                        {booking.addOns.join(", ")}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
